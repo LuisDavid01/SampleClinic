@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
               <div className="footer-contact">
                 <div className="contact-item">
                   <Phone size={16} />
-                  <span>(57) 1 234 5678</span>
+                  <span>(506) 234 5678</span>
                 </div>
                 <div className="contact-item">
                   <Mail size={16} />
@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
                 </div>
                 <div className="contact-item">
                   <MapPin size={16} />
-                  <span>Calle 123 # 45-67, Bogotá</span>
+                  <span>Calle 123 # 45-67, San José C.R.</span>
                 </div>
               </div>
             </div>

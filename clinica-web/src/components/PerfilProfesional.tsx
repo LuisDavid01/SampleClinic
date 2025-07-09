@@ -7,7 +7,7 @@ const PerfilProfesional: React.FC = () => {
       nombre: "Dr. Carlos Méndez",
       especialidad: "Fisioterapia Deportiva",
       experiencia: "15 años",
-      formacion: "Universidad Nacional de Colombia",
+      formacion: "Universidad Nacional de Costa Rica",
       descripcion: "Especialista en rehabilitación deportiva con experiencia en equipos profesionales.",
       certificaciones: ["Fisioterapia Deportiva", "Terapia Manual", "Punción Seca"]
     },
@@ -15,7 +15,7 @@ const PerfilProfesional: React.FC = () => {
       nombre: "Dra. Ana Rodríguez",
       especialidad: "Fisioterapia Neurológica",
       experiencia: "12 años",
-      formacion: "Universidad Javeriana",
+      formacion: "UNED",
       descripcion: "Experta en rehabilitación neurológica y tratamiento de pacientes con ACV.",
       certificaciones: ["Fisioterapia Neurológica", "Bobath", "Vojta"]
     },
@@ -23,7 +23,7 @@ const PerfilProfesional: React.FC = () => {
       nombre: "Dr. Miguel Torres",
       especialidad: "Fisioterapia Ortopédica",
       experiencia: "10 años",
-      formacion: "Universidad de los Andes",
+      formacion: "Universidad de Costa Rica",
       descripcion: "Especialista en lesiones musculoesqueléticas y rehabilitación post-quirúrgica.",
       certificaciones: ["Fisioterapia Ortopédica", "Mulligan", "McKenzie"]
     }

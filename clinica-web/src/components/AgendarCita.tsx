@@ -153,7 +153,7 @@ const AgendarCita: React.FC = () => {
                   value={formData.telefono}
                   onChange={handleInputChange}
                   required
-                  placeholder="(57) 300 123 4567"
+                  placeholder="(506) 123 4567"
                 />
               </div>
 
@@ -239,11 +239,11 @@ const AgendarCita: React.FC = () => {
           <h3>¿Necesitas ayuda?</h3>
           <p>También puedes contactarnos directamente:</p>
           <div className="contacto-opciones">
-            <a href="tel:+573001234567" className="btn-secondary">
+            <a href="tel:+5061234567" className="btn-secondary">
               <Phone size={16} />
               Llamar Ahora
             </a>
-            <a href="https://wa.me/573001234567" className="btn-secondary" target="_blank" rel="noopener noreferrer">
+            <a href="https://wa.me/+5061234567" className="btn-secondary" target="_blank" rel="noopener noreferrer">
               <MessageSquare size={16} />
               WhatsApp
             </a>

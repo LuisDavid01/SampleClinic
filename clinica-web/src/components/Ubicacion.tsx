@@ -33,8 +33,8 @@ const Ubicacion: React.FC = () => {
               <div className="info-content">
                 <h3>Dirección</h3>
                 <p>Calle 123 # 45-67, Local 2</p>
-                <p>Barrio Centro, Bogotá D.C.</p>
-                <p>Colombia</p>
+                <p>Barrio Amon, San José C.R.</p>
+                <p>Costa Rica</p>
               </div>
             </div>
 
@@ -59,9 +59,9 @@ const Ubicacion: React.FC = () => {
               </div>
               <div className="info-content">
                 <h3>Contacto</h3>
-                <p>Teléfono: (57) 1 234 5678</p>
-                <p>Celular: (57) 300 123 4567</p>
-                <p>WhatsApp: (57) 300 123 4567</p>
+                <p>Teléfono: (506)  234 5678</p>
+                <p>Celular: (506)  123 4567</p>
+                <p>WhatsApp: (506)  123 4567</p>
               </div>
             </div>
 
@@ -108,7 +108,7 @@ const Ubicacion: React.FC = () => {
                 </div>
                 <div className="transporte-info">
                   <h4>En Transporte Público</h4>
-                  <p>Rutas: 123, 456, 789 - Estación Centro (TransMilenio)</p>
+                  <p>Rutas: 123, 456, 789 - Estación Centro</p>
                 </div>
               </div>
             </div>
@@ -128,7 +128,7 @@ const Ubicacion: React.FC = () => {
           <div className="emergencia-card">
             <h3>Emergencias</h3>
             <p>Para emergencias fuera de horario, contáctanos al:</p>
-            <p className="emergencia-telefono">(57) 300 123 4567</p>
+            <p className="emergencia-telefono">(506) 800 123 4567</p>
             <p className="emergencia-nota">* Disponible 24/7 para casos urgentes</p>
           </div>
         </div>

@@ -32,8 +32,8 @@ const Contacto: React.FC = () => {
     {
       icon: <Phone size={24} />,
       title: "Teléfono",
-      info: ["(57) 1 234 5678", "(57) 300 123 4567"],
-      action: "tel:+573001234567"
+      info: ["(506) 234 5678", "(506) 300 123 4567"],
+      action: "tel:+5063001234567"
     },
     {
       icon: <Mail size={24} />,
@@ -44,7 +44,7 @@ const Contacto: React.FC = () => {
     {
       icon: <MapPin size={24} />,
       title: "Dirección",
-      info: ["Calle 123 # 45-67, Local 2", "Barrio Centro, Bogotá D.C."],
+      info: ["Calle 123 # 45-67, Local 2", "Barrio Amon, San José C.R."],
       action: "#ubicacion"
     },
     {
@@ -90,11 +90,11 @@ const Contacto: React.FC = () => {
             <div className="contacto-rapido">
               <h3>Contacto Rápido</h3>
               <div className="contacto-buttons">
-                <a href="tel:+573001234567" className="btn-primary">
+                <a href="tel:+5068001234567" className="btn-primary">
                   <Phone size={16} />
                   Llamar Ahora
                 </a>
-                <a href="https://wa.me/573001234567" className="btn-secondary" target="_blank" rel="noopener noreferrer">
+                <a href="https://wa.me/5068001234567" className="btn-secondary" target="_blank" rel="noopener noreferrer">
                   <MessageSquare size={16} />
                   WhatsApp
                 </a>
