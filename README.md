@@ -21,3 +21,4 @@ docker compose up --build
 4. listo! 😁👌
 # Colaboradores
 - Luis David Miranda Villalta
+- Adrian Morales Castro
