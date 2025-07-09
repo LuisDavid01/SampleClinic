@@ -1,0 +1,17 @@
+# USAMOS LA IMAGEN DE NODE 22
+FROM node:22
+
+# DIRECTORIO DE ACTIVO
+WORKDIR /app
+
+#package json
+COPY package*.json ./
+#instalamos las dependencias
+RUN npm install
+#copiamos todos los archivos
+COPY . .
+
+#exponemos el puerto
+EXPOSE 5173
+#corremos el proyecto
+CMD ["npm", "run", "dev"]
