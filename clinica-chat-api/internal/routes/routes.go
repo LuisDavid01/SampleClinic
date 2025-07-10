@@ -1,0 +1,19 @@
+package routes
+
+import (
+	//"io"
+	//"html/template"
+	//"net/http"
+	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/app"
+	"github.com/go-chi/chi/v5"
+)
+
+func SetupRoutes(app *app.Application) *chi.Mux {
+	r := chi.NewRouter()
+
+	// Health check route
+	r.Get("/api/health", app.HealthCheck)
+	//route enableing ws
+
+	return r
+}
