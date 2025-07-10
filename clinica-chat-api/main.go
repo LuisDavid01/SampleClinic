@@ -9,18 +9,18 @@ import (
 
 	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/app"
 	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/routes"
-	"github.com/joho/godotenv"
+	//"github.com/joho/godotenv"
 )
 
 func main() {
 	var port int
 	flag.IntVar(&port, "port", 8080, "live-chat")
 	flag.Parse()
-	err := godotenv.Load()
+	/*err := godotenv.Load()
 	if err != nil {
 		panic(err)
 	}
-
+	*/
 	app, err := app.NewApplication()
 	if err != nil {
 		panic(err)
