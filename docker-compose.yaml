@@ -1,8 +1,31 @@
 services:
+  clinica-chat:
+    container_name: clinica-chat
+    build:
+      context: ./clinica-chat-api
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+  
+  clinica-api:
+    container_name: clinica-api
+    build:
+      context: ./clinica-api
+    ports:
+      - "42069:42069"
+    networks:
+      - app-network
   clinica-web:
     container_name: clinica-web
     build:
       context: ./clinica-web
     ports:
       - "5173:5173"
+    networks:
+      - app-network
 
+
+networks:
+  app-network:
+    driver: bridge
