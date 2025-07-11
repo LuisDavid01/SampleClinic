@@ -7,19 +7,17 @@ export const Route = createLazyFileRoute("/")({
 function Index() {
   return (
     <div className="">
-
-
-    <section className="bg-gradient-to-br from-secondary to-white py-20">
+    <section className=" relative h-screen  flex items-center justify-center bg-gradient-to-br from-secondary to-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
                 <div>
                     <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
                         Recupera tu 
-                        <span className="text-primary">bienestar</span> 
+                        <span className=" block text-primary">bienestar</span> 
                         con nosotros
                     </h2>
-                    <p className="text-xl text-gray-600 mb-8">
+                    <p className="text-xl text-gray-900 mb-8">
                         Ofrecemos tratamientos personalizados de fisioterapia con un enfoque integral para tu salud y recuperación.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -33,46 +31,7 @@ function Index() {
                 </div>
 
 
-                <div className="relative">
-                    <div className="bg-primary rounded-2xl p-8 shadow-xl">
-                        <div className="bg-white rounded-lg p-6 space-y-4">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-gray-900">Tratamiento Personalizado</h3>
-                                    <p className="text-sm text-gray-600">Adaptado a tus necesidades específicas</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-gray-900">Horarios Flexibles</h3>
-                                    <p className="text-sm text-gray-600">Disponible cuando lo necesites</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-gray-900">Ubicación Céntrica</h3>
-                                    <p className="text-sm text-gray-600">Fácil acceso y estacionamiento</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
             </div>
         </div>
     </section>
@@ -120,6 +79,136 @@ function Index() {
                     <p className="text-gray-600">Evaluaciones y programas preventivos para mantener tu salud óptima.</p>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section className="bg-white py-20 lg:py-28">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div className="text-center mb-16">
+        <h2 className="text-3xl font-black lg:text-4xl mb-6">
+          
+        </h2>
+        <div className="prose max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600">
+           
+          </p>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-16 items-start">
+        
+        <div className="relative">
+            <div className="text-center text-lg:text-left">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+              
+            </h3>
+            
+          </div>
+          
+          <div className="space-y-4">
+            <div className="pb-4 prose">
+               
+
+            </div>
+
+             <div className="pb-4">
+              
+            </div>
+
+             <div className="pb-4">
+               
+            </div>
+
+             <div className="pb-4">
+              accordion
+            </div>
+          </div>
+        </div>
+
+
+        <div className="space-y-12">
+            <div className="aspect-[4/5] w-full overflow-hidden rounded-2xl shadow-2xl">
+            <img
+              src="/section.webp"
+              alt="team image"
+              className="w-full h-full object-cover object-center"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+    <section className="bg-gray-50 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-text-primary mb-4">
+            Lo que <span className="text-primary-500">nuestros</span> clientes tiene que decir.
+          </h2>
+          <p className="text-lg text-text-secondary">
+            Testomonios <span className="text-primary-500 font-semibold">reales</span> de clientes frecuentes.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-red-400 rounded-full flex items-center justify-center text-white font-bold">
+                T
+              </div>
+              <div className="ml-3">
+                <h4 className="font-semibold text-text-primary">Timberrr</h4>
+                <p className="text-sm text-text-secondary">11/7/2025</p>
+                <p className="text-sm text-text-secondary">ZACKHARDTONAME</p>
+              </div>
+            </div>
+            <p className="text-text-secondary text-sm leading-relaxed">
+              demo text
+            </p>
+          </div>
+
+          
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-green-400 rounded-full flex items-center justify-center text-white font-bold">
+                U
+              </div>
+              <div className="ml-3">
+                <h4 className="font-semibold text-text-primary">Upset</h4>
+                <p className="text-sm text-text-secondary">11/7/2025</p>
+                <p className="text-sm text-text-secondary">SUSPENSEFULAPPLE</p>
+              </div>
+            </div>
+            <p className="text-text-secondary text-sm leading-relaxed">
+              demo text
+            </p>
+          </div>
+
+
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center text-white font-bold">
+                A
+              </div>
+              <div className="ml-3">
+                <h4 className="font-semibold text-text-primary">Anatz</h4>
+                <p className="text-sm text-text-secondary">11/7/2025</p>
+                <p className="text-sm text-text-secondary">LUKEWARMTEA137</p>
+              </div>
+            </div>
+            <p className="text-text-secondary text-sm leading-relaxed">
+              demo text
+            </p>
+          </div>
+          
+        </div>
+      </div>
+       <div className="text-center my-8">
+          <button className="border-2 border-dashed border-gray-300 text-text-secondary px-8 py-3 rounded-lg font-medium hover:border-gray-400 transition-colors">
+            Envianos tu feedback!
+          </button>
         </div>
     </section>
 
