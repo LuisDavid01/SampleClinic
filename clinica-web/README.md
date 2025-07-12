@@ -1,340 +1,98 @@
-# React + TypeScript + Vite
+# Clínica de Fisioterapia - Esteban Porras
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este es el repositorio del código para la página web de la Clínica de Fisioterapia de Esteban Porras. El proyecto está construido con tecnologías web modernas para proporcionar una experiencia de usuario rápida, receptiva y atractiva.
 
-Currently, two official plugins are available:
+## Empezando
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Estas instrucciones te permitirán obtener una copia del proyecto en funcionamiento en tu máquina local para desarrollo y pruebas.
 
----
+### Pre-requisitos
 
-# 🏥 Clínica FisioSalud - Página Web
+Necesitarás tener Node.js y npm (o un gestor de paquetes equivalente) instalados en tu sistema.
 
-Una página web moderna y profesional para una clínica de fisioterapia, desarrollada con React, TypeScript y Vite.
-
-## 📋 Descripción
-
-Esta aplicación web presenta una clínica de fisioterapia ficticia llamada "Clínica FisioSalud" ubicada en Costa Rica. La página incluye todas las secciones necesarias para un negocio de fisioterapia comercial:
-
-- **Sección Hero**: Bienvenida atractiva con llamadas a la acción
-- **Servicios**: Catálogo completo de servicios de fisioterapia
-- **Perfil Profesional**: Información del equipo médico
-- **Ubicación**: Dirección, horarios y cómo llegar
-- **Agendar Cita**: Formulario para programar consultas
-- **Contacto**: Información de contacto y formulario
-- **Redes Sociales**: Enlaces a plataformas sociales
-
-## 🚀 Características
-
-### ✨ Diseño Moderno
-- Interfaz responsive y atractiva
-- Gradientes y efectos visuales modernos
-- Animaciones suaves y transiciones
-- Diseño adaptativo para móviles y tablets
-
-### 🎯 Funcionalidades
-- Navegación suave entre secciones
-- Formularios interactivos para citas y contacto
-- Enlaces directos a WhatsApp y teléfono
-- Botón de "volver arriba"
-- Menú hamburguesa para móviles
-
-### 📱 Responsive Design
-- Optimizado para dispositivos móviles
-- Diseño adaptativo con CSS Grid y Flexbox
-- Menú de navegación colapsable
-- Tipografía escalable
-
-## 🛠️ Tecnologías Utilizadas
-
-- **React 19.1.0**: Framework de JavaScript para la interfaz de usuario
-- **TypeScript**: Tipado estático para mayor robustez
-- **Vite**: Herramienta de construcción rápida
-- **React Router DOM**: Navegación entre páginas
-- **Lucide React**: Iconos modernos y ligeros
-- **CSS3**: Estilos modernos con Grid, Flexbox y animaciones
-
-## 📁 Estructura del Proyecto
-
-```
-clinica-web/
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── Navbar.tsx          # Barra de navegación
-│   │   ├── Hero.tsx            # Sección de bienvenida
-│   │   ├── Servicios.tsx       # Catálogo de servicios
-│   │   ├── PerfilProfesional.tsx # Equipo médico
-│   │   ├── Ubicacion.tsx       # Información de ubicación
-│   │   ├── AgendarCita.tsx     # Formulario de citas
-│   │   ├── Contacto.tsx        # Información de contacto
-│   │   └── Footer.tsx          # Pie de página con redes sociales
-│   ├── assets/
-│   ├── App.tsx                 # Componente principal
-│   ├── App.css                 # Estilos principales
-│   ├── index.css               # Estilos globales
-│   └── main.tsx                # Punto de entrada
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── README.md
-```
-
-## 🎨 Secciones de la Página
-
-### 1. **Navbar** 
-- Logo de la clínica
-- Menú de navegación con enlaces a todas las secciones
-- Menú hamburguesa para dispositivos móviles
-- Navegación suave entre secciones
-
-### 2. **Hero Section**
-- Título principal atractivo
-- Descripción de la clínica
-- Botones de llamada a la acción
-- Indicador de scroll
-
-### 3. **Servicios**
-- 6 servicios principales de fisioterapia:
-  - Fisioterapia Deportiva
-  - Fisioterapia Cardiorrespiratoria
-  - Fisioterapia Neurológica
-  - Terapia Manual
-  - Fisioterapia Geriátrica
-  - Fisioterapia Ortopédica
-- Iconos coloridos y descripciones detalladas
-
-### 4. **Perfil Profesional**
-- Estadísticas de la clínica (pacientes, experiencia, etc.)
-- Información de 3 fisioterapeutas especializados:
-  - Dr. Carlos Méndez (Fisioterapia Deportiva)
-  - Dra. Ana Rodríguez (Fisioterapia Neurológica)
-  - Dr. Miguel Torres (Fisioterapia Ortopédica)
-- Certificaciones y especialidades
-
-### 5. **Ubicación**
-- Dirección completa en San José, Costa Rica
-- Horarios de atención detallados
-- Información de contacto (teléfono, email)
-- Instrucciones de cómo llegar
-- Servicios adicionales disponibles
-- Información de emergencias
-
-### 6. **Agendar Cita**
-- Formulario completo para programar citas
-- Selección de fecha y hora
-- Elección de servicio
-- Información personal del paciente
-- Beneficios de agendar con la clínica
-- Enlaces directos de contacto
-
-### 7. **Contacto**
-- Información de contacto detallada
-- Formulario de contacto
-- Preguntas frecuentes
-- Enlaces directos a WhatsApp y teléfono
-
-### 8. **Footer**
-- Información de la clínica
-- Enlaces rápidos a secciones
-- Redes sociales (Facebook, Instagram, Twitter, LinkedIn, YouTube)
-- Formulario de suscripción al boletín
-- Información legal
-
-## 🚀 Instalación y Uso
-
-### Prerrequisitos
-- Node.js (versión 16 o superior)
-- npm o yarn
+- [Node.js](https://nodejs.org/) (v18 o superior recomendado)
+- [npm](https://www.npmjs.com/)
 
 ### Instalación
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone <url-del-repositorio>
-   cd clinica-web
-   ```
+1.  Clona el repositorio en tu máquina local:
 
-2. **Instalar dependencias**
-   ```bash
-   npm install
-   ```
+    ```bash
+    git clone https://github.com/tu-usuario/Fisioterapia-esteban-porras.git
+    ```
 
-3. **Ejecutar en modo desarrollo**
-   ```bash
-   npm run dev
-   ```
+2.  Navega al directorio del proyecto:
 
-4. **Abrir en el navegador**
-   ```
-   http://localhost:5173
-   ```
+    ```bash
+    cd clinica-web
+    ```
 
-### Scripts Disponibles
+3.  Instala las dependencias del proyecto:
 
-- `npm run dev` - Inicia el servidor de desarrollo
-- `npm run build` - Construye la aplicación para producción
-- `npm run preview` - Previsualiza la versión de producción
-- `npm run lint` - Ejecuta el linter
+    ```bash
+    npm install
+    ```
 
-## 📱 Información de Contacto
+## Corriendo el Proyecto
 
-### Clínica FisioSalud
-- **Dirección**: Calle 123 # 45-67, Local 2, Barrio Amon, San José C.R., Costa Rica
-- **Teléfono**: (506) 234 5678
-- **Celular**: (506) 300 123 4567
-- **WhatsApp**: (506) 300 123 4567
-- **Email**: info@clinicafisiosalud.com
-- **Emergencias**: (506) 800 123 4567
+Para iniciar el servidor de desarrollo y ver la aplicación en tu navegador, ejecuta el siguiente comando:
 
-### Horarios de Atención
-- **Lunes - Viernes**: 8:00 AM - 7:00 PM
-- **Sábados**: 8:00 AM - 2:00 PM
-- **Domingos**: Cerrado
-
-## 🎯 Características Técnicas
-
-### Performance
-- Carga rápida con Vite
-- Optimización de imágenes
-- Lazy loading de componentes
-- CSS optimizado
-
-### SEO
-- Estructura semántica HTML
-- Meta tags optimizados
-- URLs amigables
-- Contenido estructurado
-
-### Accesibilidad
-- Navegación por teclado
-- Contraste de colores adecuado
-- Textos alternativos en imágenes
-- Estructura de encabezados correcta
-
-## 🔧 Personalización
-
-### Cambiar Información de Contacto
-Edita los archivos de componentes para actualizar:
-- Números de teléfono
-- Dirección
-- Horarios
-- Información del equipo
-
-### Modificar Servicios
-En `src/components/Servicios.tsx` puedes:
-- Agregar nuevos servicios
-- Cambiar descripciones
-- Modificar iconos y colores
-
-### Actualizar Estilos
-Los estilos principales están en:
-- `src/App.css` - Estilos de componentes
-- `src/index.css` - Estilos globales
-
-## 📦 Despliegue
-
-### Build para Producción
 ```bash
-npm run build
+npm run dev
 ```
 
-### Despliegue en Netlify
-1. Conecta tu repositorio a Netlify
-2. Configura el directorio de build como `dist`
-3. El comando de build será `npm run build`
+Esto iniciará la aplicación en modo de desarrollo. Abre [http://localhost:5173](http://localhost:5173) (o el puerto que se indique en la terminal) para verla en el navegador. La página se recargará si realizas cambios en el código.
 
-### Despliegue en Vercel
-1. Conecta tu repositorio a Vercel
-2. Vercel detectará automáticamente que es un proyecto Vite
-3. Se desplegará automáticamente
+## Tecnologías Utilizadas
 
-## 🤝 Contribución
+Este proyecto utiliza una variedad de tecnologías modernas de desarrollo web:
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+### Framework y Librerías
 
-## 📄 Licencia
+-   **React 19:** Una biblioteca de JavaScript para construir interfaces de usuario.
+-   **Vite:** Un entorno de desarrollo de frontend rápido que proporciona una experiencia de desarrollo más ágil.
+-   **TanStack Router:** Enrutamiento para aplicaciones React, con un enfoque en la seguridad de tipos y la eficiencia.
+-   **TanStack Query:** Para la obtención, almacenamiento en caché y actualización de datos en aplicaciones React.
+-   **Tailwind CSS:** Un framework de CSS de utilidad primero para un diseño rápido y personalizado.
+-   **TypeScript:** Un superconjunto de JavaScript que añade tipado estático opcional.
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+### Componentes de UI
 
-## 👨‍💻 Autor
+-   **Shadcn:** Primitivas de UI sin estilo para construir componentes de diseño de alta calidad.
+-   **Lucide React:** Un conjunto de iconos SVG simple y hermoso.
+-   **Embla Carousel React:** Un carrusel extensible y ligero con una API fluida.
 
-Desarrollado para equipo de trabajo Curso Analisis y modelado de requerimientos - U.Fidelitas - Costa Rica
+### Herramientas de Desarrollo
 
+-   **ESLint:** Para el análisis estático de código para encontrar problemas.
+-   **Prettier:** Un formateador de código opinado.
+-   **PostCSS:** Una herramienta para transformar CSS con plugins de JavaScript.
 
-- [React](https://reactjs.org/) - Framework de JavaScript
-- [Vite](https://vitejs.dev/) - Herramienta de construcción
-- [Lucide](https://lucide.dev/) - Iconos
-- [TypeScript](https://www.typescriptlang.org/) - Tipado estático
+## Scripts Disponibles
 
----
+En el `package.json`, puedes encontrar los siguientes scripts:
 
-**Nota**: Esta es una aplicación de demostración. La información de contacto y ubicación es ficticia y se debe actualizar con datos reales antes de usar en producción.
+-   `npm run dev`: Inicia la aplicación en modo de desarrollo.
+-   `npm run build`: Compila la aplicación para producción en la carpeta `dist`.
+-   `npm run lint`: Ejecuta ESLint para analizar el código en busca de errores de estilo y de código.
+-   `npm run preview`: Sirve la compilación de producción localmente para previsualizarla.
 
----
+## Estructura del Proyecto
 
-## Expanding the ESLint configuration
+El código fuente principal se encuentra en la carpeta `src`.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+.
+├── src/
+│   ├── assets/         # Imágenes y otros recursos estáticos
+│   ├── components/     # Componentes de React reutilizables
+│   ├── lib/            # Funciones de utilidad
+│   ├── routes/         # Configuración de rutas de la aplicación
+│   ├── App.tsx         # Componente principal de la aplicación
+│   ├── main.tsx        # Punto de entrada de la aplicación
+│   └── index.css       # Estilos globales
+├── public/             # Archivos estáticos que no se procesan por Vite
+├── package.json        # Dependencias y scripts del proyecto
+├── vite.config.ts      # Configuración de Vite
+└── tailwind.config.mjs # Configuración de Tailwind CSS
 ```
