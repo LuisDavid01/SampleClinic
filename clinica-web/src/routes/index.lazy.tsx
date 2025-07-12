@@ -308,8 +308,8 @@ function Index() {
 							Nuestro <span className="text-primary">Equipo</span> Profesional
 						</h2>
 						<p className="text-lg text-gray-600 max-w-2xl mx-auto">
-							Profesionales altamente capacitados comprometidos con tu
-							<span className="text-primary font-semibold">bienestar</span> y recuperación
+							Profesionales altamente capacitados comprometidos con tu 
+							<span className="text-primary font-semibold"> bienestar</span> y recuperación
 						</p>
 					</div>
 
