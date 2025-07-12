@@ -1,3 +1,4 @@
+import { SignOutButton } from "@clerk/tanstack-react-start"
 import { Link } from "@tanstack/react-router"
 export const Header : React.FC= () => {
     return(
@@ -19,12 +20,13 @@ export const Header : React.FC= () => {
                         <Link to="/admin/dashboard">admin</Link>
                         </li>
                     </ul>
-                    <button className="px-4 py-2 text-white border border-primary rounded-lg hover:bg-secondary transition-colors duration-200">
+                    <Link to="/login" className="px-4 py-2 bg-primary text-white border border-primary rounded-lg hover:bg-secondary transition-colors duration-200">
                         Iniciar Sesión
-                    </button>
-                    <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    </Link>
+                    <Link to="/signup" className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
                         Registrarse
-                    </button>
+                    </Link>
+                    <SignOutButton></SignOutButton>
                 </div>
             </div>
         </div>
