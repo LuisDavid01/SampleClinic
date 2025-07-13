@@ -1,5 +1,6 @@
-import { SignedIn,SignedOut, SignOutButton, UserButton } from "@clerk/tanstack-react-start"
+import { SignedIn,SignedOut, UserButton } from "@clerk/tanstack-react-start"
 import { Link } from "@tanstack/react-router"
+import  MobileMenu  from "../MobileMenu/index"
 export const Header : React.FC= () => {
     return(
         <header className="bg-white shadow-sm sticky z-60">
@@ -19,22 +20,64 @@ export const Header : React.FC= () => {
                         <li>
                         <Link to="/admin/dashboard">admin</Link>
                         </li>
-                    </ul>
+                    
                     
 
                     <SignedOut>
-                    <Link to="/login" className="px-4 py-2 bg-primary text-white border border-primary rounded-lg ">
+                        <li>
+                            <Link to="/login" className="px-4 py-2 bg-primary text-white border border-primary rounded-lg ">
                         Iniciar Sesión
                     </Link>
-                    <Link to="/signup" className="px-4 py-2 bg-primary text-white rounded-lg ">
+                        </li>
+                    
+                    <li>
+                        <Link to="/signup" className="px-4 py-2 bg-primary text-white rounded-lg ">
                         Registrarse
                     </Link>
+                    </li>
+                    
+
                     </SignedOut>
+
                     <SignedIn>
+
                     <UserButton />
-                    <SignOutButton/>
+
                     </SignedIn>
+                    </ul>
                 </div>
+                <div className="md:hidden">
+                    <MobileMenu>
+                    <li>
+                        <Link to="/contacts" >Contacto</Link>
+                        </li>
+                        <li>
+                        <Link to="/admin/dashboard">admin</Link>
+                        </li>
+                        <SignedOut>
+                        <li>
+                            <Link to="/login" className="px-4 py-2 bg-primary text-white border border-primary rounded-lg ">
+                        Iniciar Sesión
+                    </Link>
+                        </li>
+                    
+                    <li>
+                        <Link to="/signup" className="px-4 py-2 bg-primary text-white rounded-lg ">
+                        Registrarse
+                    </Link>
+                    </li>
+                    
+
+                    </SignedOut>
+
+                    <SignedIn>
+
+                    <UserButton />
+
+                    </SignedIn>
+                </MobileMenu>
+                </div>
+                
             </div>
         </div>
     </header>
