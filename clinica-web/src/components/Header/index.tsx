@@ -1,4 +1,4 @@
-import { SignedIn,SignedOut, SignOutButton } from "@clerk/tanstack-react-start"
+import { SignedIn,SignedOut, SignOutButton, UserButton } from "@clerk/tanstack-react-start"
 import { Link } from "@tanstack/react-router"
 export const Header : React.FC= () => {
     return(
@@ -31,6 +31,7 @@ export const Header : React.FC= () => {
                     </Link>
                     </SignedOut>
                     <SignedIn>
+                    <UserButton />
                     <SignOutButton/>
                     </SignedIn>
                 </div>
