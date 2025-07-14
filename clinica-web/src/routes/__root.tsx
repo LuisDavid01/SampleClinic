@@ -3,7 +3,7 @@ import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
-import { ClerkProvider } from '@clerk/tanstack-react-start'
+import { ClerkProvider } from '@clerk/clerk-react'
 import { esES } from '@clerk/localizations'
 //const clerkKey = import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY
 export const Route = createRootRoute({
