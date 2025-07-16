@@ -30,8 +30,11 @@ app.disable('x-powered-by');
 
 
 //rutas del api
-
-
+app.get('/api/health', (req, res) => {
+  res.json({
+    message: 'Service is healthy',
+  });
+});
 
 //iniciamos el servidor
 app.listen(port, () => console.log(`El servidor esta corriendo en: http://localhost:${port} `));
