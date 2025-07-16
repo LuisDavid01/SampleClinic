@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { MessageCircle, X, ArrowLeft, Send, Clock, User, Mail } from "lucide-react"
 import type { Chat, Message } from "@/types/chat"
 
-// Datos mock para simular chats existentes
+// Datos mock para simular chats existentes - agregar más chats
 const mockChats: Chat[] = [
   {
     id: "1",
@@ -31,15 +31,29 @@ const mockChats: Chat[] = [
       },
       {
         id: "2",
-        content: "Hola Ana, ¿puedes contarme más detalles?",
+        content: "Hola Ana, ¿puedes contarme más detalles sobre el error que recibes?",
         timestamp: new Date(Date.now() - 8 * 60 * 1000),
         isFromSupport: true,
         isRead: true,
       },
       {
         id: "3",
-        content: "No puedo completar mi compra",
+        content: "No puedo completar mi compra, me aparece un error cuando intento pagar",
         timestamp: new Date(Date.now() - 5 * 60 * 1000),
+        isFromSupport: false,
+        isRead: false,
+      },
+      {
+        id: "4",
+        content: "He intentado con diferentes tarjetas y el mismo problema",
+        timestamp: new Date(Date.now() - 4 * 60 * 1000),
+        isFromSupport: false,
+        isRead: false,
+      },
+      {
+        id: "5",
+        content: "¿Podrían ayudarme por favor?",
+        timestamp: new Date(Date.now() - 3 * 60 * 1000),
         isFromSupport: false,
         isRead: false,
       },
@@ -57,6 +71,20 @@ const mockChats: Chat[] = [
     messages: [
       {
         id: "1",
+        content: "Hola, estoy interesado en el producto XYZ",
+        timestamp: new Date(Date.now() - 15 * 60 * 1000),
+        isFromSupport: false,
+        isRead: true,
+      },
+      {
+        id: "2",
+        content: "¡Hola Carlos! Te ayudo con información sobre ese producto",
+        timestamp: new Date(Date.now() - 12 * 60 * 1000),
+        isFromSupport: true,
+        isRead: true,
+      },
+      {
+        id: "3",
         content: "¿Tienen stock disponible?",
         timestamp: new Date(Date.now() - 2 * 60 * 1000),
         isFromSupport: false,
@@ -76,22 +104,133 @@ const mockChats: Chat[] = [
     messages: [
       {
         id: "1",
-        content: "Quiero devolver un producto",
+        content: "Quiero devolver un producto que compré la semana pasada",
         timestamp: new Date(Date.now() - 35 * 60 * 1000),
         isFromSupport: false,
         isRead: true,
       },
       {
         id: "2",
-        content: "Perfecto, te ayudo con eso",
+        content: "Perfecto María, te ayudo con el proceso de devolución",
         timestamp: new Date(Date.now() - 32 * 60 * 1000),
         isFromSupport: true,
         isRead: true,
       },
       {
         id: "3",
-        content: "Gracias por la ayuda",
+        content: "Gracias por la ayuda, todo perfecto",
         timestamp: new Date(Date.now() - 30 * 60 * 1000),
+        isFromSupport: false,
+        isRead: true,
+      },
+    ],
+  },
+  {
+    id: "4",
+    customerName: "Pedro Martínez",
+    customerEmail: "pedro@email.com",
+    subject: "Problema técnico",
+    status: "waiting",
+    lastMessage: "La página no carga",
+    lastMessageTime: new Date(Date.now() - 45 * 60 * 1000),
+    unreadCount: 2,
+    messages: [
+      {
+        id: "1",
+        content: "Tengo problemas para acceder a mi cuenta",
+        timestamp: new Date(Date.now() - 50 * 60 * 1000),
+        isFromSupport: false,
+        isRead: true,
+      },
+      {
+        id: "2",
+        content: "La página no carga correctamente",
+        timestamp: new Date(Date.now() - 45 * 60 * 1000),
+        isFromSupport: false,
+        isRead: false,
+      },
+    ],
+  },
+  {
+    id: "5",
+    customerName: "Laura Fernández",
+    customerEmail: "laura@email.com",
+    subject: "Consulta de facturación",
+    status: "active",
+    lastMessage: "¿Pueden enviarme la factura?",
+    lastMessageTime: new Date(Date.now() - 1 * 60 * 1000),
+    unreadCount: 1,
+    messages: [
+      {
+        id: "1",
+        content: "Necesito la factura de mi última compra",
+        timestamp: new Date(Date.now() - 10 * 60 * 1000),
+        isFromSupport: false,
+        isRead: true,
+      },
+      {
+        id: "2",
+        content: "Claro Laura, te ayudo a generar la factura",
+        timestamp: new Date(Date.now() - 8 * 60 * 1000),
+        isFromSupport: true,
+        isRead: true,
+      },
+      {
+        id: "3",
+        content: "¿Pueden enviarme la factura por email?",
+        timestamp: new Date(Date.now() - 1 * 60 * 1000),
+        isFromSupport: false,
+        isRead: false,
+      },
+    ],
+  },
+  {
+    id: "6",
+    customerName: "Roberto Silva",
+    customerEmail: "roberto@email.com",
+    subject: "Cambio de dirección",
+    status: "waiting",
+    lastMessage: "Necesito actualizar mi dirección",
+    lastMessageTime: new Date(Date.now() - 60 * 60 * 1000),
+    unreadCount: 1,
+    messages: [
+      {
+        id: "1",
+        content: "Necesito actualizar mi dirección de envío",
+        timestamp: new Date(Date.now() - 60 * 60 * 1000),
+        isFromSupport: false,
+        isRead: false,
+      },
+    ],
+  },
+  {
+    id: "7",
+    customerName: "Carmen Ruiz",
+    customerEmail: "carmen@email.com",
+    subject: "Pregunta sobre garantía",
+    status: "closed",
+    lastMessage: "Entendido, muchas gracias",
+    lastMessageTime: new Date(Date.now() - 120 * 60 * 1000),
+    unreadCount: 0,
+    messages: [
+      {
+        id: "1",
+        content: "¿Cuál es el tiempo de garantía de los productos?",
+        timestamp: new Date(Date.now() - 125 * 60 * 1000),
+        isFromSupport: false,
+        isRead: true,
+      },
+      {
+        id: "2",
+        content: "La garantía es de 2 años para todos nuestros productos",
+        timestamp: new Date(Date.now() - 122 * 60 * 1000),
+        isFromSupport: true,
+        isRead: true,
+      },
+      {
+        id: "3",
+        content: "Entendido, muchas gracias por la información",
+        timestamp: new Date(Date.now() - 120 * 60 * 1000),
         isFromSupport: false,
         isRead: true,
       },
@@ -217,7 +356,7 @@ export default function SupportChat() {
 
       {/* Panel de chat */}
       {isOpen && (
-        <Card className="fixed bottom-24 right-6 w-96 h-[500px] shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col">
+        <Card className="fixed bottom-24 right-6 w-96 h-[600px] shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col">
           {!selectedChat ? (
             // Vista de lista de chats
             <>
@@ -233,8 +372,8 @@ export default function SupportChat() {
                 </CardTitle>
               </CardHeader>
 
-              <CardContent className="flex-1 p-0">
-                <ScrollArea className="h-full">
+              <CardContent className="flex-1 p-0 overflow-hidden">
+                <ScrollArea className="h-[480px]">
                   {chats.map((chat, index) => (
                     <div key={chat.id}>
                       <div
@@ -301,7 +440,7 @@ export default function SupportChat() {
               </CardHeader>
 
               <CardContent className="flex-1 p-4 overflow-hidden">
-                <ScrollArea className="h-full pr-4">
+                <ScrollArea className="h-[400px] pr-4">
                   <div className="space-y-3">
                     {selectedChat.messages.map((message) => (
                       <div
