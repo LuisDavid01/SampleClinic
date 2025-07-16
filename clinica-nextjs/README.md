@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fisioterapia Esteban Porras - Clínica Next.js
 
-## Getting Started
+Este proyecto es una aplicación web para la clínica de fisioterapia de Esteban Porras, desarrollada con Next.js.
 
-First, run the development server:
+## Descripción
+
+Esta aplicación permite a los usuarios ver información sobre la clínica, agendar citas y administrar su información de perfil. Los administradores tienen un panel para gestionar usuarios y citas.
+
+## Tecnologías Utilizadas
+
+- **Framework:** [Next.js](https://nextjs.org/)
+- **Lenguaje:** [TypeScript](https://www.typescriptlang.org/)
+- **UI:** [React](https://react.dev/)
+- **Estilos:** [Tailwind CSS](https://tailwindcss.com/)
+- **Autenticación:** [Clerk](https://clerk.com/)
+
+## Cómo Empezar
+
+Sigue estos pasos para levantar el entorno de desarrollo local.
+
+### Prerrequisitos
+
+- Node.js (v20 o superior)
+- npm, yarn, pnpm, o bun
+
+### Instalación
+
+1. Navega al directorio del proyecto:
+   ```bash
+   cd clinica-nextjs
+   ```
+2. Instala las dependencias:
+   ```bash
+   npm install
+   ```
+
+### Corriendo la Aplicación
+
+Para iniciar el servidor de desarrollo, ejecuta:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la aplicación.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts Disponibles
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev`: Inicia el servidor de desarrollo.
+- `npm run build`: Compila la aplicación para producción.
+- `npm run start`: Inicia el servidor de producción.
+- `npm run lint`: Revisa el código con ESLint.
+- `npm run format`: Formatea el código con Prettier.
 
-## Learn More
+## Estructura del Proyecto
 
-To learn more about Next.js, take a look at the following resources:
+```
+.
+├── public/               # Archivos estáticos
+├── src/
+│   ├── app/              # Rutas y páginas de la aplicación
+│   │   ├── admin/        # Panel de administración
+│   │   ├── Paciente/     # Perfil del paciente
+│   │   └── ...
+│   ├── components/       # Componentes reutilizables
+│   ├── interfaces/       # Definiciones de tipos e interfaces
+│   └── utils/            # Funciones de utilidad
+├── .gitignore            # Archivos ignorados por Git
+├── next.config.ts        # Configuración de Next.js
+├── package.json          # Dependencias y scripts
+└── tsconfig.json         # Configuración de TypeScript
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Dependencias Principales
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `@clerk/nextjs`: Para la autenticación de usuarios.
+- `next`: El framework de React para producción.
+- `react`: Biblioteca para construir interfaces de usuario.
+- `tailwindcss`: Framework de CSS para un diseño rápido.
 
-## Deploy on Vercel
+## Contribuciones
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Las contribuciones son bienvenidas. Por favor, abre un issue o un pull request para discutir los cambios.

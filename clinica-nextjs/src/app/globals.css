@@ -1,13 +1,12 @@
 @import "tailwindcss";
 
-
- @font-face {
-    font-family: Inter;
-    src: url("/fonts/inter.ttf");
-    font-weight: 300,400,500,600,700,800,900;
-    font-style: normal;
-    font-display: swap;
-  }
+@font-face {
+  font-family: Inter;
+  src: url("/fonts/inter.ttf");
+  font-weight: 300, 400, 500, 600, 700, 800, 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 button {
   border-radius: 8px;
@@ -43,5 +42,4 @@ button {
 body {
   background: var(--background);
   color: var(--foreground);
-  
 }

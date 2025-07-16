@@ -1,25 +1,28 @@
-import { redirect } from 'next/navigation'
-import { checkRole } from '@/utils/roles'
-import { SearchUsers } from './SearchUsers'
-import { clerkClient } from '@clerk/nextjs/server'
-import { removeRole, setRole } from './_actions'
+import { redirect } from "next/navigation";
+import { checkRole } from "@/utils/roles";
+import { SearchUsers } from "./SearchUsers";
+import { clerkClient } from "@clerk/nextjs/server";
+import { removeRole, setRole } from "./_actions";
 
 export default async function AdminDashboard(params: {
-  searchParams: Promise<{ search?: string }>
+  searchParams: Promise<{ search?: string }>;
 }) {
-  if (!checkRole('admin')) {
-    redirect('/')
+  if (!checkRole("admin")) {
+    redirect("/");
   }
 
-  const query = (await params.searchParams).search
+  const query = (await params.searchParams).search;
 
-  const client = await clerkClient()
+  const client = await clerkClient();
 
-  const users = query ? (await client.users.getUserList({ query })).data : []
+  const users = query ? (await client.users.getUserList({ query })).data : [];
 
   return (
     <>
-      <p>This is the protected admin dashboard restricted to users with the `admin` role.</p>
+      <p>
+        This is the protected admin dashboard restricted to users with the
+        `admin` role.
+      </p>
 
       <SearchUsers />
 
@@ -32,8 +35,9 @@ export default async function AdminDashboard(params: {
 
             <div>
               {
-                user.emailAddresses.find((email) => email.id === user.primaryEmailAddressId)
-                  ?.emailAddress
+                user.emailAddresses.find(
+                  (email) => email.id === user.primaryEmailAddressId,
+                )?.emailAddress
               }
             </div>
 
@@ -56,8 +60,8 @@ export default async function AdminDashboard(params: {
               <button type="submit">Remove Role</button>
             </form>
           </div>
-        )
+        );
       })}
     </>
-  )
+  );
 }
