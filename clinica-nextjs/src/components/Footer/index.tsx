@@ -1,13 +1,13 @@
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-card text-text-primary py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                 <svg
-                  className="w-5 h-5 text-white"
+                  className="w-5 h-5 text-accent"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -22,7 +22,7 @@ export const Footer: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold">Clinica Esteban Porras</h3>
             </div>
-            <p className="text-gray-400">
+            <p className="y">
               Tu salud y bienestar son nuestra prioridad. Ofrecemos tratamientos
               profesionales y personalizados.
             </p>
@@ -30,24 +30,24 @@ export const Footer: React.FC = () => {
 
           <div>
             <h4 className="text-lg font-semibold mb-4">Servicios</h4>
-            <ul className="space-y-2 text-gray-400">
+            <ul className="space-y-2 text-gray-500">
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <a href="#" className="hover:text-text-primary transition-colors">
                   Terapia Manual
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <a href="#" className="hover:text-text-primary transition-colors">
                   Rehabilitación
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <a href="#" className="hover:text-text-primary transition-colors">
                   Prevención
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <a href="#" className="hover:text-text-primary transition-colors">
                   Evaluación
                 </a>
               </li>
@@ -56,7 +56,7 @@ export const Footer: React.FC = () => {
 
           <div>
             <h4 className="text-lg font-semibold mb-4">Contacto</h4>
-            <ul className="space-y-2 text-gray-400">
+            <ul className="space-y-2 text-gray-500">
               <li className="flex items-center space-x-2">
                 <svg
                   className="w-4 h-4"
@@ -158,7 +158,7 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-          <p className="text-gray-400">
+          <p className="text-text-primary">
             © {new Date().getFullYear()}. Clinica Esteban Porras. Todos los
             derechos reservados.
           </p>

@@ -236,11 +236,18 @@ export default function Home() {
 									<div className="flex items-start space-x-4">
 										<div className="flex-shrink-0 w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
 											<svg
-												className="w-4 h-4 text-white"
+												className="w-4 h-4 text-accent"
 												fill="none"
 												stroke="currentColor"
 												viewBox="0 0 24 24"
-											></svg>
+											>
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													strokeWidth="2"
+													d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+												></path>
+											</svg>
 										</div>
 										<div>
 											<h4 className="font-semibold text-text-primary mb-2">

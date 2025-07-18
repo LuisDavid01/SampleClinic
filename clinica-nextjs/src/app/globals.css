@@ -64,7 +64,7 @@
   --text-primary: oklch(15.34% 0.056 260.53);
   
   --text-accent: oklch(70.911% 0.12964 178.567); 
-  --secondary-button: oklch(88.157% 0.0715 57.701);  
+  --secondary-button: oklch(87.67% 0.056 41.73);  
   --complementario: oklch(0.6 0.1 160);   
   
   /* Colores de fondo y texto personalizados */
@@ -74,7 +74,7 @@
   /* Colores base del sistema */
   --card: oklch(90.954% 0.00614 224.18 / 0.815);
   
-  --card-secondary: oklch(86.091% 0.08314 56.859 / 0.788);
+  --card-secondary: oklch(83.69% 0.076 42.27);
   --card-foreground: oklch(0.1 0.02 240);
 
   --popover: oklch(1 0 0);
@@ -98,7 +98,7 @@
   --secondary-button: oklch(42.769% 0.11629 47.347);  
   /* Colores base del sistema en dark mode */
   --card: oklch(23.78% 0.04142 178.878 / 0.322);
-  --card-secondary: oklch(32.502% 0.08485 49.951);
+  --card-secondary: oklch(22.01% 0.052 43.11);
   --card-foreground: oklch(0.9 0.02 240);
 
   --popover: oklch(0.1 0.02 240);
