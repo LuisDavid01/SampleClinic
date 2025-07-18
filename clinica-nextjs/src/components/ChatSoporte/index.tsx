@@ -337,7 +337,7 @@ export default function SupportChat() {
       {/* Botón flotante */}
       <Button
         onClick={toggleChat}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 z-50"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform duration-200 z-50"
         size="icon"
       >
         {isOpen ? (
@@ -356,7 +356,7 @@ export default function SupportChat() {
 
       {/* Panel de chat */}
       {isOpen && (
-        <Card className="fixed bottom-24 right-6 w-96 h-[600px] shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col">
+        <Card className="fixed bottom-24 right-6 w-96 h-[600px] shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col bg-background">
           {!selectedChat ? (
             // Vista de lista de chats
             <>
@@ -378,16 +378,16 @@ export default function SupportChat() {
                     <div key={chat.id}>
                       <div
                         onClick={() => selectChat(chat)}
-                        className="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                        className="p-4  hover:bg-card-secondary cursor-pointer transition-colors"
                       >
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-gray-500" />
+                            <User className="h-4 w-4 text-text-primary" />
                             <span className="font-medium text-sm">{chat.customerName}</span>
                             <div className={`w-2 h-2 rounded-full ${getStatusColor(chat.status)}`} />
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">{formatTime(chat.lastMessageTime)}</span>
+                            <span className="text-xs text-text-primary">{formatTime(chat.lastMessageTime)}</span>
                             {chat.unreadCount > 0 && (
                               <Badge
                                 variant="destructive"
@@ -400,13 +400,13 @@ export default function SupportChat() {
                         </div>
 
                         <div className="flex items-center gap-1 mb-1">
-                          <Mail className="h-3 w-3 text-gray-400" />
-                          <span className="text-xs text-gray-500">{chat.customerEmail}</span>
+                          <Mail className="h-3 w-3 text-text-primary" />
+                          <span className="text-xs text-text-primary">{chat.customerEmail}</span>
                         </div>
 
-                        <p className="text-sm font-medium text-gray-700 mb-1">{chat.subject}</p>
+                        <p className="text-sm font-medium text-text-primary mb-1">{chat.subject}</p>
 
-                        {chat.lastMessage && <p className="text-xs text-gray-500 truncate">{chat.lastMessage}</p>}
+                        {chat.lastMessage && <p className="text-xs text-text-primary truncate">{chat.lastMessage}</p>}
 
                         <div className="flex items-center justify-between mt-2">
                           <Badge variant="outline" className="text-xs">
@@ -439,7 +439,7 @@ export default function SupportChat() {
                 </div>
               </CardHeader>
 
-              <CardContent className="flex-1 p-4 overflow-hidden">
+              <CardContent className="flex-1 p-4 overflow-hidden ">
                 <ScrollArea className="h-[400px] pr-4">
                   <div className="space-y-3">
                     {selectedChat.messages.map((message) => (
@@ -449,7 +449,7 @@ export default function SupportChat() {
                       >
                         <div
                           className={`max-w-[80%] p-3 rounded-lg text-sm ${
-                            message.isFromSupport ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-800"
+                            message.isFromSupport ? "bg-blue-500 text-white" : "bg-card text-text-primary"
                           }`}
                         >
                           <p>{message.content}</p>
@@ -478,8 +478,8 @@ export default function SupportChat() {
                     className="flex-1"
                     onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                   />
-                  <Button onClick={sendMessage} size="icon" disabled={!newMessage.trim()}>
-                    <Send className="h-4 w-4" />
+                  <Button onClick={sendMessage} size="icon"  disabled={!newMessage.trim()}>
+                    <Send className="h-4 w-4 " />
                   </Button>
                 </div>
               </div>

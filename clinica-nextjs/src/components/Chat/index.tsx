@@ -20,7 +20,7 @@ export default function FloatingChat() {
       {/* Botón flotante */}
       <Button
         onClick={toggleChat}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 z-50"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform duration-200 z-50"
         size="icon"
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
@@ -28,7 +28,7 @@ export default function FloatingChat() {
 
       {/* Chat desplegable */}
       {isOpen && (
-        <Card className="fixed bottom-24 right-6 w-80 h-96 shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200">
+        <Card className="fixed bottom-24 right-6 w-80 h-96 shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 bg-background">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Chat de Ayuda</CardTitle>
           </CardHeader>
@@ -36,15 +36,15 @@ export default function FloatingChat() {
           <CardContent className="flex-1 overflow-y-auto space-y-3 max-h-60">
             {
               <div className="flex justify-start">
-                <div className="bg-gray-100 text-gray-800 p-2 rounded-lg text-sm">
+                <div className="bg-card text-text-primary p-2 rounded-lg text-sm">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-foreground rounded-full animate-bounce"></div>
                     <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-foreground rounded-full animate-bounce"
                       style={{ animationDelay: "0.1s" }}
                     ></div>
                     <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-foreground rounded-full animate-bounce"
                       style={{ animationDelay: "0.2s" }}
                     ></div>
                   </div>
