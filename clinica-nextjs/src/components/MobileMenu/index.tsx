@@ -37,8 +37,8 @@ const HamburgerMenu = ({ children }: HamburgerMenuProps) => {
         </span>
       </Button>
 
-      <nav className={`hamburger-nav ${isOpen ? "open" : ""}`}>
-        <ul className="hamburger-menu">{children}</ul>
+      <nav className={`hamburger-nav bg-background ${isOpen ? "open" : ""}`}>
+        <ul className="hamburger-menu text-text-primary">{children}</ul>
       </nav>
     </div>
   );

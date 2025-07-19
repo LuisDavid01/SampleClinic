@@ -72,9 +72,9 @@
   --foreground: oklch(0.1 0.02 240);      
   
   /* Colores base del sistema */
-  --card: oklch(90.954% 0.00614 224.18 / 0.815);
+  --card: oklch(90.954% 0.00614 224.18);
   
-  --card-secondary: oklch(87.67% 0.056 41.73);
+  --card-secondary: oklch(87.668% 0.05628 41.657);
   --card-foreground: oklch(0.1 0.02 240);
 
   --popover: oklch(1 0 0);
@@ -98,7 +98,7 @@
   --text-accent: oklch(76.78% 0.140 176.53); 
   --secondary-button: oklch(42.769% 0.11629 47.347);  
   /* Colores base del sistema en dark mode */
-  --card: oklch(23.78% 0.04142 178.878 / 0.322);
+  --card: oklch(23.78% 0.04142 178.878);
   --card-secondary: oklch(22.01% 0.052 43.11);
   --card-foreground: oklch(0.9 0.02 240);
 

@@ -32,7 +32,7 @@ export default async function  RootLayout({
     <ClerkProvider
     appearance={{
       variables: {
-        colorPrimary: 'var(--primary)',
+        colorPrimary: 'var(--complementario)',
         colorBackground: 'var(--card)',
         colorInputBackground: 'var(--card-secondary)',
         colorNeutral: 'var(--foreground)',

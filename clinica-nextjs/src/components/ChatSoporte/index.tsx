@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { MessageCircle, X, ArrowLeft, Send, Clock, User, Mail } from "lucide-react"
 import type { Chat, Message } from "@/types/chat"
-
+import { cn } from "@/lib/utils"
 // Datos mock para simular chats existentes - agregar más chats
 const mockChats: Chat[] = [
   {
@@ -356,7 +356,18 @@ export default function SupportChat() {
 
       {/* Panel de chat */}
       {isOpen && (
-        <Card className="fixed bottom-24 right-6 w-96 h-[600px] shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col bg-background">
+        <Card
+  className={cn(
+    // Clases comunes (aplican en todos los tamaños)
+    "shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col bg-background",
+    
+    // Clases base (móvil: <640px) - centrado y full-screen
+    "fixed inset-0 m-auto w-full h-[480] rounded-none",
+    
+    // Clases para PC (≥640px) - posición fija en esquina, tamaño fijo
+    "sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-96 sm:h-[600px] sm:rounded-lg"
+  )}
+>
           {!selectedChat ? (
             // Vista de lista de chats
             <>
@@ -440,7 +451,7 @@ export default function SupportChat() {
               </CardHeader>
 
               <CardContent className="flex-1 p-4 overflow-hidden ">
-                <ScrollArea className="h-[400px] pr-4">
+                <ScrollArea className="h-full pr-4">
                   <div className="space-y-3">
                     {selectedChat.messages.map((message) => (
                       <div

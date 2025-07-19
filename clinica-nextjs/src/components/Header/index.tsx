@@ -22,9 +22,6 @@ export const Header: React.FC = async () => {
 
           <div className="hidden md:flex md:justify-center space-x-4 md:space-x-8">
             <ul className="flex justify-between items-center space-x-4 md:space-x-8 text-text-primary">
-              <li>
-                <Link href="/contacts">Contacto</Link>
-              </li>
               {(await checkRole("admin")) && (
                 <li>
                   <Link
@@ -55,35 +52,36 @@ export const Header: React.FC = async () => {
           </div>
           <div className="md:hidden">
             <MobileMenu>
-              <li>
-                <Link href="/contacts">Contacto</Link>
-              </li>
-              <li>
-                <Link href="/admin/dashboard">admin</Link>
-              </li>
-              <SignedOut>
+              {(await checkRole("admin")) && (
                 <li>
                   <Link
-                    href="/login"
-                    className="px-4 py-2 bg-primary text-white border border-primary rounded-lg "
-                  >
-                    Iniciar Sesión
-                  </Link>
+                  href="/admin"
+                  className="text-red-600 hover:text-red-800 font-medium"
+                >
+                  Admin Panel
+                </Link>
+                </li>
+                
+              )}
+              <SignedOut>
+                <li>
+                  <SignInButton>Iniciar Sesión</SignInButton>
                 </li>
 
                 <li>
-                  <Link
-                    href="/signup"
-                    className="px-4 py-2 bg-primary text-white rounded-lg "
-                  >
-                    Registrarse
-                  </Link>
+                  <SignUpButton>Registrarse</SignUpButton>
                 </li>
               </SignedOut>
 
               <SignedIn>
-                <UserButton />
+                <li>
+                <Link href={"/User"}>Perfil</Link>
+                </li>
+
               </SignedIn>
+              <li>
+              <ThemeToggle/>
+              </li>
             </MobileMenu>
           </div>
         </div>
