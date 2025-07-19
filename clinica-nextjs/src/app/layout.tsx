@@ -30,6 +30,20 @@ export default async function  RootLayout({
 }>) {
   return (
     <ClerkProvider
+    appearance={{
+      variables: {
+        colorPrimary: 'var(--primary)',
+        colorBackground: 'var(--card)',
+        colorInputBackground: 'var(--card-secondary)',
+        colorNeutral: 'var(--foreground)',
+        colorText: 'var(--text-primary)',
+        colorInputText:  'var(--foreground)',
+        colorTextOnPrimaryBackground: 'var(--primary-foreground)',
+        colorShimmer: 'var(--text-primary-foreground)'
+        
+      }
+    }
+    }
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
       localization={esES}

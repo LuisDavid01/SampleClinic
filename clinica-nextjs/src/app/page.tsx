@@ -31,10 +31,10 @@ export default function Home() {
 								enfoque integral para tu salud y recuperación.
 							</p>
 							<div className="flex flex-col sm:flex-row gap-4">
-								<button className="bg-secondary-button text-text-primary px-8 py-3 rounded-lg font-semibold hover:scale-105 transition-transform duration-200">
+								<button className="bg-secondary-button text-text-primary px-8 py-3 rounded-lg font-semibold delay-150  ease-in-out hover:-translate-y-1  transition-transform duration-200">
 									Agendar Cita
 								</button>
-								<button className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:scale-110 transition-transform duration-200">
+								<button className="bg-primary text-primary-foreground shadow-2xl px-8 py-3 rounded-lg font-semibold delay-150  ease-in-out hover:-translate-y-1 hover:shadow-cyan-500 transition-all duration-100">
 									Conocer Más
 								</button>
 							</div>
@@ -56,7 +56,7 @@ export default function Home() {
 					</div>
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 						<div className="bg-card rounded-lg p-6 hover:shadow-lg transition-shadow duration-200 text-center">
-							<div className="w-12 h-12 bg-background rounded-lg flex items-center justify-center mb-4 mx-auto">
+							<div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4 mx-auto">
 								<svg
 									className="w-6 h-6 text-accent "
 									fill="none"
@@ -81,7 +81,7 @@ export default function Home() {
 						</div>
 
 						<div className="bg-card rounded-lg p-6 hover:shadow-lg transition-shadow duration-200 text-center">
-							<div className="w-12 h-12 bg-background rounded-lg flex items-center justify-center mb-4 mx-auto">
+							<div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4 mx-auto">
 								<svg
 									className="w-6 h-6 text-accent"
 									fill="none"
@@ -106,7 +106,7 @@ export default function Home() {
 						</div>
 
 						<div className="bg-card rounded-lg p-6 hover:shadow-lg transition-shadow duration-200 text-center">
-							<div className="w-12 h-12 bg-background rounded-lg flex items-center justify-center mb-4 mx-auto">
+							<div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4 mx-auto">
 								<svg
 									className="w-6 h-6 text-accent"
 									fill="none"
@@ -362,7 +362,7 @@ export default function Home() {
 					</div>
 
 					<div className="text-center mt-12">
-						<button className="border-2 border-dashed border-gray-300 text-text-primary px-8 py-3 rounded-lg font-medium hover:border-primary hover:text-primary transition-colors duration-200">
+						<button className="bg-primary text-primary-foreground shadow-2xl px-8 py-3 rounded-lg font-semibold delay-150  ease-in-out hover:-translate-y-1 hover:shadow-cyan-500 transition-all duration-100">
 							Envíanos tu feedback
 						</button>
 					</div>
