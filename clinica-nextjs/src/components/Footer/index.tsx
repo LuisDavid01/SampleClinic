@@ -1,3 +1,5 @@
+import { Twitter, Facebook, Instagram, Linkedin } from 'lucide-react';
+
 export const Footer: React.FC = () => {
   return (
     <footer className="bg-card text-text-primary py-12">
@@ -119,7 +121,7 @@ export const Footer: React.FC = () => {
             <div className="flex space-x-4">
               <a
                 href="#"
-                className="w-10 h-10 bg-primary rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                className="w-10 h-10  rounded-full flex items-center justify-center hover:scale-110 transition-transform"
               >
                 <svg
                   className="w-5 h-5 text-accent"
@@ -131,7 +133,7 @@ export const Footer: React.FC = () => {
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-primary rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
               >
                 <svg
                   className="w-5 h-5 text-accent"
@@ -143,7 +145,7 @@ export const Footer: React.FC = () => {
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-primary rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                className="w-10 h-10  rounded-full flex items-center justify-center hover:scale-110 transition-transform"
               >
                 <svg
                   className="w-5 h-5 text-accent"
