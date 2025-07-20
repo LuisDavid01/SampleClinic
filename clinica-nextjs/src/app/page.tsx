@@ -1,5 +1,6 @@
 
 import { metadata } from "./layout";
+import Image from 'next/image'
 metadata.title = "Clinica Esteban Porras - Inicio";
 metadata.description = "Inicio de la pagina"
 export default function Home() {
@@ -279,14 +280,16 @@ export default function Home() {
 						</div>
 
 						<div className="space-y-12">
-							<div className="aspect-[4/5] w-full overflow-hidden rounded-2xl shadow-2xl relative">
-								<img
-									src="/section.webp"
-									alt="Fisioterapeuta trabajando con paciente"
-									className="w-full h-full object-cover object-center"
+							<div className="overflow-hidden rounded-2xl shadow-2xl relative h-[480px] md:h-[720px]">
+								<Image 
+								src="/section.webp" 
+								priority={true} 
+								fill
+								alt="Fisioterapeuta trabajando con paciente" 
+								className="object-cover object-bottom" 
 								/>
+							</div> 
 							</div>
-						</div>
 					</div>
 				</div>
 			</section>
