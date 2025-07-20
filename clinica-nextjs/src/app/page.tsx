@@ -111,7 +111,7 @@ export default function Home() {
 						{/* Servicio 1 */}
 						<div className="group bg-card rounded-2xl p-8 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-primary/10 hover:border-primary/30">
 							<div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-								<svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
 								</svg>
 							</div>
