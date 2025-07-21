@@ -1,10 +1,8 @@
 
-import { metadata } from "./layout";
 import Image from 'next/image'
 import { Users, Award, Heart, Star } from 'lucide-react';
 
-metadata.title = "Clínica Esteban Porras - Fisioterapia y Rehabilitación";
-metadata.description = "Centro especializado en fisioterapia, rehabilitación y terapia manual en Costa Rica. Profesionales certificados para tu recuperación integral."
+
 const teamMembers = [
     {
       id: 1,
