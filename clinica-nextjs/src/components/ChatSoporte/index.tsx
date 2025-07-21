@@ -384,7 +384,7 @@ export default function SupportChat() {
               </CardHeader>
 
               <CardContent className="flex-1 p-0 overflow-hidden">
-                <ScrollArea className="h-[480px]">
+                <ScrollArea className="h-full">
                   {chats.map((chat, index) => (
                     <div key={chat.id}>
                       <div

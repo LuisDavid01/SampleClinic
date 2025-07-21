@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  
+
 };
 
 export default nextConfig;
@@ -16,3 +16,16 @@ module.exports = {
     ];
   },
 };
+
+module.exports = {
+  images: {
+    remotePatterns: [
+  {
+    protocol: 'https',
+    hostname: '*.r2.dev',
+    port: '',
+    pathname: '/**',
+  },
+],
+  },
+}

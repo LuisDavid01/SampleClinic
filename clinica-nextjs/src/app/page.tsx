@@ -38,7 +38,7 @@ const teamMembers = [
 export default function Home() {
 	return (
 		<div className="">
-			{/* Hero Section - Mejorada */}
+			{/* Hero Section */}
 			<section className="relative h-screen flex items-center justify-center overflow-hidden">
 				<video
 					autoPlay
@@ -46,7 +46,7 @@ export default function Home() {
 					muted
 					className="absolute top-0 left-0 w-full h-full object-cover object-[35%_75%]  md:object-cover  z-0"
 				>
-					<source src="/massage.mp4" type="video/mp4" />
+					<source src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/massage.mp4" type="video/mp4" />
 				</video>
 
 				<div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-black/40 via-black/20 to-black/40 z-10"></div>
@@ -242,7 +242,7 @@ export default function Home() {
 								<div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-2xl"></div>
 								<div className="relative overflow-hidden rounded-3xl shadow-2xl h-[480px] md:h-[600px]">
 									<Image 
-										src="/section.webp" 
+										src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/acerca-de.webp" 
 										priority={true} 
 										fill
 										alt="Fisioterapeuta profesional trabajando con paciente en tratamiento especializado" 
