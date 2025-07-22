@@ -339,6 +339,8 @@ export default function SupportChat() {
         onClick={toggleChat}
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform duration-200 z-50"
         size="icon"
+        name="chat-soporte"
+        aria-label="chat-soporte"
       >
         {isOpen ? (
           <X className="h-6 w-6" />

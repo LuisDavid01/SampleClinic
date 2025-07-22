@@ -22,6 +22,8 @@ export default function FloatingChat() {
         onClick={toggleChat}
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform duration-200 z-50"
         size="icon"
+        name="chat"
+        aria-label="chat"
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
       </Button>

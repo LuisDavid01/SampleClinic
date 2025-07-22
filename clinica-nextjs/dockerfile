@@ -14,9 +14,5 @@ COPY . .
 #exponemos el puerto
 EXPOSE 5173
 
-ENV NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-ENV NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_dG91Y2hpbmctbWFsbGFyZC04NC5jbGVyay5hY2NvdW50cy5kZXYk
-ENV CLERK_SECRET_KEY=
 #corremos el proyecto
 CMD ["npm", "run", "dev"]

@@ -1,4 +1,4 @@
-'use client'
+
 import Image from 'next/image'
 import { Users, Award, Heart, Star } from 'lucide-react';
 
@@ -318,7 +318,7 @@ export default function Home() {
 										{testimonial.avatar}
 									</div>
 									<div>
-										<h4 className="font-bold text-text-primary text-lg">{testimonial.name}</h4>
+										<h3 className="font-bold text-text-primary text-lg">{testimonial.name}</h3>
 										<p className="text-text-primary text-sm opacity-75">{testimonial.role}</p>
 									</div>
 								</div>

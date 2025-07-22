@@ -121,6 +121,7 @@ export const Footer: React.FC = () => {
               <a
                 href="#"
                 className="w-10 h-10  rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                aria-label="link1"
               >
                 <svg
                   className="w-5 h-5 text-accent"
@@ -133,6 +134,7 @@ export const Footer: React.FC = () => {
               <a
                 href="#"
                 className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                aria-label="link2"
               >
                 <svg
                   className="w-5 h-5 text-accent"
@@ -145,6 +147,7 @@ export const Footer: React.FC = () => {
               <a
                 href="#"
                 className="w-10 h-10  rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                aria-label="link3"
               >
                 <svg
                   className="w-5 h-5 text-accent"

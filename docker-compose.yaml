@@ -4,8 +4,8 @@ services:
     build: ./clinica-nextjs
     ports:
       - "3000:3000"
-    environment:
-      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+    env_file:
+      - /clinica-nextjs/.env.local
     networks:
       - app-network
   clinica-chat:
@@ -25,14 +25,6 @@ services:
       - "42069:42069"
     networks:
       - app-network
-  #clinica-web:
-    #container_name: clinica-web
-    #build:
-    #  context: ./clinica-web
-    #ports:
-    #  - "5173:5173"
-    #networks:
-     # - app-network
 
 
 networks:
