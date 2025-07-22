@@ -22,17 +22,7 @@ export const Header: React.FC = async () => {
 
           <div className="hidden md:flex md:justify-center space-x-4 md:space-x-8">
             <ul className="flex justify-between items-center space-x-4 md:space-x-8 text-text-primary">
-              {(await checkRole("admin")) && (
-                <li>
-                  <Link
-                  href="/admin"
-                  className="text-red-600 hover:text-red-800 font-medium"
-                >
-                  Admin Panel
-                </Link>
-                </li>
-                
-              )}
+              
 
               <SignedOut>
                 <li>
@@ -45,24 +35,59 @@ export const Header: React.FC = async () => {
               </SignedOut>
 
               <SignedIn>
-                <UserButton />
+                {(await checkRole("admin")) ? (
+                <li>
+                  <Link
+                  href="/admin"
+                  className="text-text-primary font-medium"
+                >
+                  Admin Panel
+                </Link>
+                </li>
+                
+              ): (
+                  <li>
+                    <Link
+                    href="/dashboard"
+                    className="text-text-primary font-medium"
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+                )}
+                <li>
+                <UserButton
+                userProfileUrl="/dashboard/user"
+                />
+                </li>
               </SignedIn>
+              <li>
               <ThemeToggle/>
+              </li>
             </ul>
           </div>
           <div className="md:hidden">
             <MobileMenu>
-              {(await checkRole("admin")) && (
+              {(await checkRole("admin")) ? (
                 <li>
                   <Link
                   href="/admin"
-                  className="text-red-600 hover:text-red-800 font-medium"
+                  className="text-text-primary font-medium"
                 >
                   Admin Panel
                 </Link>
                 </li>
                 
-              )}
+              ): (
+                  <li>
+                    <Link
+                    href="/dashboard"
+                    className="text-text-primary font-medium"
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+                )}
               <SignedOut>
                 <li>
                   <SignInButton>Iniciar Sesión</SignInButton>
@@ -75,7 +100,7 @@ export const Header: React.FC = async () => {
 
               <SignedIn>
                 <li>
-                <Link href={"/User"}>Perfil</Link>
+                <Link href={"/dashboard/user"}>Perfil</Link>
                 </li>
 
               </SignedIn>

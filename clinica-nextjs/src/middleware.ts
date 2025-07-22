@@ -1,11 +1,14 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-
+//estas rutas solo pueden ser accedidas por administradores
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
+//estas rutas estan protegidas 
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)'])
 export default clerkMiddleware(async (auth, req) => {
-  const isAdmin = isAdminRoute(req);
 
+  if (isProtectedRoute(req)) await auth.protect()
+  const isAdmin = isAdminRoute(req);
   if (isAdmin) {
     const authData = await auth();
 
@@ -16,6 +19,7 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(url);
     }
   }
+  
 });
 
 export const config = {

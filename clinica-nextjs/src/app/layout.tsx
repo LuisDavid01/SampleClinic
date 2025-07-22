@@ -38,8 +38,6 @@ export default async function  RootLayout({
       }
     }
     }
-      signInUrl="/sign-in"
-      signUpUrl="/sign-up"
       localization={esES}
     >
       <html lang="en">

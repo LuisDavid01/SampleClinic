@@ -1,8 +1,30 @@
-
+'use client'
 import Image from 'next/image'
 import { Users, Award, Heart, Star } from 'lucide-react';
 
-
+const reviews = [
+							{
+								name: "María González",
+								role: "Paciente desde 2023",
+								text: "Después de mi lesión de rodilla, pensé que no volvería a caminar normalmente. El tratamiento personalizado y la dedicación del equipo me ayudaron a recuperar completamente mi movilidad. ¡Incluso puedo correr otra vez!",
+								rating: 5,
+								avatar: "M"
+							},
+							{
+								name: "Carlos Ruiz",
+								role: "Atleta profesional",
+								text: "Como deportista de alto rendimiento, necesito un cuidado especializado y preciso. Aquí encontré profesionales que realmente entienden las demandas del deporte y me ayudaron a volver más fuerte que antes.",
+								rating: 5,
+								avatar: "C"
+							},
+							{
+								name: "Ana López",
+								role: "Recuperación post-cirugía",
+								text: "El seguimiento continuo y la dedicación personalizada del equipo fueron fundamentales en mi proceso de rehabilitación. Su apoyo emocional fue tan importante como el tratamiento físico.",
+								rating: 5,
+								avatar: "A"
+							}
+						]
 const teamMembers = [
     {
       id: 1,
@@ -276,29 +298,7 @@ export default function Home() {
 					</div>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-						{[
-							{
-								name: "María González",
-								role: "Paciente desde 2023",
-								text: "Después de mi lesión de rodilla, pensé que no volvería a caminar normalmente. El tratamiento personalizado y la dedicación del equipo me ayudaron a recuperar completamente mi movilidad. ¡Incluso puedo correr otra vez!",
-								rating: 5,
-								avatar: "M"
-							},
-							{
-								name: "Carlos Ruiz",
-								role: "Atleta profesional",
-								text: "Como deportista de alto rendimiento, necesito un cuidado especializado y preciso. Aquí encontré profesionales que realmente entienden las demandas del deporte y me ayudaron a volver más fuerte que antes.",
-								rating: 5,
-								avatar: "C"
-							},
-							{
-								name: "Ana López",
-								role: "Recuperación post-cirugía",
-								text: "El seguimiento continuo y la dedicación personalizada del equipo fueron fundamentales en mi proceso de rehabilitación. Su apoyo emocional fue tan importante como el tratamiento físico.",
-								rating: 5,
-								avatar: "A"
-							}
-						].map((testimonial, index) => (
+						{reviews.map((testimonial, index) => (
 							<div key={index} className="group bg-card rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-primary/10">
 								{/* Rating stars */}
 								<div className="flex mb-4">
