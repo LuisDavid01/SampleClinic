@@ -489,7 +489,7 @@ export default function SupportChat() {
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Escribe tu respuesta..."
                     className="flex-1"
-                    onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                   />
                   <Button onClick={sendMessage} size="icon"  disabled={!newMessage.trim()}>
                     <Send className="h-4 w-4 " />

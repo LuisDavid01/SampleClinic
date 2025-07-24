@@ -1,3 +1,4 @@
+import MobileMenu from "@/components/MobileMenu"
 import { UserButton } from "@clerk/nextjs"
 import ThemeToggle from "@/components/ThemeToggle"
 import { Button } from "@/components/ui/button"
@@ -20,90 +21,153 @@ export default async function dasboardLayout({
 }) {
 
   return (
-    
     <div className="flex min-h-screen flex-col">
-         <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary"></div>
-          <Link href={"/"} className=" text-2xl text-text-primary font-semibold">
-              Clinica Esteban Porras
-            </Link>
+          <Link href={"/"} className="text-lg md:text-2xl text-text-primary font-semibold">
+            Clinica Esteban Porras
+          </Link>
         </div>
-        <nav className="flex items-center gap-6">
+        
+        <nav className="hidden md:flex items-center gap-6">
           <Link href="#" className="flex items-center gap-1 text-sm hover:text-primary">
             Ayuda <ExternalLink className="w-4 h-4" />
           </Link>
           <div className="flex justify-center items-center">
-              <ThemeToggle/>
+            <ThemeToggle/>
           </div>
         </nav>
+        
+        {/* Mobile Menu - Solo visible en móvil */}
+        <div className="md:hidden">
+          <MobileMenu>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={'/admin'}>
+                <BarChart3 className="w-4 h-4 mr-3" />
+                Vista general
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+            >
+              <TrendingUp className="w-4 h-4 mr-3" />
+              Analíticas
+            </Button>
+            
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={'/admin/ManageUsers'}>
+                <BarChart3 className="w-4 h-4 mr-3" />
+                <span>Gestionar usuarios</span>
+              </Link>
+            </Button>
+            
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+            >
+              <Inbox className="w-4 h-4 mr-3" />
+              Citas
+            </Button>
+            
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+            >
+              <Grid3X3 className="w-4 h-4 mr-3" />
+              Registros
+            </Button>
+            
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+            >
+              <Settings className="w-4 h-4 mr-3" />
+              Preferencias
+            </Button>
+          </MobileMenu>
+        </div>
       </header>
 
       <div className="flex">
-        <aside className="w-64 p-6 border-r border-gray-800">
+        
+        <aside className="hidden md:block w-64 p-6 border-r border-gray-800">
           <div className="flex items-center justify-center gap-3 mb-8">
             <UserButton
-            showName
-            userProfileUrl="/dashboard/user"
+              showName
+              userProfileUrl="/dashboard/user"
             />
           </div>
 
           <nav className="space-y-2">
             <Button
               variant="ghost"
-              className="w-full justify-start text-gray-400 hover:text-text-primary hover:bg-gray-800"
-            asChild
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
             >
               <Link href={'/admin'}>
-              <BarChart3 className="w-4 h-4 mr-3" />
-              Vsita general
+                <BarChart3 className="w-4 h-4 mr-3" />
+                Vista general
               </Link>
             </Button>
 
             <Button
               variant="ghost"
-              className="w-full justify-start text-gray-400 hover:text-text-primary hover:bg-gray-800"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
             >
               <TrendingUp className="w-4 h-4 mr-3" />
-              Analiticas
+              Analíticas
             </Button>
-           <Button
-            variant="ghost"
-            className="w-full justify-start text-gray-400 hover:text-text-primary hover:bg-gray-800"
-            asChild
-          >
-            <Link href={'/admin/ManageUsers'}>
-              <BarChart3 className="w-4 h-4 mr-3" />
-              <span>Gestionar usuarios</span>
-            </Link>
-          </Button>
+            
             <Button
               variant="ghost"
-              className="w-full justify-start text-gray-400 hover:text-text-primary hover:bg-gray-800"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={'/admin/ManageUsers'}>
+                <BarChart3 className="w-4 h-4 mr-3" />
+                <span>Gestionar usuarios</span>
+              </Link>
+            </Button>
+            
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
             >
               <Inbox className="w-4 h-4 mr-3" />
               Citas
             </Button>
+            
             <Button
               variant="ghost"
-              className="w-full justify-start text-gray-400 hover:text-text-primary hover:bg-gray-800"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
             >
               <Grid3X3 className="w-4 h-4 mr-3" />
               Registros
             </Button>
+            
             <Button
               variant="ghost"
-              className="w-full justify-start text-gray-400 hover:text-text-primary hover:bg-gray-800"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
             >
               <Settings className="w-4 h-4 mr-3" />
               Preferencias
             </Button>
-            
-            
           </nav>
         </aside>
+        
+        {/* Main content */}
         <main className="flex-1 p-6">
-        {children}
+          {children}
         </main>
       </div>
     </div>

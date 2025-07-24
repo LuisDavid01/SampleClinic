@@ -1,6 +1,7 @@
 
 import Image from 'next/image'
 import { Users, Award, Heart, Star } from 'lucide-react';
+import Link from 'next/link';
 
 const reviews = [
 							{
@@ -92,12 +93,12 @@ export default function Home() {
 									</svg>
 									Agendar Cita
 								</button>
-								<button className="group bg-primary/10 backdrop-blur-sm text-white border-2 border-primary px-8 py-4 rounded-xl font-semibold hover:bg-primary hover:text-black hover:-translate-y-1 shadow-xl hover:shadow-cyan-500  transition-all duration-300 flex items-center justify-center gap-2">
+								<Link href={'#about'} className="group bg-primary/10 backdrop-blur-sm text-white border-2 border-primary px-8 py-4 rounded-xl font-semibold hover:bg-primary hover:text-black hover:-translate-y-1 shadow-xl hover:shadow-cyan-500  transition-all duration-300 flex items-center justify-center gap-2">
 									Conocer Más
 									<svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
 									</svg>
-								</button>
+								</Link>
 							</div>
 						</div>
 						
@@ -198,7 +199,7 @@ export default function Home() {
 			</section>
 
 			{/* About Section */}
-			<section className="bg-gradient-to-br from-background to-card py-24">
+			<section id='about' className="bg-gradient-to-br from-background to-card py-24">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="grid lg:grid-cols-2 gap-16 items-center">
 						<div className="order-2 lg:order-1">

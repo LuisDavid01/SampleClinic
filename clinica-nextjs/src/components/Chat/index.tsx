@@ -62,7 +62,7 @@ export default function FloatingChat() {
                 className="flex-1 text-sm"
 
               />
-              <Button type="submit" size="icon" >
+              <Button type="submit" disabled size="icon" >
                 <Send className="h-4 w-4" />
               </Button>
             </form>

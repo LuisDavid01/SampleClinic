@@ -3,9 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Inter } from 'next/font/google'
 import { esES } from "@clerk/localizations";
 import "./globals.css";
-import FloatingChat from "@/components/Chat";
-import SupportChat from "@/components/ChatSoporte";
-import { checkRole } from "@/utils/roles"
+import ChatWithSuspense from "@/components/ChatWithSuspense";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -43,11 +41,7 @@ export default async function  RootLayout({
       <html lang="en">
         <body className={`${inter.variable} font-sans antialiased`}>
           {children}
-          {(await checkRole("admin")) ? (
-                <SupportChat/>
-          ) : (
-            <FloatingChat/>
-          )}
+          <ChatWithSuspense />
         </body>
       </html>
     </ClerkProvider>

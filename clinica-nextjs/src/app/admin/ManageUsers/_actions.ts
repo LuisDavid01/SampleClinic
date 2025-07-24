@@ -13,6 +13,12 @@ export async function setRole(formData: FormData) {
   const userId = formData.get("id") as string;
   const role = formData.get("role") as string;
 
+  const user = await currentUser();
+ // prevents users from removing themselfs
+  if (user?.id === userId ){
+    return;
+  }
+
   await client.users.updateUserMetadata(userId, {
     publicMetadata: {
       role: role,
