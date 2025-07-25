@@ -8,9 +8,7 @@ import {
   Grid3X3,
   Inbox,
   TrendingUp,
-  MoreHorizontal,
   ExternalLink,
-  ChevronDown,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -30,7 +28,7 @@ export default async function dasboardLayout({
         </div>
         
         <nav className="hidden md:flex items-center gap-6">
-          <Link href="#" className="flex items-center gap-1 text-sm hover:text-primary">
+          <Link href="#" className="flex items-center gap-1 text-sm text-text-primary">
             Ayuda <ExternalLink className="w-4 h-4" />
           </Link>
           <div className="flex justify-center items-center">
@@ -90,10 +88,29 @@ export default async function dasboardLayout({
             <Button
               variant="ghost"
               className="w-full justify-start text-text-primary hover:bg-gray-800"
+            asChild
             >
+              <Link href={'/user'}>
               <Settings className="w-4 h-4 mr-3" />
-              Preferencias
+              Cuenta
+              </Link>
             </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+            asChild
+            >
+              <Link href="#" className="flex items-center gap-1 text-sm text-text-primary">
+                <ExternalLink className="w-4 h-4" />
+                 Ayuda
+              </Link>
+            </Button>
+
+            
+          <div className="flex justify-start items-start my-3">
+            <ThemeToggle/>
+          </div>
+
           </MobileMenu>
         </div>
       </header>
@@ -104,7 +121,7 @@ export default async function dasboardLayout({
           <div className="flex items-center justify-center gap-3 mb-8">
             <UserButton
               showName
-              userProfileUrl="/dashboard/user"
+              userProfileUrl="/user"
             />
           </div>
 
@@ -157,10 +174,13 @@ export default async function dasboardLayout({
             
             <Button
               variant="ghost"
-              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              className="w-full  justify-start text-text-primary hover:bg-gray-800"
+            asChild
             >
+              <Link href={'/user'}>
               <Settings className="w-4 h-4 mr-3" />
-              Preferencias
+              Cuenta
+              </Link>
             </Button>
           </nav>
         </aside>

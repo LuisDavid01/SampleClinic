@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
 //estas rutas estan protegidas 
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', "/admin(.*)"])
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', "/admin(.*)","/user(.*)"])
 export default clerkMiddleware(async (auth, req) => {
 
   if (isProtectedRoute(req)) await auth.protect()

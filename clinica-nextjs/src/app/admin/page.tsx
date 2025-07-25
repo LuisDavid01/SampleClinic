@@ -20,29 +20,16 @@ export default async function AdminDashboard() {
       <div className="p-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome to your admin dashboard</p>
+            <h1 className="text-3xl font-bold">Welcome to your admin dashboard</h1>
           </div>
 
-          {/* Notification Banner */}
-          <div className="mb-8 p-4 bg-primary/10 border border-primary/20 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-primary">
-                  New: Realtime Colors now has templates available! Have a cool template idea?
-                </p>
-              </div>
-              <Button size="sm" variant="outline" className="text-primary border-primary hover:bg-primary hover:text-primary-foreground">
-                Submit it!
-              </Button>
-            </div>
-          </div>
+          
 
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card className="bg-card/50 border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">New users</CardTitle>
+                <CardTitle className="text-sm font-medium">Usuarios nuevos</CardTitle>
                 <User className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -56,7 +43,7 @@ export default async function AdminDashboard() {
 
             <Card className="bg-card/50 border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">New messages</CardTitle>
+                <CardTitle className="text-sm font-medium">Nuevas citas esta semana</CardTitle>
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -70,7 +57,7 @@ export default async function AdminDashboard() {
 
             <Card className="bg-card/50 border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Sales</CardTitle>
+                <CardTitle className="text-sm font-medium">Ventas mensuales</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -84,7 +71,7 @@ export default async function AdminDashboard() {
 
             <Card className="bg-card/50 border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Conversion rate</CardTitle>
+                <CardTitle className="text-sm font-medium">Tasa de conversion</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -103,7 +90,7 @@ export default async function AdminDashboard() {
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  Page views / Revenue
+                  Clientes mensuales
                   <Button variant="ghost" size="sm">
                     <Menu className="h-4 w-4" />
                   </Button>
@@ -148,31 +135,6 @@ export default async function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
-
-          {/* Top Categories */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                Top categories
-                <Button variant="ghost" size="sm">
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 border border-border rounded-lg">
-                  <div className="font-medium">Development</div>
-                </div>
-                <div className="p-4 border border-border rounded-lg">
-                  <div className="font-medium">Web Design</div>
-                </div>
-                <div className="p-4 border border-border rounded-lg">
-                  <div className="font-medium">Graphic Design</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
     </div>
   );

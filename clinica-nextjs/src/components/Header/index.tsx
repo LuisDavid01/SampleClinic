@@ -6,9 +6,11 @@ import {
   SignUpButton,
 } from "@clerk/nextjs";
 import Link from "next/link";
+import { Button } from "@/components/ui/button"
 import { checkRole } from "@/utils/roles";
 import MobileMenu from "../MobileMenu/index";
 import ThemeToggle from "../ThemeToggle";
+import { Settings } from "lucide-react";
 export const Header: React.FC = async () => {
   return (
     <header className="bg-background shadow-sm sticky z-60">
@@ -25,11 +27,11 @@ export const Header: React.FC = async () => {
               
 
               <SignedOut>
-                <li>
+                <li >
                   <SignInButton>Iniciar Sesión</SignInButton>
                 </li>
 
-                <li>
+                <li >
                   <SignUpButton>Registrarse</SignUpButton>
                 </li>
               </SignedOut>
@@ -57,7 +59,7 @@ export const Header: React.FC = async () => {
                 )}
                 <li>
                 <UserButton
-                userProfileUrl="/dashboard/user"
+                userProfileUrl="/user"
                 />
                 </li>
               </SignedIn>
@@ -68,7 +70,19 @@ export const Header: React.FC = async () => {
           </div>
           <div className="md:hidden">
             <MobileMenu>
-              {(await checkRole("admin")) ? (
+              
+              <SignedOut>
+                <li className="cursor-pointer">
+                  <SignInButton >Iniciar Sesión</SignInButton>
+                </li>
+
+                <li className="cursor-pointer">
+                  <SignUpButton>Registrarse</SignUpButton>
+                </li>
+              </SignedOut>
+
+              <SignedIn>
+                {(await checkRole("admin")) ? (
                 <li>
                   <Link
                   href="/admin"
@@ -88,21 +102,12 @@ export const Header: React.FC = async () => {
                   </Link>
                 </li>
                 )}
-              <SignedOut>
                 <li>
-                  <SignInButton>Iniciar Sesión</SignInButton>
+                
+              <Link href={'/user'}>
+              Cuenta
+              </Link>
                 </li>
-
-                <li>
-                  <SignUpButton>Registrarse</SignUpButton>
-                </li>
-              </SignedOut>
-
-              <SignedIn>
-                <li>
-                <Link href={"/dashboard/user"}>Perfil</Link>
-                </li>
-
               </SignedIn>
               <li>
               <ThemeToggle/>

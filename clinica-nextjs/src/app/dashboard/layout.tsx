@@ -75,11 +75,28 @@ export default async function dasboardUserLayout({
               className="w-full justify-start text-text-primary hover:bg-gray-800"
             asChild
             >
-              <Link href={'/dashboard/user'}>
+              <Link href={'/user'}>
               <Settings className="w-4 h-4 mr-3" />
               Cuenta
               </Link>
             </Button>
+
+            <Button
+              variant="ghost"
+              className="w-full  justify-start text-text-primary hover:bg-gray-800"
+            asChild
+            >
+              <Link href="#" className="flex items-center gap-1 text-sm text-text-primary">
+                <ExternalLink className="w-4 h-4" />
+                 Ayuda
+              </Link>
+            </Button>
+
+            
+          <div className="flex justify-start items-start my-3">
+            <ThemeToggle/>
+          </div>
+
           </MobileMenu>
         </div>
       </header>
@@ -89,7 +106,7 @@ export default async function dasboardUserLayout({
           <div className="flex items-center justify-center gap-3 mb-8">
             <UserButton
             showName
-            userProfileUrl="/dashboard/user"
+            userProfileUrl="/user"
             userProfileMode="navigation"
             />
           </div>
@@ -131,7 +148,7 @@ export default async function dasboardUserLayout({
               className="w-full justify-start text-text-primary hover:bg-gray-800"
             asChild
             >
-              <Link href={'/dashboard/user'}>
+              <Link href={'/user'}>
               <Settings className="w-4 h-4 mr-3" />
               Cuenta
               </Link>
