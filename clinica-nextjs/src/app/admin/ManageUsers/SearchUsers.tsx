@@ -52,7 +52,7 @@ export const SearchUsers = () => {
           <button
             type="button"
             onClick={() => {
-              const form = document.querySelector('form') as HTMLFormElement;
+              const form = document.querySelector("form") as HTMLFormElement;
               if (form) {
                 form.reset();
                 router.push(pathname);

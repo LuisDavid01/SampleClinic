@@ -22,7 +22,7 @@ module.exports = {
     remotePatterns: [
   {
     protocol: 'https',
-    hostname: '*.r2.dev',
+    hostname: 'pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev',
     port: '',
     pathname: '/**',
   },

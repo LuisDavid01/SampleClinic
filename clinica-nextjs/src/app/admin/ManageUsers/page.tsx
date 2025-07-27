@@ -1,34 +1,42 @@
-import { redirect } from "next/navigation"
-import { checkRole } from "@/utils/roles"
-import { SearchUsers } from "./SearchUsers"
-import { clerkClient } from "@clerk/nextjs/server"
-import { removeRole, setRole } from "./_actions"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Users, Shield, UserCheck, Search, Mail, MoreVertical } from "lucide-react"
+import { redirect } from "next/navigation";
+import { checkRole } from "@/utils/roles";
+import { SearchUsers } from "./SearchUsers";
+import { clerkClient } from "@clerk/nextjs/server";
+import { removeRole, setRole } from "./_actions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Users,
+  Shield,
+  UserCheck,
+  Search,
+  Mail,
+  MoreVertical,
+} from "lucide-react";
 
 export default async function AdminDashboard(params: {
-  searchParams: Promise<{ search?: string }>
+  searchParams: Promise<{ search?: string }>;
 }) {
   if (!checkRole("admin")) {
-    redirect("/")
+    redirect("/");
   }
 
-  const query = (await params.searchParams).search
-  const client = await clerkClient()
+  const query = (await params.searchParams).search;
+  const client = await clerkClient();
   const users = query
     ? (await client.users.getUserList({ query })).data
-    : (await client.users.getUserList({ limit: 100, offset: 0 })).data
+    : (await client.users.getUserList({ limit: 100, offset: 0 })).data;
 
   // Calcular estadísticas
   const stats = {
     total: users.length,
     admins: users.filter((user) => user.publicMetadata.role === "admin").length,
-    moderators: users.filter((user) => user.publicMetadata.role === "moderator").length,
+    moderators: users.filter((user) => user.publicMetadata.role === "moderator")
+      .length,
     regular: users.filter((user) => !user.publicMetadata.role).length,
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,7 +61,9 @@ export default async function AdminDashboard(params: {
               <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-xl sm:text-2xl font-bold text-text-primary">{stats.total}</div>
+              <div className="text-xl sm:text-2xl font-bold text-text-primary">
+                {stats.total}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">Registrados</p>
             </CardContent>
           </Card>
@@ -66,8 +76,12 @@ export default async function AdminDashboard(params: {
               <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-accent-foreground/70" />
             </CardHeader>
             <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-xl sm:text-2xl font-bold text-accent-foreground">{stats.admins}</div>
-              <p className="text-xs text-accent-foreground/70 mt-1">Completos</p>
+              <div className="text-xl sm:text-2xl font-bold text-accent-foreground">
+                {stats.admins}
+              </div>
+              <p className="text-xs text-accent-foreground/70 mt-1">
+                Completos
+              </p>
             </CardContent>
           </Card>
 
@@ -79,8 +93,12 @@ export default async function AdminDashboard(params: {
               <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-secondary-foreground/70" />
             </CardHeader>
             <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-xl sm:text-2xl font-bold text-secondary-foreground">{stats.moderators}</div>
-              <p className="text-xs text-secondary-foreground/70 mt-1">Limitados</p>
+              <div className="text-xl sm:text-2xl font-bold text-secondary-foreground">
+                {stats.moderators}
+              </div>
+              <p className="text-xs text-secondary-foreground/70 mt-1">
+                Limitados
+              </p>
             </CardContent>
           </Card>
 
@@ -92,7 +110,9 @@ export default async function AdminDashboard(params: {
               <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-xl sm:text-2xl font-bold text-text-primary">{stats.regular}</div>
+              <div className="text-xl sm:text-2xl font-bold text-text-primary">
+                {stats.regular}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">Sin roles</p>
             </CardContent>
           </Card>
@@ -115,8 +135,13 @@ export default async function AdminDashboard(params: {
         <Card className="bg-card border-muted">
           <CardHeader className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <CardTitle className="text-text-primary text-lg sm:text-xl">Gestión de Usuarios</CardTitle>
-              <Badge variant="secondary" className="text-sm bg-muted text-muted-foreground w-fit">
+              <CardTitle className="text-text-primary text-lg sm:text-xl">
+                Gestión de Usuarios
+              </CardTitle>
+              <Badge
+                variant="secondary"
+                className="text-sm bg-muted text-muted-foreground w-fit"
+              >
                 {users.length} usuarios
               </Badge>
             </div>
@@ -130,18 +155,23 @@ export default async function AdminDashboard(params: {
                 <h3 className="text-base sm:text-lg font-medium text-text-primary mb-2">
                   No se encontraron usuarios
                 </h3>
-                <p className="text-sm text-muted-foreground">Intenta con una búsqueda diferente</p>
+                <p className="text-sm text-muted-foreground">
+                  Intenta con una búsqueda diferente
+                </p>
               </div>
             ) : (
               <div className="space-y-3 sm:space-y-4">
                 {users.map((user) => {
-                  const currentRole = user.publicMetadata.role as string
+                  const currentRole = user.publicMetadata.role as string;
                   const primaryEmail = user.emailAddresses.find(
                     (email) => email.id === user.primaryEmailAddressId,
-                  )?.emailAddress
+                  )?.emailAddress;
 
                   return (
-                    <Card key={user.id} className="bg-background border-muted hover:shadow-md transition-shadow">
+                    <Card
+                      key={user.id}
+                      className="bg-background border-muted hover:shadow-md transition-shadow"
+                    >
                       <CardContent className="p-4 sm:p-6">
                         <div className="space-y-4">
                           {/* User Info */}
@@ -169,7 +199,9 @@ export default async function AdminDashboard(params: {
 
                           {/* Role Badge */}
                           <div className="flex items-center gap-2">
-                            <span className="text-xs sm:text-sm text-muted-foreground">Rol:</span>
+                            <span className="text-xs sm:text-sm text-muted-foreground">
+                              Rol:
+                            </span>
                             {currentRole === "admin" ? (
                               <Badge className="gap-1 bg-accent text-accent-foreground border-accent text-xs">
                                 <Shield className="h-3 w-3" />
@@ -181,7 +213,10 @@ export default async function AdminDashboard(params: {
                                 Moderador
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="gap-1 text-xs">
+                              <Badge
+                                variant="outline"
+                                className="gap-1 text-xs"
+                              >
                                 <Users className="h-3 w-3" />
                                 Usuario
                               </Badge>
@@ -190,7 +225,10 @@ export default async function AdminDashboard(params: {
 
                           {/* Actions - Mobile Optimized */}
                           <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-muted">
-                            <form action={setRole} className="flex-1 sm:flex-initial">
+                            <form
+                              action={setRole}
+                              className="flex-1 sm:flex-initial"
+                            >
                               <input type="hidden" value={user.id} name="id" />
                               <input type="hidden" value="admin" name="role" />
                               <Button
@@ -202,10 +240,17 @@ export default async function AdminDashboard(params: {
                                 Hacer Admin
                               </Button>
                             </form>
-                            
-                            <form action={setRole} className="flex-1 sm:flex-initial">
+
+                            <form
+                              action={setRole}
+                              className="flex-1 sm:flex-initial"
+                            >
                               <input type="hidden" value={user.id} name="id" />
-                              <input type="hidden" value="moderator" name="role" />
+                              <input
+                                type="hidden"
+                                value="moderator"
+                                name="role"
+                              />
                               <Button
                                 type="submit"
                                 size="sm"
@@ -215,8 +260,11 @@ export default async function AdminDashboard(params: {
                                 Hacer Moderador
                               </Button>
                             </form>
-                            
-                            <form action={removeRole} className="flex-1 sm:flex-initial">
+
+                            <form
+                              action={removeRole}
+                              className="flex-1 sm:flex-initial"
+                            >
                               <input type="hidden" value={user.id} name="id" />
                               <Button
                                 type="submit"
@@ -232,7 +280,7 @@ export default async function AdminDashboard(params: {
                         </div>
                       </CardContent>
                     </Card>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -240,5 +288,5 @@ export default async function AdminDashboard(params: {
         </Card>
       </div>
     </div>
-  )
+  );
 }

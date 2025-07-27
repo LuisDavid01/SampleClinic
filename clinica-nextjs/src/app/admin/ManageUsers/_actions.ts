@@ -2,7 +2,7 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { checkRole } from "@/utils/roles";
 import { revalidatePath } from "next/cache";
-import { currentUser } from '@clerk/nextjs/server';
+import { currentUser } from "@clerk/nextjs/server";
 
 export async function setRole(formData: FormData) {
   if (!checkRole("admin")) {
@@ -14,8 +14,8 @@ export async function setRole(formData: FormData) {
   const role = formData.get("role") as string;
 
   const user = await currentUser();
- // prevents users from removing themselfs
-  if (user?.id === userId ){
+  // prevents users from removing themselfs
+  if (user?.id === userId) {
     return;
   }
 
@@ -36,9 +36,9 @@ export async function removeRole(formData: FormData) {
 
   const client = await clerkClient();
   const userId = formData.get("id") as string;
- const user = await currentUser();
- // prevents users from removing themselfs
-  if (user?.id === userId ){
+  const user = await currentUser();
+  // prevents users from removing themselfs
+  if (user?.id === userId) {
     return;
   }
   await client.users.updateUserMetadata(userId, {

@@ -1,4 +1,3 @@
-
 export const Footer: React.FC = () => {
   return (
     <footer className="bg-card text-text-primary py-12">
@@ -33,22 +32,34 @@ export const Footer: React.FC = () => {
             <h4 className="text-lg font-semibold mb-4">Servicios</h4>
             <ul className="space-y-2 ">
               <li>
-                <a href="#" className="text-text-primary hover:text-gray-500 transition-colors">
+                <a
+                  href="#"
+                  className="text-text-primary hover:text-gray-500 transition-colors"
+                >
                   Terapia Manual
                 </a>
               </li>
               <li>
-                <a href="#" className="text-text-primary hover:text-gray-500 transition-colors">
+                <a
+                  href="#"
+                  className="text-text-primary hover:text-gray-500 transition-colors"
+                >
                   Rehabilitación
                 </a>
               </li>
               <li>
-                <a href="#" className="text-text-primary hover:text-gray-500 transition-colors">
+                <a
+                  href="#"
+                  className="text-text-primary hover:text-gray-500 transition-colors"
+                >
                   Prevención
                 </a>
               </li>
               <li>
-                <a href="#" className="text-text-primary hover:text-gray-500 transition-colors">
+                <a
+                  href="#"
+                  className="text-text-primary hover:text-gray-500 transition-colors"
+                >
                   Evaluación
                 </a>
               </li>

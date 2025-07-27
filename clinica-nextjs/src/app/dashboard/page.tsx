@@ -1,14 +1,19 @@
-
 import {
   Calendar,
   Clock,
   FileText,
   CalendarX,
- ChevronRight
-} from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+  ChevronRight,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 // Datos de ejemplo
 const patientData = {
   name: "María González",
@@ -16,7 +21,7 @@ const patientData = {
   nextAppointment: "15 de Enero, 2024 - 10:00 AM",
   totalSessions: 12,
   completedSessions: 8,
-}
+};
 
 const upcomingAppointments = [
   {
@@ -43,7 +48,7 @@ const upcomingAppointments = [
     type: "Ejercicios Terapéuticos",
     status: "confirmada",
   },
-]
+];
 
 const cancelableAppointments = [
   {
@@ -62,7 +67,7 @@ const cancelableAppointments = [
     type: "Terapia Manual",
     canCancel: true,
   },
-]
+];
 
 const medicalRecords = [
   {
@@ -89,12 +94,10 @@ const medicalRecords = [
     treatment: "Terapia Manual",
     progress: "Reducción significativa del dolor",
   },
-]
+];
 export default function Page() {
   return (
     <div className="min-h-screen bg-background">
-      
-
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
         {/* Welcome Section */}
         <div className="mb-6 sm:mb-8">
@@ -102,7 +105,8 @@ export default function Page() {
             ¡Bienvenid@, Otra vez!
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Aquí puedes gestionar tus citas y revisar tu progreso en el tratamiento.
+            Aquí puedes gestionar tus citas y revisar tu progreso en el
+            tratamiento.
           </p>
         </div>
 
@@ -118,7 +122,9 @@ export default function Page() {
               </div>
             </CardHeader>
             <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4">
-              <div className="text-base sm:text-lg font-bold text-text-primary">15 Ene</div>
+              <div className="text-base sm:text-lg font-bold text-text-primary">
+                15 Ene
+              </div>
               <p className="text-xs text-muted-foreground">10:00 AM</p>
             </CardContent>
           </Card>
@@ -137,7 +143,11 @@ export default function Page() {
                 {patientData.completedSessions}/{patientData.totalSessions}
               </div>
               <p className="text-xs text-muted-foreground">
-                {Math.round((patientData.completedSessions / patientData.totalSessions) * 100)}% completado
+                {Math.round(
+                  (patientData.completedSessions / patientData.totalSessions) *
+                    100,
+                )}
+                % completado
               </p>
             </CardContent>
           </Card>
@@ -152,7 +162,9 @@ export default function Page() {
               </div>
             </CardHeader>
             <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4">
-              <div className="text-base sm:text-lg font-bold text-text-primary">{medicalRecords.length}</div>
+              <div className="text-base sm:text-lg font-bold text-text-primary">
+                {medicalRecords.length}
+              </div>
               <p className="text-xs text-muted-foreground">Registros</p>
             </CardContent>
           </Card>
@@ -167,7 +179,9 @@ export default function Page() {
               </div>
             </CardHeader>
             <CardContent className="px-3 sm:px-4 pb-3 sm:pb-4">
-              <div className="text-base sm:text-lg font-bold text-text-primary">{cancelableAppointments.length}</div>
+              <div className="text-base sm:text-lg font-bold text-text-primary">
+                {cancelableAppointments.length}
+              </div>
               <p className="text-xs text-muted-foreground">Disponibles</p>
             </CardContent>
           </Card>
@@ -183,7 +197,9 @@ export default function Page() {
                   <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-text-accent" />
                   Citas Próximas
                 </CardTitle>
-                <CardDescription className="text-sm">Tus próximas sesiones de fisioterapia</CardDescription>
+                <CardDescription className="text-sm">
+                  Tus próximas sesiones de fisioterapia
+                </CardDescription>
               </CardHeader>
               <CardContent className="px-4 sm:px-6 space-y-3 sm:space-y-4">
                 {upcomingAppointments.map((appointment) => (
@@ -197,8 +213,16 @@ export default function Page() {
                           {appointment.type}
                         </h4>
                         <Badge
-                          variant={appointment.status === "confirmada" ? "default" : "secondary"}
-                          className={appointment.status === "confirmada" ? "bg-primary text-primary-foreground" : ""}
+                          variant={
+                            appointment.status === "confirmada"
+                              ? "default"
+                              : "secondary"
+                          }
+                          className={
+                            appointment.status === "confirmada"
+                              ? "bg-primary text-primary-foreground"
+                              : ""
+                          }
                         >
                           {appointment.status}
                         </Badge>
@@ -206,9 +230,15 @@ export default function Page() {
                       <p className="text-xs sm:text-sm text-muted-foreground mb-1">
                         {appointment.date} - {appointment.time}
                       </p>
-                      <p className="text-xs sm:text-sm text-text-accent truncate">{appointment.therapist}</p>
+                      <p className="text-xs sm:text-sm text-text-accent truncate">
+                        {appointment.therapist}
+                      </p>
                     </div>
-                    <Button variant="outline" size="sm" className="ml-2 flex-shrink-0 text-xs sm:text-sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="ml-2 flex-shrink-0 text-xs sm:text-sm"
+                    >
                       <span className="hidden sm:inline">Ver detalles</span>
                       <ChevronRight className="h-4 w-4 sm:hidden" />
                     </Button>
@@ -225,16 +255,27 @@ export default function Page() {
                 <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-text-accent" />
                 Expedientes Médicos
               </CardTitle>
-              <CardDescription className="text-sm">Historial de tratamientos</CardDescription>
+              <CardDescription className="text-sm">
+                Historial de tratamientos
+              </CardDescription>
             </CardHeader>
             <CardContent className="px-4 sm:px-6 space-y-3 sm:space-y-4">
               {medicalRecords.slice(0, 2).map((record) => (
-                <div key={record.id} className="p-3 sm:p-4 bg-background rounded-lg border">
+                <div
+                  key={record.id}
+                  className="p-3 sm:p-4 bg-background rounded-lg border"
+                >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-1">
-                    <h4 className="font-medium text-text-primary text-sm sm:text-base">{record.type}</h4>
-                    <span className="text-xs sm:text-sm text-muted-foreground">{record.date}</span>
+                    <h4 className="font-medium text-text-primary text-sm sm:text-base">
+                      {record.type}
+                    </h4>
+                    <span className="text-xs sm:text-sm text-muted-foreground">
+                      {record.date}
+                    </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-text-accent mb-2">{record.therapist}</p>
+                  <p className="text-xs sm:text-sm text-text-accent mb-2">
+                    {record.therapist}
+                  </p>
                   {record.diagnosis && (
                     <p className="text-xs sm:text-sm text-muted-foreground mb-1">
                       <strong>Diagnóstico:</strong> {record.diagnosis}
@@ -260,7 +301,9 @@ export default function Page() {
                 <CalendarX className="w-4 h-4 sm:w-5 sm:h-5 text-text-accent" />
                 Citas por Cancelar
               </CardTitle>
-              <CardDescription className="text-sm">Citas que puedes cancelar</CardDescription>
+              <CardDescription className="text-sm">
+                Citas que puedes cancelar
+              </CardDescription>
             </CardHeader>
             <CardContent className="px-4 sm:px-6 space-y-3 sm:space-y-4">
               {cancelableAppointments.map((appointment) => (
@@ -275,9 +318,15 @@ export default function Page() {
                     <p className="text-xs sm:text-sm text-muted-foreground mb-1">
                       {appointment.date} - {appointment.time}
                     </p>
-                    <p className="text-xs sm:text-sm text-text-accent truncate">{appointment.therapist}</p>
+                    <p className="text-xs sm:text-sm text-text-accent truncate">
+                      {appointment.therapist}
+                    </p>
                   </div>
-                  <Button variant="destructive" size="sm" className="ml-2 flex-shrink-0 text-xs sm:text-sm hover:bg-red-600">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="ml-2 flex-shrink-0 text-xs sm:text-sm hover:bg-red-600"
+                  >
                     Cancelar
                   </Button>
                 </div>
@@ -289,8 +338,6 @@ export default function Page() {
               )}
             </CardContent>
           </Card>
-
-          
         </div>
       </div>
     </div>
