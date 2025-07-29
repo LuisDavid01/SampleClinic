@@ -5,13 +5,9 @@
 .hamburger-button {
   padding: 8px;
   border-radius: 4px;
-  color: #1f2937;
+
   font-size: 1.5rem;
   transition: background-color 0.3s;
-}
-
-.hamburger-button:hover {
-  background-color: #f3f4f6;
 }
 
 .hamburger-icon {
@@ -47,7 +43,7 @@
   top: 100%;
   right: 0;
   width: 16rem;
-  background-color: white;
+
   border-radius: 6px;
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),

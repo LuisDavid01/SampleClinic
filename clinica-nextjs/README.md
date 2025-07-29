@@ -56,20 +56,34 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la 
 
 ```
 .
-├── public/               # Archivos estáticos
+├── public/
 ├── src/
-│   ├── app/              # Rutas y páginas de la aplicación
-│   │   ├── admin/        # Panel de administración
-│   │   ├── Paciente/     # Perfil del paciente
-│   │   └── ...
-│   ├── components/       # Componentes reutilizables
-│   ├── interfaces/       # Definiciones de tipos e interfaces
-│   └── utils/            # Funciones de utilidad
-├── .gitignore            # Archivos ignorados por Git
-├── next.config.ts        # Configuración de Next.js
-├── package.json          # Dependencias y scripts
-└── tsconfig.json         # Configuración de TypeScript
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── sign-in/
+│   │   │   └── sign-up/
+│   │   ├── (landingPage)/
+│   │   ├── admin/
+│   │   │   └── ManageUsers/
+│   │   ├── dashboard/
+│   │   └── User/
+│   ├── components/
+│   ├── Interfaces/
+│   └── utils/
+├── .gitignore
+├── next.config.ts
+├── package.json
+└── tsconfig.json
 ```
+
+### Tipos de Rutas en Next.js
+
+Next.js utiliza un enrutador basado en el sistema de archivos. El framework soporta diferentes tipos de rutas para crear una aplicación web, cada una con una convención de nomenclatura y un propósito específicos:
+
+- **`page.tsx`**: Define una interfaz de usuario públicamente accesible para una ruta. En este proyecto, ejemplos incluyen las páginas de inicio de sesión, registro y el panel de control.
+- **`layout.tsx`**: Una interfaz de usuario compartida para un segmento y sus hijos. Un layout envuelve una página o un layout hijo. En este proyecto, hay layouts principales para la autenticación, la página de destino y la aplicación principal.
+- **Grupos de Rutas `(nombreDeCarpeta)`**: Organiza las rutas sin afectar la ruta de la URL. Se utilizan para separar diferentes secciones de la aplicación, como la autenticación `(auth)`, la página de destino `(landingPage)` y la aplicación principal.
+
 
 ## Dependencias Principales
 
