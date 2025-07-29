@@ -1,17 +1,35 @@
+"use client";
 import {
   SignedIn,
   SignedOut,
   UserButton,
   SignInButton,
   SignUpButton,
+  useUser,
 } from "@clerk/nextjs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { checkRole } from "@/utils/roles";
 import MobileMenu from "../MobileMenu/index";
 import ThemeToggle from "../ThemeToggle";
 import { LogOut, LogIn } from "lucide-react";
-export const Header: React.FC = async () => {
+
+const smoothScrollTo = (elementId: string) => {
+  const element = document.getElementById(elementId);
+  if (element) {
+    const headerHeight = 0; // altura del header + padding adicional
+    const elementPosition = element.offsetTop - headerHeight;
+    
+    window.scrollTo({
+      top: elementPosition,
+      behavior: 'smooth'
+    });
+  }
+};
+
+export const Header: React.FC = () => {
+  const { user } = useUser();
+  const isAdmin = user?.publicMetadata?.role === "admin";
+
   return (
     <header className="bg-background shadow-sm sticky z-60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -25,14 +43,70 @@ export const Header: React.FC = async () => {
             </Link>
           </div>
 
-          <div className="hidden md:flex md:justify-center space-x-4 md:space-x-8">
-            <ul className="flex justify-between items-center space-x-4 md:space-x-8 text-text-primary">
+          <div className="hidden md:flex md:justify-center space-x-2 md:space-x-4">
+            <ul className="flex justify-between items-center space-x-2 md:space-x-4 text-text-primary">
+              {/* Navegación de secciones */}
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary px-2"
+                  onClick={() => smoothScrollTo('inicio')}
+                >
+                  Inicio
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary px-2"
+                  onClick={() => smoothScrollTo('servicios')}
+                >
+                  Servicios
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary px-2"
+                  onClick={() => smoothScrollTo('acerca-de')}
+                >
+                  Acerca de
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary px-2"
+                  onClick={() => smoothScrollTo('testimonios')}
+                >
+                  Testimonios
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary px-2"
+                  onClick={() => smoothScrollTo('equipo')}
+                >
+                  Equipo
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary px-2"
+                  onClick={() => smoothScrollTo('citas')}
+                >
+                  Citas
+                </Button>
+              </li>
+
               <SignedOut>
                 <li>
                   <SignInButton>
                     <Button
                       variant="link"
-                      className="w-full justify-start text-text-primary "
+                      className="w-full justify-start text-text-primary px-2"
                     >
                       Iniciar Sesión
                     </Button>
@@ -43,7 +117,7 @@ export const Header: React.FC = async () => {
                   <SignUpButton>
                     <Button
                       variant="link"
-                      className="w-full justify-start text-text-primary "
+                      className="w-full justify-start text-text-primary px-2"
                     >
                       Registrarse
                     </Button>
@@ -52,11 +126,11 @@ export const Header: React.FC = async () => {
               </SignedOut>
 
               <SignedIn>
-                {(await checkRole("admin")) ? (
+                {isAdmin ? (
                   <li>
                     <Button
                       variant="link"
-                      className="w-full justify-start text-text-primary "
+                      className="w-full justify-start text-text-primary px-2"
                       asChild
                     >
                       <Link
@@ -71,7 +145,7 @@ export const Header: React.FC = async () => {
                   <li>
                     <Button
                       variant="link"
-                      className="w-full justify-start text-text-primary "
+                      className="w-full justify-start text-text-primary px-2"
                       asChild
                     >
                       <Link
@@ -95,6 +169,62 @@ export const Header: React.FC = async () => {
           </div>
           <div className="md:hidden">
             <MobileMenu>
+              {/* Navegación de secciones para móvil */}
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary"
+                  onClick={() => smoothScrollTo('inicio')}
+                >
+                  Inicio
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary"
+                  onClick={() => smoothScrollTo('servicios')}
+                >
+                  Servicios
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary"
+                  onClick={() => smoothScrollTo('acerca-de')}
+                >
+                  Acerca de
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary"
+                  onClick={() => smoothScrollTo('testimonios')}
+                >
+                  Testimonios
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary"
+                  onClick={() => smoothScrollTo('equipo')}
+                >
+                  Equipo
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant="link"
+                  className="w-full justify-start text-text-primary"
+                  onClick={() => smoothScrollTo('citas')}
+                >
+                  Citas
+                </Button>
+              </li>
+
               <SignedOut>
                 <SignInButton>
                   <Button
@@ -116,7 +246,7 @@ export const Header: React.FC = async () => {
               </SignedOut>
 
               <SignedIn>
-                {(await checkRole("admin")) ? (
+                {isAdmin ? (
                   <li>
                     <Button
                       variant="link"
