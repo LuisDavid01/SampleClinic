@@ -5,15 +5,18 @@ import { TeamSection } from "@/components/TeamSection";
 import { ReviewsSection } from "@/components/ReviewSection";
 import { AcercaDeSection } from "@/components/AcercaDeSection";
 import { HomeHero } from "@/components/HomeHero";
+import { AppointmentForm } from "@/components/AppointmentForm";
 
 export default function Home() {
   return (
     <div className="">
       {/* Hero Section */}
-      <HomeHero/>
+      <section id="inicio">
+        <HomeHero/>
+      </section>
 
       {/* Services Section */}
-      <section className="py-24 bg-background relative overflow-hidden">
+      <section id="servicios" className="py-24 bg-background relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-2 bg-primary/10 text-text-primary rounded-full text-sm font-medium mb-4">
@@ -165,10 +168,12 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <AcercaDeSection />
+      <section id="acerca-de">
+        <AcercaDeSection />
+      </section>
 
       {/* Testimonials Section*/}
-      <section className="bg-background py-24 relative overflow-hidden">
+      <section id="testimonios" className="bg-background py-24 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-2 bg-primary/10 text-text-primary rounded-full text-sm font-medium mb-4">
@@ -209,7 +214,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <section className="relative bg-gradient-to-br from-card/50 to-background py-24 overflow-hidden">
+      <section id="equipo" className="relative bg-gradient-to-br from-card/50 to-background py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           {/* Header */}
           <div className="text-center mb-20">
@@ -277,6 +282,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Appointment Form Section */}
+      <AppointmentForm />
     </div>
   );
 }
