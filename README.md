@@ -1,292 +1,107 @@
-# Sistema Fullstack para la fisioterapeuta Esteban Porras 
 
-## Tech stack:
-![React](https://img.icons8.com/?size=128&id=asWSSTBrDlTW&format=png&color=000000)
-![Supabase](https://img.icons8.com/?size=128&id=grZaE9tjqDyr&format=png&color=000000)
-![Node](https://img.icons8.com/?size=128&id=hsPbhkOH4FMe&format=png&color=000000)
-![Golang](https://img.icons8.com/color/128/000000/golang.png)
-![Postgresql](https://img.icons8.com/?size=128&id=Pv4IGT0TSpt8&format=png&color=000000)
-![Docker](https://img.icons8.com/color/128/000000/docker.png)
-# Instalacion
-### Docker (Instalacion recomendada)
-1. instalar [docker](https://www.docker.com/) version lts
-2. Clonar el repositorio
-```bash
-git clone https://github.com/LuisDavid01/fisioterapeuta-ep
-```
-3. Correr todos los contenedores con las bases de datos.
-```bash
-docker compose up --build
-```
-4. listo! 😁👌
-# Colaboradores
-- Luis David Miranda Villalta
-- Adrian Morales Castro
+# Fisioterapia Esteban Porras - Plataforma de la Clínica
 
+![Banner del Proyecto](https://res.cloudinary.com/duoghrh9k/image/upload/v1718858839/fisioterapia_esteban_porras_vj4f0p.svg)
 
-# 🏥 Clínica FisioSalud - Página Web
+Esta es una plataforma integral para la clínica "Fisioterapia Esteban Porras", diseñada para optimizar la gestión de pacientes, la programación de citas y la comunicación interna. El proyecto está construido con un stack tecnológico moderno, que incluye un frontend con Next.js y un backend con Go, todo contenedorizado con Docker para facilitar el despliegue y la escalabilidad.
 
-Una página web moderna y profesional para una clínica de fisioterapia, desarrollada con React, TypeScript y Vite.
+## Estructura del Proyecto
 
-## 📋 Descripción
+El repositorio está organizado como un monorepo con dos servicios principales:
 
-Esta aplicación web presenta una clínica de fisioterapia ficticia llamada "Clínica FisioSalud" ubicada en Costa Rica. La página incluye todas las secciones necesarias para un negocio de fisioterapia comercial:
+-   **`clinica-nextjs`**: Una aplicación de [Next.js](https://nextjs.org/) que funciona como el frontend para el usuario. Maneja todo, desde la página de inicio hasta los paneles de administración y de usuario.
+-   **`clinica-chat-api`**: Una aplicación de [Go](https://go.dev/) que impulsa la funcionalidad de chat en tiempo real, permitiendo una comunicación fluida entre pacientes y personal.
 
-- **Sección Hero**: Bienvenida atractiva con llamadas a la acción
-- **Servicios**: Catálogo completo de servicios de fisioterapia
-- **Perfil Profesional**: Información del equipo médico
-- **Ubicación**: Dirección, horarios y cómo llegar
-- **Agendar Cita**: Formulario para programar consultas
-- **Contacto**: Información de contacto y formulario
-- **Redes Sociales**: Enlaces a plataformas sociales
+## Tecnologías Utilizadas
 
-## 🚀 Características
+### Frontend (`clinica-nextjs`)
 
-### ✨ Diseño Moderno
-- Interfaz responsive y atractiva
-- Gradientes y efectos visuales modernos
-- Animaciones suaves y transiciones
-- Diseño adaptativo para móviles y tablets
+-   **Framework**: [Next.js](https://nextjs.org/)
+-   **Lenguaje**: [TypeScript](https://www.typescriptlang.org/)
+-   **Estilos**: [Tailwind CSS](https://tailwindcss.com/)
+-   **Componentes de UI**: [Shadcn UI](https://ui.shadcn.com/)
+-   **Autenticación**: [Clerk](https://clerk.com/)
 
-### 🎯 Funcionalidades
-- Navegación suave entre secciones
-- Formularios interactivos para citas y contacto
-- Enlaces directos a WhatsApp y teléfono
-- Botón de "volver arriba"
-- Menú hamburguesa para móviles
+### Backend (`clinica-chat-api`)
 
-### 📱 Responsive Design
-- Optimizado para dispositivos móviles
-- Diseño adaptativo con CSS Grid y Flexbox
-- Menú de navegación colapsable
-- Tipografía escalable
+-   **Lenguaje**: [Go](https://go.dev/)
+-   **Framework Web**: [Gin](https://gin-gonic.com/)
+-   **Comunicación en Tiempo Real**: [Gorilla WebSocket](https://github.com/gorilla/websocket)
 
-## 🛠️ Tecnologías Utilizadas
+### Contenerización
 
-- **React 19.1.0**: Framework de JavaScript para la interfaz de usuario
-- **TypeScript**: Tipado estático para mayor robustez
-- **Vite**: Herramienta de construcción rápida
-- **React Router DOM**: Navegación entre páginas
-- **Lucide React**: Iconos modernos y ligeros
-- **CSS3**: Estilos modernos con Grid, Flexbox y animaciones
+-   **Orquestación**: [Docker Compose](https.docs.docker.com/compose/)
 
-## 📁 Estructura del Proyecto
+## Cómo Ejecutar el Proyecto
 
-```
-clinica-web/
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── Navbar.tsx          # Barra de navegación
-│   │   ├── Hero.tsx            # Sección de bienvenida
-│   │   ├── Servicios.tsx       # Catálogo de servicios
-│   │   ├── PerfilProfesional.tsx # Equipo médico
-│   │   ├── Ubicacion.tsx       # Información de ubicación
-│   │   ├── AgendarCita.tsx     # Formulario de citas
-│   │   ├── Contacto.tsx        # Información de contacto
-│   │   └── Footer.tsx          # Pie de página con redes sociales
-│   ├── assets/
-│   ├── App.tsx                 # Componente principal
-│   ├── App.css                 # Estilos principales
-│   ├── index.css               # Estilos globales
-│   └── main.tsx                # Punto de entrada
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── README.md
-```
+Puedes ejecutar el proyecto usando Docker (recomendado) o configurando cada servicio manualmente.
 
-## 🎨 Secciones de la Página
+### Con Docker (Recomendado)
 
-### 1. **Navbar** 
-- Logo de la clínica
-- Menú de navegación con enlaces a todas las secciones
-- Menú hamburguesa para dispositivos móviles
-- Navegación suave entre secciones
+Esta es la forma más sencilla de poner en marcha toda la aplicación.
 
-### 2. **Hero Section**
-- Título principal atractivo
-- Descripción de la clínica
-- Botones de llamada a la acción
-- Indicador de scroll
+1.  **Prerrequisitos**: Asegúrate de tener [Docker](https://www.docker.com/get-started) y [Docker Compose](https://docs.docker.com/compose/install/) instalados.
 
-### 3. **Servicios**
-- 6 servicios principales de fisioterapia:
-  - Fisioterapia Deportiva
-  - Fisioterapia Cardiorrespiratoria
-  - Fisioterapia Neurológica
-  - Terapia Manual
-  - Fisioterapia Geriátrica
-  - Fisioterapia Ortopédica
-- Iconos coloridos y descripciones detalladas
+2.  **Construir y Ejecutar**:
+    ```bash
+    docker-compose up --build
+    ```
 
-### 4. **Perfil Profesional**
-- Estadísticas de la clínica (pacientes, experiencia, etc.)
-- Información de 3 fisioterapeutas especializados:
-  - Dr. Carlos Méndez (Fisioterapia Deportiva)
-  - Dra. Ana Rodríguez (Fisioterapia Neurológica)
-  - Dr. Miguel Torres (Fisioterapia Ortopédica)
-- Certificaciones y especialidades
+    Este comando construirá las imágenes tanto para el frontend como para el backend y arrancará los contenedores. La aplicación estará accesible en [http://localhost:3000](http://localhost:3000).
 
-### 5. **Ubicación**
-- Dirección completa en San José, Costa Rica
-- Horarios de atención detallados
-- Información de contacto (teléfono, email)
-- Instrucciones de cómo llegar
-- Servicios adicionales disponibles
-- Información de emergencias
+### Sin Docker
 
-### 6. **Agendar Cita**
-- Formulario completo para programar citas
-- Selección de fecha y hora
-- Elección de servicio
-- Información personal del paciente
-- Beneficios de agendar con la clínica
-- Enlaces directos de contacto
+Si prefieres ejecutar cada servicio manualmente, sigue estos pasos.
 
-### 7. **Contacto**
-- Información de contacto detallada
-- Formulario de contacto
-- Preguntas frecuentes
-- Enlaces directos a WhatsApp y teléfono
+#### Backend (`clinica-chat-api`)
 
-### 8. **Footer**
-- Información de la clínica
-- Enlaces rápidos a secciones
-- Redes sociales (Facebook, Instagram, Twitter, LinkedIn, YouTube)
-- Formulario de suscripción al boletín
-- Información legal
+1.  **Navega al directorio**:
+    ```bash
+    cd clinica-chat-api
+    ```
 
-## 🚀 Instalación y Uso
+2.  **Instala las dependencias**:
+    ```bash
+    go mod tidy
+    ```
 
-### Prerrequisitos
-- Node.js (versión 16 o superior)
-- npm o yarn
+3.  **Ejecuta el servidor**:
+    ```bash
+    go run main.go
+    ```
 
-### Instalación
+    La API se estará ejecutando en el puerto `8080`.
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone <url-del-repositorio>
-   cd clinica-web
-   ```
+#### Frontend (`clinica-nextjs`)
 
-2. **Instalar dependencias**
-   ```bash
-   npm install
-   ```
+1.  **Navega al directorio**:
+    ```bash
+    cd clinica-nextjs
+    ```
 
-3. **Ejecutar en modo desarrollo**
-   ```bash
-   npm run dev
-   ```
+2.  **Instala las dependencias**:
+    ```bash
+    npm install
+    ```
 
-4. **Abrir en el navegador**
-   ```
-   http://localhost:5173
-   ```
+3.  **Configura las variables de entorno**:
+    Crea un archivo `.env.local` copiando el ejemplo:
+    ```bash
+    cp .env.example .env.local
+    ```
+    Actualiza el archivo `.env.local` con tus propias credenciales.
 
-### Scripts Disponibles
+4.  **Ejecuta el servidor de desarrollo**:
+    ```bash
+    npm run dev
+    ```
 
-- `npm run dev` - Inicia el servidor de desarrollo
-- `npm run build` - Construye la aplicación para producción
-- `npm run preview` - Previsualiza la versión de producción
-- `npm run lint` - Ejecuta el linter
+    El frontend estará accesible en [http://localhost:3000](http://localhost:3000).
 
-## 📱 Información de Contacto
+## Cómo Contribuir
 
-### Clínica FisioSalud
-- **Dirección**: Calle 123 # 45-67, Local 2, Barrio Amon, San José C.R., Costa Rica
-- **Teléfono**: (506) 234 5678
-- **Celular**: (506) 300 123 4567
-- **WhatsApp**: (506) 300 123 4567
-- **Email**: info@clinicafisiosalud.com
-- **Emergencias**: (506) 800 123 4567
+¡Las contribuciones son bienvenidas! Si tienes alguna idea, sugerencia o reporte de error, por favor abre un *issue* o envía un *pull request*.
 
-### Horarios de Atención
-- **Lunes - Viernes**: 8:00 AM - 7:00 PM
-- **Sábados**: 8:00 AM - 2:00 PM
-- **Domingos**: Cerrado
+## Licencia
 
-## 🎯 Características Técnicas
-
-### Performance
-- Carga rápida con Vite
-- Optimización de imágenes
-- Lazy loading de componentes
-- CSS optimizado
-
-### SEO
-- Estructura semántica HTML
-- Meta tags optimizados
-- URLs amigables
-- Contenido estructurado
-
-### Accesibilidad
-- Navegación por teclado
-- Contraste de colores adecuado
-- Textos alternativos en imágenes
-- Estructura de encabezados correcta
-
-## 🔧 Personalización
-
-### Cambiar Información de Contacto
-Edita los archivos de componentes para actualizar:
-- Números de teléfono
-- Dirección
-- Horarios
-- Información del equipo
-
-### Modificar Servicios
-En `src/components/Servicios.tsx` puedes:
-- Agregar nuevos servicios
-- Cambiar descripciones
-- Modificar iconos y colores
-
-### Actualizar Estilos
-Los estilos principales están en:
-- `src/App.css` - Estilos de componentes
-- `src/index.css` - Estilos globales
-
-## 📦 Despliegue
-
-### Build para Producción
-```bash
-npm run build
-```
-
-### Despliegue en Netlify
-1. Conecta tu repositorio a Netlify
-2. Configura el directorio de build como `dist`
-3. El comando de build será `npm run build`
-
-### Despliegue en Vercel
-1. Conecta tu repositorio a Vercel
-2. Vercel detectará automáticamente que es un proyecto Vite
-3. Se desplegará automáticamente
-
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
-## 👨‍💻 Autor
-
-Desarrollado para equipo de trabajo Curso Analisis y modelado de requerimientos - U.Fidelitas - Costa Rica
-
-
-- [React](https://reactjs.org/) - Framework de JavaScript
-- [Vite](https://vitejs.dev/) - Herramienta de construcción
-- [Lucide](https://lucide.dev/) - Iconos
-- [TypeScript](https://www.typescriptlang.org/) - Tipado estático
-
----
-
-**Nota**: Esta es una aplicación de demostración. La información de contacto y ubicación es ficticia y se debe actualizar con datos reales antes de usar en producción.
+Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
