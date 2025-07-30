@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { checkRole } from "@/utils/roles";
+import { redirect } from "next/navigation";
 // Datos de ejemplo
 const patientData = {
   name: "María González",
@@ -95,7 +97,12 @@ const medicalRecords = [
     progress: "Reducción significativa del dolor",
   },
 ];
-export default function Page() {
+export default async function Page () {
+
+  if (await checkRole("admin")) {
+      redirect("/admin");
+    }
+    
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">

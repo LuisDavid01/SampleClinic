@@ -1,5 +1,6 @@
-import { Header } from "@/components/Header";
+
 import { Footer } from "@/components/Footer";
+import { LandingPageHeader } from "@/components/LandingPageHeader";
 
 export default async function landingPageLayout({
   children,
@@ -8,7 +9,7 @@ export default async function landingPageLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <LandingPageHeader />
       <main className="flex-1">{children}</main>
       <Footer />
     </div>
