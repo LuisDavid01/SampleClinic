@@ -31,7 +31,12 @@ import {
   Radar,
 } from "recharts"
 
-const monthlyData = [
+
+
+
+export default  function AdminDashboard() {
+
+  const monthlyData = [
   { month: "Ene", consultas: 180, terapias: 165 },
   { month: "Feb", consultas: 220, terapias: 195 },
   { month: "Mar", consultas: 195, terapias: 180 },
@@ -118,9 +123,6 @@ const recentPatients = [
     avatar: "/placeholder.svg?height=32&width=32",
   },
 ]
-
-
-export default  function AdminDashboard() {
  return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -311,118 +313,7 @@ export default  function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Bottom Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Today's Appointments */}
-          <Card className="bg-card border-0 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-text-primary">Citas de Hoy</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {todayAppointments.map((appointment) => (
-                <div key={appointment.id} className="flex items-center space-x-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={appointment.avatar || "/placeholder.svg"} />
-                    <AvatarFallback className="bg-primary/10 text-primary">
-                      {appointment.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-text-primary truncate">{appointment.name}</p>
-                    <p className="text-xs text-muted-foreground">{appointment.treatment}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-text-primary">{appointment.time}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Recent Patients */}
-          <Card className="lg:col-span-2 bg-card border-0 shadow-sm">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold text-text-primary">Pacientes Recientes</CardTitle>
-                <div className="flex items-center space-x-2">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Buscar paciente..." className="pl-8 w-64 bg-input border-0" />
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filtrar
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-muted">
-                    <TableHead className="text-muted-foreground">Paciente</TableHead>
-                    <TableHead className="text-muted-foreground">Última Visita</TableHead>
-                    <TableHead className="text-muted-foreground">Edad</TableHead>
-                    <TableHead className="text-muted-foreground">Tratamiento</TableHead>
-                    <TableHead className="text-muted-foreground">Estado</TableHead>
-                    <TableHead className="text-muted-foreground w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentPatients.map((patient) => (
-                    <TableRow key={patient.id} className="border-muted">
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={patient.avatar || "/placeholder.svg"} />
-                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                              {patient.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium text-text-primary">{patient.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{patient.lastVisit}</TableCell>
-                      <TableCell className="text-muted-foreground">{patient.age}</TableCell>
-                      <TableCell className="text-muted-foreground">{patient.treatment}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            patient.status === "Activo"
-                              ? "default"
-                              : patient.status === "En tratamiento"
-                                ? "secondary"
-                                : "outline"
-                          }
-                          className={
-                            patient.status === "Activo"
-                              ? "bg-primary/10 text-primary border-primary/20"
-                              : patient.status === "En tratamiento"
-                                ? "bg-text-accent/10 text-text-accent border-text-accent/20"
-                                : "bg-muted text-muted-foreground"
-                          }
-                        >
-                          {patient.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
+        
       </div>
     </div>
   )

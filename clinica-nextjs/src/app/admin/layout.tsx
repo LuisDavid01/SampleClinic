@@ -1,7 +1,7 @@
 import { UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { DasboardHeader } from "@/components/DashboardHeader";
-import { BarChart3, Settings, Grid3X3, Inbox, TrendingUp } from "lucide-react";
+import { BarChart3, Settings, Grid3X3, Inbox, TrendingUp, User } from "lucide-react";
 import Link from "next/link";
 
 export default async function dasboardLayout({
@@ -33,18 +33,10 @@ export default async function dasboardLayout({
             <Button
               variant="ghost"
               className="w-full justify-start text-text-primary hover:bg-gray-800"
-            >
-              <TrendingUp className="w-4 h-4 mr-3" />
-              Analíticas
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-text-primary hover:bg-gray-800"
               asChild
             >
-              <Link href={"/admin/ManageUsers"}>
-                <BarChart3 className="w-4 h-4 mr-3" />
+              <Link href={"/admin/manageUsers"}>
+                <User className="w-4 h-4 mr-3" />
                 <span>Gestionar usuarios</span>
               </Link>
             </Button>
@@ -52,17 +44,36 @@ export default async function dasboardLayout({
             <Button
               variant="ghost"
               className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
             >
+              <Link href={"/admin/appointments"}>
               <Inbox className="w-4 h-4 mr-3" />
-              Citas
+              <span>Citas</span>
+              </Link>
+              
+              
             </Button>
 
             <Button
               variant="ghost"
               className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
             >
+              <Link href={"/admin/files"}>
               <Grid3X3 className="w-4 h-4 mr-3" />
-              Registros
+              <span>Expedientes</span>
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/audit"}>
+              <TrendingUp className="w-4 h-4 mr-3" />
+              <span>Auditoria</span>
+              </Link>
             </Button>
 
             <Button
