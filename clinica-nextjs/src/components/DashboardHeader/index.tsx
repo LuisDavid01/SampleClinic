@@ -9,6 +9,8 @@ import {
   Inbox,
   TrendingUp,
   ExternalLink,
+  Home,
+  User
 } from "lucide-react";
 export const DasboardHeader = async () => {
   return (
@@ -37,62 +39,86 @@ export const DasboardHeader = async () => {
       {/* Mobile Menu - Solo visible en móvil */}
       <div className="md:hidden">
         <MobileMenu>
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-            asChild
-          >
-            <Link href={"/admin"}>
-              <BarChart3 className="w-4 h-4 mr-3" />
-              Vista general
-            </Link>
-          </Button>
+           <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin"}>
+                <BarChart3 className="w-4 h-4 mr-3" />
+                Vista general
+              </Link>
+            </Button>
 
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-          >
-            <TrendingUp className="w-4 h-4 mr-3" />
-            Analíticas
-          </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/ManageUsers"}>
+                <User className="w-4 h-4 mr-3" />
+                <span>Gestionar usuarios</span>
+              </Link>
+            </Button>
 
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-            asChild
-          >
-            <Link href={"/admin/ManageUsers"}>
-              <BarChart3 className="w-4 h-4 mr-3" />
-              <span>Gestionar usuarios</span>
-            </Link>
-          </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/appointments"}>
+                <Inbox className="w-4 h-4 mr-3" />
+                <span>Citas</span>
+              </Link>
+            </Button>
 
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-          >
-            <Inbox className="w-4 h-4 mr-3" />
-            Citas
-          </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/files"}>
+                <Grid3X3 className="w-4 h-4 mr-3" />
+                <span>Expedientes</span>
+              </Link>
+            </Button>
 
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-          >
-            <Grid3X3 className="w-4 h-4 mr-3" />
-            Registros
-          </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/audit"}>
+                <TrendingUp className="w-4 h-4 mr-3" />
+                <span>Auditoria</span>
+              </Link>
+            </Button>
 
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-            asChild
-          >
-            <Link href={"/user"}>
-              <Settings className="w-4 h-4 mr-3" />
-              Cuenta
-            </Link>
-          </Button>
+            
+
+            <Button
+              variant="ghost"
+              className="w-full  justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/user"}>
+                <Settings className="w-4 h-4 mr-3" />
+                Cuenta
+              </Link>
+            </Button>
+
+            
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/"}>
+                <Home className="w-4 h-4 mr-3" />
+                Regresar al inicio
+              </Link>
+            </Button>
+
           <Button
             variant="link"
             className="w-full justify-start text-text-primary "

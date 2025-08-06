@@ -28,9 +28,9 @@ export default function AdminUsersPage(params: {
               <User className="h-6 w-6 text-accent" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Expedientes</h1>
+              <h1 className="text-3xl font-bold">Gestionar usuarios</h1>
               <p className="text-muted-foreground">
-                Gestiona los expedientes de los pacientes
+                Gestiona los permisos de los usuarios
               </p>
             </div>
           </div>

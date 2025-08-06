@@ -60,7 +60,7 @@ export default async function dasboardLayout({
               className="w-full justify-start text-text-primary hover:bg-gray-800"
               asChild
             >
-              <Link href={"/admin/manageUsers"}>
+              <Link href={"/admin/ManageUsers"}>
                 <User className="w-4 h-4 mr-3" />
                 <span>Gestionar usuarios</span>
               </Link>

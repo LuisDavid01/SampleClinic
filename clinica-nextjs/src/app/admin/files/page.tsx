@@ -87,12 +87,12 @@ export default function FilesPage() {
               <div className="flex gap-2">
                 <Select >
                   <SelectTrigger>
-                    <SelectValue placeholder="Estado" />
+                    <SelectValue placeholder="Estado"  />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="exitoso">Exitoso</SelectItem>
-                    <SelectItem value="fallido">Fallido</SelectItem>
+                    <SelectItem value="activo">Activo</SelectItem>
+                    <SelectItem value="inActivo">Inactivo</SelectItem>
                   </SelectContent>
                 </Select>
                 

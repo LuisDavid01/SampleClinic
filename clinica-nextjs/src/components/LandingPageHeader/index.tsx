@@ -6,6 +6,7 @@ import {
   SignInButton,
   SignUpButton,
   useUser,
+  SignOutButton,
 } from "@clerk/nextjs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -217,7 +218,8 @@ export const LandingPageHeader: React.FC = () => {
               </li>
 
               <SignedOut>
-                <SignInButton>
+                <li>
+                  <SignInButton>
                   <Button
                     variant="link"
                     className="w-full justify-start text-text-primary "
@@ -225,6 +227,8 @@ export const LandingPageHeader: React.FC = () => {
                     Acceder
                   </Button>
                 </SignInButton>
+                </li>
+                
 
                 
               </SignedOut>
@@ -268,6 +272,16 @@ export const LandingPageHeader: React.FC = () => {
                     asChild
                   >
                     <Link href={"/user"}>Cuenta</Link>
+                  </Button>
+                </li>
+
+                <li>
+                  <Button
+                    variant="link"
+                    className="w-full justify-start text-text-primary "
+                    asChild
+                  >
+                    <SignOutButton/>
                   </Button>
                 </li>
               </SignedIn>
