@@ -5,9 +5,100 @@ import { ChevronLeft, ChevronRight, Plus, Search, Calendar, Users } from "lucide
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-
-
-export default function AdminCalendar() {
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar"
+// Sample appointment data
+const sampleAppointments = [
+  {
+    id: 1,
+    patientName: "Isagi Yoichi",
+    time: "10:00 am - 11:00 am",
+    date: new Date(2025, 0, 3), // January 3, 2025
+    avatar: "/placeholder.svg?height=32&width=32",
+    type: "Consulta General",
+    status: "confirmed",
+  },
+  {
+    id: 2,
+    patientName: "Nagi Seishiro",
+    time: "10:00 am - 11:00 am",
+    date: new Date(2025, 0, 4),
+    avatar: "/placeholder.svg?height=32&width=32",
+    type: "Seguimiento",
+    status: "pending",
+  },
+  {
+    id: 3,
+    patientName: "Kaiser Brown",
+    time: "10:00 am - 11:00 am",
+    date: new Date(2025, 0, 6),
+    avatar: "/placeholder.svg?height=32&width=32",
+    type: "Tratamiento",
+    status: "confirmed",
+  },
+  {
+    id: 4,
+    patientName: "Alexandro Bernard",
+    time: "10:00 am - 11:00 am",
+    date: new Date(2025, 0, 13),
+    avatar: "/placeholder.svg?height=32&width=32",
+    type: "Consulta",
+    status: "confirmed",
+  },
+  {
+    id: 5,
+    patientName: "Romanov Ey Betty",
+    time: "10:00 am - 11:00 am",
+    date: new Date(2025, 0, 17),
+    avatar: "/placeholder.svg?height=32&width=32",
+    type: "Revisión",
+    status: "confirmed",
+  },
+  {
+    id: 6,
+    patientName: "Kitty Lily",
+    time: "10:00 am - 11:00 am",
+    date: new Date(2025, 0, 18),
+    avatar: "/placeholder.svg?height=32&width=32",
+    type: "Consulta",
+    status: "confirmed",
+  },
+  {
+    id: 7,
+    patientName: "Lily Alexa",
+    time: "10:00 am - 11:00 am",
+    date: new Date(2025, 0, 21),
+    avatar: "/placeholder.svg?height=32&width=32",
+    type: "Tratamiento",
+    status: "confirmed",
+  },
+  {
+    id: 8,
+    patientName: "Shaaa Brown",
+    time: "10:00 am - 11:00 am",
+    date: new Date(2025, 0, 24),
+    avatar: "/placeholder.svg?height=32&width=32",
+    type: "Seguimiento",
+    status: "confirmed",
+  },
+  {
+    id: 9,
+    patientName: "Ahmed Lali",
+    time: "10:00 am - 11:00 am",
+    date: new Date(2025, 0, 27),
+    avatar: "/placeholder.svg?height=32&width=32",
+    type: "Consulta",
+    status: "pending",
+  },
+  {
+    id: 10,
+    patientName: "Budiman Dio Salmon",
+    time: "10:00 am - 11:00 am",
+    date: new Date(2025, 0, 31),
+    avatar: "/placeholder.svg?height=32&width=32",
+    type: "Revisión",
+    status: "confirmed",
+  },
+]
 
 const monthNames = [
   "January",
@@ -26,7 +117,8 @@ const monthNames = [
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-  const [currentDate, setCurrentDate] = useState(new Date())
+export default function AppointmentCalendar() {
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 0, 1)) // January 2025
   const [viewType, setViewType] = useState<"week" | "month">("month")
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -61,6 +153,10 @@ const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
     return days
   }
 
+  const getAppointmentsForDate = (date: Date) => {
+    return sampleAppointments.filter((appointment) => appointment.date.toDateString() === date.toDateString())
+  }
+
   const navigateMonth = (direction: "prev" | "next") => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev)
@@ -74,7 +170,10 @@ const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
   }
 
   const days = getDaysInMonth(currentDate)
-return (
+  const totalAppointments = sampleAppointments.length
+  const todayAppointments = getAppointmentsForDate(new Date()).length
+
+  return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
@@ -98,7 +197,7 @@ return (
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Appointments</p>
-                <p className="text-2xl font-bold text-text-primary">0</p>
+                <p className="text-2xl font-bold text-text-primary">{totalAppointments}</p>
               </div>
             </div>
           </Card>
@@ -109,7 +208,7 @@ return (
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Today's Appointments</p>
-                <p className="text-2xl font-bold text-text-primary">0</p>
+                <p className="text-2xl font-bold text-text-primary">{todayAppointments}</p>
               </div>
             </div>
           </Card>
@@ -120,7 +219,9 @@ return (
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">This Month</p>
-                <p className="text-2xl font-bold text-text-primary">0</p>
+                <p className="text-2xl font-bold text-text-primary">
+                  {sampleAppointments.filter((apt) => apt.date.getMonth() === currentDate.getMonth()).length}
+                </p>
               </div>
             </div>
           </Card>
@@ -188,6 +289,7 @@ return (
           {/* Calendar Days */}
           <div className="grid grid-cols-7 gap-2">
             {days.map((day, index) => {
+              const appointments = getAppointmentsForDate(day.date)
               const isToday = day.date.toDateString() === new Date().toDateString()
 
               return (
@@ -205,30 +307,34 @@ return (
                     {day.date.getDate()}
                   </div>
 
-                  {/* Empty space for future appointments */}
-                  <div className="space-y-1">{/* No appointments to display */}</div>
+                  <div className="space-y-1">
+                    {appointments.slice(0, 2).map((appointment) => (
+                      <div key={appointment.id} className="rounded-md bg-primary/10 p-1 text-xs">
+                        <div className="flex items-center gap-1">
+                          <Avatar className="h-4 w-4">
+                            <AvatarImage src={appointment.avatar || "/placeholder.svg"} />
+                            <AvatarFallback className="text-xs">
+                              {appointment.patientName
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="truncate text-text-primary">{appointment.patientName}</span>
+                        </div>
+                        <div className="mt-1 text-muted-foreground">{appointment.time.split(" - ")[0]}</div>
+                      </div>
+                    ))}
+                    {appointments.length > 2 && (
+                      <div className="text-xs text-muted-foreground">+{appointments.length - 2} more</div>
+                    )}
+                  </div>
                 </div>
               )
             })}
           </div>
         </Card>
-
-        {/* Empty State Message */}
-        <div className="mt-8 text-center">
-          <div className="mx-auto max-w-md">
-            <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium text-text-primary mb-2">No appointments scheduled</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Get started by creating your first appointment. Click the "New Appointment" button to begin.
-            </p>
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-              <Plus className="mr-2 h-4 w-4" />
-              Schedule First Appointment
-            </Button>
-          </div>
-        </div>
       </div>
     </div>
   )
 }
-

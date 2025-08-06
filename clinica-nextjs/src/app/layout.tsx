@@ -3,7 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Inter } from "next/font/google";
 import { esES } from "@clerk/localizations";
 import "./globals.css";
-import ChatWithSuspense from "@/components/ChatWithSuspense";
+import ChatSelect from "@/components/ChatSelect";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -40,7 +40,7 @@ export default async function RootLayout({
       <html lang="en">
         <body className={`${inter.variable} font-sans antialiased`}>
           {children}
-          <ChatWithSuspense />
+          <ChatSelect />
         </body>
       </html>
     </ClerkProvider>
