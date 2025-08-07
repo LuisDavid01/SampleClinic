@@ -1,6 +1,7 @@
 
 import { CalendarDays} from 'lucide-react'
 import CalendarAdmin from "@/components/CalendarAdmin"
+import { Suspense } from 'react'
 export default function AppointmentsDashboard() {
   return (
     <div className="min-h-screen bg-background p-6">
@@ -39,7 +40,9 @@ export default function AppointmentsDashboard() {
         </div>
       </div>
     </div>
+    <Suspense fallback={<div>loading...</div>}>
     <CalendarAdmin/>
+    </Suspense>
   </div>
 </div>
   )

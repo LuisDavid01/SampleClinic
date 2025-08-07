@@ -13,7 +13,10 @@ import {
 } from '@/components/ui/Form'
 import { Expediente, ISSUE_STATUS } from '@/types/Expediente'
 
-
+const doctors = [
+  { label: 'Guillermo', value: 'guillermo' },
+   { label: 'María', value: 'maria' },
+    ]
 
 
 interface ExpedienteFormProps {
@@ -120,6 +123,30 @@ export default function ExpedienteForm({
         )}
       </FormGroup>
 
+
+      <FormGroup>
+        <FormLabel htmlFor="cedula">Cedula de identidad</FormLabel>
+        <FormInput
+          id="cedula"
+          name="cedula"
+          placeholder="Documento de identidad del paciente"
+          defaultValue={expediente?.cedula || ''}
+          required
+          minLength={3}
+          maxLength={12}
+          disabled={isPending}
+          aria-describedby="cedula-error"
+          className={state?.errors?.cedula? 'border-red-500' : ''}
+        />
+        {state?.errors?.title && (
+          <p id="cedula-error" className="text-sm text-red-500">
+            {state.errors.title[0]}
+          </p>
+        )}
+      </FormGroup>
+
+
+
       <FormGroup>
         <FormLabel htmlFor="description">Description</FormLabel>
         <FormTextarea
@@ -128,6 +155,24 @@ export default function ExpedienteForm({
           placeholder="Describe the issue..."
           rows={4}
           defaultValue={expediente?.descripcion || ''}
+          disabled={isPending}
+          aria-describedby="description-error"
+          className={state?.errors?.description ? 'border-red-500' : ''}
+        />
+        {state?.errors?.description && (
+          <p id="description-error" className="text-sm text-red-500">
+            {state.errors.description[0]}
+          </p>
+        )}
+      </FormGroup>
+
+      <FormGroup>
+        <FormLabel htmlFor="doctor">Doctor asignado</FormLabel>
+        <FormSelect
+          id="doctor"
+          name="doctor"
+          options={doctors}
+          defaultValue={expediente?.doctor|| ''}
           disabled={isPending}
           aria-describedby="description-error"
           className={state?.errors?.description ? 'border-red-500' : ''}
@@ -171,7 +216,7 @@ export default function ExpedienteForm({
           Cancel
         </Button>
         <Button type="submit" disabled>
-          
+          {isEditing ? 'Confirmar cambios' : 'Crear expediente'}
         </Button>
       </div>
     </Form>

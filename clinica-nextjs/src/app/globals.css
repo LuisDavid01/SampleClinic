@@ -49,6 +49,7 @@
   --color-secondary-button: var(--secondary-button);
   --color-complementario: var(--complementario);
   --color-text-accent: var(--text-accent);
+
 }
 
 :root {
@@ -79,7 +80,8 @@
   --muted-foreground: oklch(0.5 0.01 240);
   --accent: oklch(46.924% 0.07835 159.789); /* Usando tu complementario */
   --accent-foreground: oklch(0.98 0.02 240);
-  --input: oklch(89.755% 0.0001 271.152);
+  --input: oklch(78.577% 0.00009 271.152);
+  --border: oklch(22.213% 0.00003 271.152);
 }
 
 .dark {
@@ -104,6 +106,7 @@
   --muted-foreground: oklch(0.5 0.01 240);
   --accent: oklch(0.6 0.1 160); /* Mantiene tu complementario */
   --accent-foreground: oklch(0.9 0.02 240);
+  --border: oklch(0.9 0.02 240);
 }
 
 @layer base {

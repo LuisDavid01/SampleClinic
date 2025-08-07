@@ -3,11 +3,11 @@ export type StatusAppointment = 'Programada' | 'Completada' | 'En progreso' | 'C
 export type Appointment = {
 
   id: number,
-  pacienteID?: number,
+  pacienteID: number,
   doctor: string,
   fecha: Date,
   status: StatusAppointment,
-  nota: string
+  nota?: string
   // resto de campos
 
 }

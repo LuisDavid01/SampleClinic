@@ -3,12 +3,16 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import NewExpediente from '@/components/NewExpediente'
 import { Status } from '@/types/Expediente'
+import { Card, CardContent } from '@/components/ui/card'
+import DocumentosExpediente from '@/components/DocuementosExpediente'
 
 export default function EditFilePage() {
     const mock = {
         id: 2,
           pacienteID: 3123,
           descripcion: "Prueba de funcionalidad",
+          cedula: "2-8732-0032",
+          doctor: "Maria",
           status: 'Activo' as Status
     }
 
@@ -29,6 +33,20 @@ export default function EditFilePage() {
           <NewExpediente expediente={mock} isEditing/>
         </Suspense>
         </div>
+
+        <div className='my-6'>
+
+          <h2 className="text-2xl font-bold mb-6">Contenido del expediente</h2>
+        
+          <Card>
+              <CardContent className="p-6">
+                <Suspense fallback={<div>Loading...</div>}>
+                <DocumentosExpediente />
+                </Suspense>
+              </CardContent>
+          </Card>
+        </div>
+
     </div>
     )
 }

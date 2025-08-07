@@ -65,44 +65,64 @@ export default function FilesPage() {
         </div>
 
         {/* Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="w-5 h-5" />
-              Filtros y Búsqueda
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="lg:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground w-4 h-4" />
-                  <input
-                    placeholder="Buscar por nombre, id...."
-                    className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-background border border-muted rounded-lg text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Select >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Estado"  />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="activo">Activo</SelectItem>
-                    <SelectItem value="inActivo">Inactivo</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Button variant="outline" size="icon">
-                  <RefreshCw className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Filter className="w-5 h-5" />
+                      Filtros y Búsqueda
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                      <div className="lg:col-span-2">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground w-4 h-4" />
+                          <input
+                            placeholder="Buscar en registros..."
+                            className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-background border border-muted rounded-lg text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200"
+                          />
+                        </div>
+                      </div>
+                      
+                      <Select value="all" >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Diagnostico" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas los diagnosticos</SelectItem>
+                          
+                        </SelectContent>
+                      </Select>
+        
+                      <Select value="all">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Usuario" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los doctores</SelectItem>
+                          
+                        </SelectContent>
+                      </Select>
+        
+                      <div className="flex gap-2">
+                        <Select defaultValue="all">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Estado" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Todos los estados</SelectItem>
+                            <SelectItem value="exitoso">Activo</SelectItem>
+                            <SelectItem value="fallido">Inactivo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        <Button variant="outline" size="icon">
+                          <RefreshCw className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
         {/* Desktop Table */}
         <Card className="hidden lg:block">

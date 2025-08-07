@@ -136,3 +136,20 @@
   color: hsl(var(--primary)) !important;
   font-weight: bold !important;
 }
+
+.rbc-button-link.rbc-show-more {
+  background-color: var(--muted-foreground) !important; /* bg-gray-400 */
+  color: hsl(var(--color-text-primary)) !important; /* text-text-primary */
+  font-size: 0.75rem !important;
+  padding: 2px 4px !important;
+  border-radius: 0.25rem !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Opcional: hover effect */
+.rbc-button-link.rbc-show-more:hover {
+  background-color: #6b7280 !important; /* Un poco más oscuro en hover */
+  color: hsl(var(--primary-foreground)) !important;
+}
