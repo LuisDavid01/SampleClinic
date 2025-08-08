@@ -169,7 +169,7 @@ export default function DocumentosExpediente() {
 
   const handleDescargarArchivo = (archivo: ArchivoGuardado) => {
     // Simular descarga - en producción sería una llamada real al servidor
-    console.log('Descargando archivo:', archivo.nombre)
+    alert('Descargando archivo:' + archivo.nombre)
     // window.open(archivo.url, '_blank')
   }
 
@@ -241,7 +241,10 @@ export default function DocumentosExpediente() {
                       className="flex items-center gap-2 shrink-0"
                     >
                       <Download className="w-4 h-4" />
-                      <span className="hidden sm:inline">Descargar</span>
+                      
+                    </Button>
+                    <Button variant="outline" size="sm" className=" hover:bg-red-500">
+                        <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </CardContent>
