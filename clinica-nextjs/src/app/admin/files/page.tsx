@@ -17,7 +17,11 @@ import {
   User,
   RefreshCw,
    Filter,
-   Search
+   Search,
+   ChevronRight,
+   ChevronLeft,
+   ChevronsLeft,
+   ChevronsRight
 } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils"
 
@@ -200,7 +204,7 @@ export default function FilesPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="text-sm text-muted-foreground">Actualizado</p>
-                      <p className="text-sm font-medium">{formatRelativeTime(file.updatedAt)}</p>
+                      <p className="text-sm font-medium">{file.updatedAt.getDate()}</p>
                     </div>
                     
                     <div className="flex gap-2 pt-2">
@@ -216,6 +220,69 @@ export default function FilesPage() {
             )
           })}
         </div>
+
+        {/* Pagination */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Mostrar</span>
+                <Select defaultValue="10">
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-sm text-muted-foreground">
+                  de {2} registros
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+       
+                  disabled
+                >
+                  <ChevronsLeft className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+
+                  disabled
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                
+                <span className="text-sm px-4">
+                  Página 1 de 2
+                </span>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                >
+                  <ChevronsRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

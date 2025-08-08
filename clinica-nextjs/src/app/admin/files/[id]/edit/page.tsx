@@ -6,6 +6,7 @@ import { Status } from '@/types/Expediente'
 import { Card, CardContent } from '@/components/ui/card'
 import DocumentosExpediente from '@/components/DocuementosExpediente'
 import ConsentManagement from '@/components/ConsentManagment'
+import DiagnosticoTable from '@/components/DiagnosticoTable'
 
 export default function EditFilePage() {
     const mock = {
@@ -39,8 +40,19 @@ export default function EditFilePage() {
           
         </Suspense>
 
-       <div className='my-6'>
+        <div className='my-6'>
           <h2 className="text-2xl font-bold mb-6">Contenido del expediente</h2>
+          <Card >
+            <CardContent className='p-6'>
+              <Suspense fallback={<div>Loading...</div>}>
+                <DiagnosticoTable/>
+              </Suspense>
+              
+            </CardContent>
+          </Card>
+        </div>
+
+       <div className='my-6'>
           <Card >
             <CardContent className='p-6'>
               <Suspense fallback={<div>Loading...</div>}>
