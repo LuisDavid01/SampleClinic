@@ -101,6 +101,8 @@ export default async function Page () {
 
   if (await checkRole("admin")) {
       redirect("/admin");
+    }else{
+      redirect("/pacientes");
     }
     
   return (

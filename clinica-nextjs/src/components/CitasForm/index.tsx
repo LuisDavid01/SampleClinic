@@ -49,15 +49,18 @@ export const CitasForm = () => {
       mensaje: "",
     });
     
-    alert("¡Cita agendada exitosamente! Te contactaremos pronto para confirmar.");
+    alert("¡Cita de fisioterapia agendada exitosamente! Te contactaremos pronto para confirmar tu consulta médica.");
   };
 
   const servicios = [
     "Terapia Manual",
-    "Rehabilitación",
-    "Prevención",
+    "Rehabilitación Física",
+    "Prevención de Lesiones",
     "Evaluación Biomecánica",
     "Terapia Deportiva",
+    "Fisioterapia Respiratoria",
+    "Terapia Neurológica",
+    "Terapia Pediátrica",
     "Otro"
   ];
 
@@ -76,17 +79,17 @@ export const CitasForm = () => {
         {/* Header */}
         <div className="text-center mb-16">
           <span className="inline-block px-4 py-2 bg-primary/10 text-text-primary rounded-full text-sm font-medium mb-4">
-            Agenda tu Cita
+            Agendar Cita Médica
           </span>
           <h2 className="text-4xl lg:text-5xl font-bold text-text-primary mb-6">
             Reserva tu
             <span className="text-transparent bg-accent bg-clip-text">
               {" "}
-              Consulta
+              Cita de Fisioterapia
             </span>
           </h2>
           <p className="text-lg text-text-primary max-w-3xl mx-auto leading-relaxed">
-            Agenda tu cita de manera fácil y rápida. Nuestro equipo se pondrá en contacto contigo para confirmar tu consulta.
+            Agenda tu cita de fisioterapia de manera fácil y rápida. Nuestro equipo se pondrá en contacto contigo para confirmar tu consulta médica.
           </p>
         </div>
 
@@ -163,24 +166,24 @@ export const CitasForm = () => {
 
             <div className="bg-gradient-to-br from-primary/10 to-accent/10 backdrop-blur-sm rounded-2xl p-8 border border-primary/20 shadow-xl">
               <h3 className="text-xl font-bold text-text-primary mb-4">
-                ¿Por qué elegirnos?
+                ¿Por qué elegir nuestra clínica de fisioterapia?
               </h3>
               <ul className="space-y-3 text-text-primary/80">
                 <li className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  Atención personalizada y profesional
+                  Fisioterapeutas certificados y con experiencia
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  Equipo altamente capacitado
+                  Tratamientos personalizados para cada paciente
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  Tecnología de vanguardia
+                  Equipamiento moderno para rehabilitación
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  Resultados comprobados
+                  Seguimiento completo de tu recuperación
                 </li>
               </ul>
             </div>
