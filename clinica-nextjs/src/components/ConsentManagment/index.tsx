@@ -16,10 +16,16 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
-import { Search, Plus,Filter, FileSignatureIcon, FileText, Download, Edit, Trash2, Eye, Upload, PenTool, CalendarIcon, Check, ChevronsUpDown, X, AlertCircle, Clock, CheckCircle, XCircle, Archive, User, Stethoscope, FileSignature } from 'lucide-react'
+import { Search, Plus,Filter,  FileText, Download, Edit, Trash2, Eye, Upload, PenTool, CalendarIcon, Check, ChevronsUpDown, X, 
+     ChevronRight,
+   ChevronLeft,
+   ChevronsLeft,
+   ChevronsRight, Clock, CheckCircle, XCircle, Archive, User, Stethoscope, FileSignature } from 'lucide-react'
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import Link from "next/link"
+
+
 // Mock data
 const mockConsentimientos = [
   {
@@ -54,21 +60,21 @@ const mockConsentimientos = [
     id: 2,
     paciente: {
       id: "PAT-002",
-      nombre: "María González López",
+      nombre: "Juan Pérez Rodríguez",
       cedula: "2-3456-7890",
       telefono: "+506 7777-7777"
     },
     tratamiento: {
-      tipo: "Procedimiento Dental",
-      descripcion: "Extracción de muela del juicio",
+      tipo: "Dislocación de hombro",
+      descripcion: "lesion severa",
       codigo: "DENT-005"
     },
     estado: "pendiente",
     fechaCreacion: new Date('2025-08-06T09:00:00'),
     fechaFirma: null,
     doctorResponsable: {
-      nombre: "Dra. Ana Vargas",
-      especialidad: "Odontología"
+      nombre: "Juan Domingo",
+      especialidad: "Fisioterapia"
     },
     documento: {
       tipo: "pendiente",
@@ -82,7 +88,7 @@ const mockConsentimientos = [
     id: 3,
     paciente: {
       id: "PAT-003",
-      nombre: "Pedro Jiménez Castro",
+      nombre: "Juan Pérez Rodríguez",
       cedula: "3-4567-8901",
       telefono: "+506 6666-6666"
     },
@@ -421,15 +427,10 @@ export default function ConsentManagement() {
      <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex items-center gap-2">
-        <FileSignatureIcon className="w-5 h-5 text-text-primary" />
-        <h2 className="text-lg font-semibold text-text-primary">
-          Consentimiento del paciente
-        </h2>
-      </div>
+         
           <Dialog open={isNewConsentDialogOpen} onOpenChange={setIsNewConsentDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button className="bg-primary hover:bg-primary/90 cursor-pointer">
                 <Plus className="w-4 h-4 mr-2" />
                 Nuevo Consentimiento
               </Button>
@@ -493,7 +494,7 @@ export default function ConsentManagement() {
                                   />
                                   <div>
                                     <p className="font-medium">{paciente.nombre}</p>
-                                    <p className="text-sm text-muted-foreground">{paciente.cedula}</p>
+                                    <p className="text-sm ">{paciente.cedula}</p>
                                   </div>
                                 </CommandItem>
                               ))}
@@ -533,7 +534,7 @@ export default function ConsentManagement() {
                             <SelectItem key={tratamiento.codigo} value={tratamiento.codigo}>
                               <div>
                                 <p className="font-medium">{tratamiento.tipo}</p>
-                                <p className="text-sm text-muted-foreground">{tratamiento.descripcion}</p>
+                                <p className="text-sm ">{tratamiento.descripcion}</p>
                               </div>
                             </SelectItem>
                           ))}
@@ -554,7 +555,7 @@ export default function ConsentManagement() {
                             <SelectItem key={doctor.nombre} value={doctor.nombre}>
                               <div>
                                 <p className="font-medium">{doctor.nombre}</p>
-                                <p className="text-sm text-muted-foreground">{doctor.especialidad}</p>
+                                <p className="text-sm ">{doctor.especialidad}</p>
                               </div>
                             </SelectItem>
                           ))}
@@ -723,55 +724,59 @@ export default function ConsentManagement() {
         
 
         {/* Filters and Search */}
-        <Card>
-          <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Filter className="w-5 h-5" />
-                      Filtros y Búsqueda
-                    </CardTitle>
-                  </CardHeader>
-          <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground w-4 h-4" />
-                  <Input
-                    placeholder="Buscar por paciente, cédula o tratamiento..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-background border border-muted rounded-lg text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos los estados</SelectItem>
-                    <SelectItem value="firmado">Firmados</SelectItem>
-                    <SelectItem value="pendiente">Pendientes</SelectItem>
-                    <SelectItem value="vencido">Vencidos</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={treatmentFilter} onValueChange={setTreatmentFilter}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos los tratamientos</SelectItem>
-                    <SelectItem value="cirugía">Cirugía General</SelectItem>
-                    <SelectItem value="dental">Procedimiento Dental</SelectItem>
-                    <SelectItem value="anestesia">Anestesia</SelectItem>
-                    <SelectItem value="oncológico">Tratamiento Oncológico</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+<Card>
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <Filter className="w-5 h-5" />
+      Filtros y Búsqueda
+    </CardTitle>
+  </CardHeader>
 
+  <CardContent className="p-6">
+    <div className="flex flex-wrap gap-4">
+      {/* Input de búsqueda */}
+      <div className="w-full lg:flex-1">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground w-4 h-4" />
+          <Input
+            placeholder="Buscar por paciente, cédula o tratamiento..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-background border border-muted rounded-lg text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200"
+          />
+        </div>
+      </div>
+
+      {/* Contenedor de selects */}
+      <div className="flex flex-wrap gap-2 w-full lg:w-auto">
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos los estados</SelectItem>
+            <SelectItem value="firmado">Firmados</SelectItem>
+            <SelectItem value="pendiente">Pendientes</SelectItem>
+            <SelectItem value="vencido">Vencidos</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={treatmentFilter} onValueChange={setTreatmentFilter}>
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos los tratamientos</SelectItem>
+            <SelectItem value="cirugía">Cirugía General</SelectItem>
+            <SelectItem value="dental">Procedimiento Dental</SelectItem>
+            <SelectItem value="anestesia">Anestesia</SelectItem>
+            <SelectItem value="oncológico">Tratamiento Oncológico</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  </CardContent>
+</Card>
         {/* Consent List */}
         <div className="space-y-4">
           {filteredConsentimientos.length === 0 ? (
@@ -795,64 +800,126 @@ export default function ConsentManagement() {
             </Card>
           ) : (
             filteredConsentimientos.map((consent) => (
-              <Card key={consent.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-muted-foreground" />
-                          <span className="font-medium">{consent.paciente.nombre}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Stethoscope className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">{consent.tratamiento.tipo}</span>
-                        </div>
-                        {getStatusBadge(consent.estado)}
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                        <div>
-                          <span className="font-medium">Cédula:</span> {consent.paciente.cedula}
-                        </div>
-                        <div>
-                          <span className="font-medium">Doctor:</span> {consent.doctorResponsable.nombre}
-                        </div>
-                        <div>
-                          <span className="font-medium">Creado:</span> {format(consent.fechaCreacion, "PPP", { locale: es })}
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{consent.tratamiento.descripcion}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedConsent(consent)
-                          setIsViewDialogOpen(true)
-                        }}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Download className="w-4 h-4" />
-                      </Button>
-                      <Link href={'/admin/files/cosent/1'}>
-                      <Button variant="outline" size="sm"
-                      className="cursor-pointer">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      </Link>
-                      
-                      <Button variant="destructive" size="sm" >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                            <div
+                key={consent.id}
+                className="border border-border rounded-lg p-4 bg-card hover:bg-muted-foreground/10 transition-colors"
+              >
+                {/* Encabezado */}
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-text-primary">
+                      {consent.paciente.nombre}
+                    </span>
+                    {getStatusBadge(consent.estado)}
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* Botones de acción */}
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        setSelectedConsent(consent)
+                        setIsViewDialogOpen(true)
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Link href={`/admin/files/consent/${consent.id}`}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 cursor-pointer"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="h-8 w-8 p-0 "
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Detalles */}
+                <div className="text-sm text-text-primary space-y-1">
+                  <p>
+                    <span className="font-medium">Cédula:</span>{" "}
+                    {consent.paciente.cedula}
+                  </p>
+                  <p>
+                    <span className="font-medium">Tratamiento:</span>{" "}
+                    {consent.tratamiento.tipo}
+                  </p>
+                  <p>
+                    <span className="font-medium">Doctor:</span>{" "}
+                    {consent.doctorResponsable.nombre}
+                  </p>
+                  <p>
+                    <span className="font-medium">Creado:</span>{" "}
+                    {format(consent.fechaCreacion, "dd 'de' MMMM 'de' yyyy", {
+                      locale: es,
+                    })}
+                  </p>
+                </div>
+              </div>
             ))
           )}
+          {/* Pagination */}
+<Card>
+  <CardContent className="p-4">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      
+      {/* Selector de cantidad */}
+      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-sm">
+        <span className="text-muted-foreground">Mostrar</span>
+        <Select defaultValue="10">
+          <SelectTrigger className="w-20">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="10">10</SelectItem>
+            <SelectItem value="25">25</SelectItem>
+            <SelectItem value="50">50</SelectItem>
+            <SelectItem value="100">100</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-muted-foreground">
+          de {2} registros
+        </span>
+      </div>
+
+                {/* Controles de paginación */}
+                <div className="flex items-center justify-center gap-1 sm:gap-2">
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronsLeft className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+
+                  <span className="text-sm px-2 sm:px-4">
+                    Página 1 de 2
+                  </span>
+
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronsRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* View Consent Dialog */}

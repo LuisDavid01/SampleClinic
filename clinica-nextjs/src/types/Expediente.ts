@@ -4,7 +4,7 @@ export type Status = 'Activo' | 'Inavtico'
 export type Expediente = {
 
   id: number,
-  pacienteID: number,
+  pacienteID: string,
   cedula: string, 
   descripcion?: string,
   doctor: string

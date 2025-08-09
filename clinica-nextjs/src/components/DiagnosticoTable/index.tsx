@@ -20,7 +20,8 @@ import {
    ChevronLeft,
    ChevronsLeft,
    ChevronsRight,
-   LucideBookUser
+   LucideBookUser,
+   PlusIcon
 } from "lucide-react"
 
 export default function DiagnosticoTable(){
@@ -38,23 +39,27 @@ const doctores = [
 ]
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-2">
-        <LucideBookUser className="w-5 h-5 text-text-primary" />
-        <h2 className="text-lg font-semibold text-text-primary">
-          Diagnosticos & consultas
-        </h2>
-      </div>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+             <Link href="/admin/diagnosis/new">
+            <Button className="cursor-pointer w-full">
+              <PlusIcon className="w-4 h-4 mr-2" />
+              Nuevo diagnostico
+            </Button>
+          </Link>
+        </div>
         {/* Filters and Search */}
         <Card>
           <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Filter className="w-5 h-5" />
-                      Filtros y Búsqueda
-                    </CardTitle>
-                  </CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              Filtros y Búsqueda
+            </CardTitle>
+          </CardHeader>
+
           <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
+            <div className="flex flex-wrap gap-4">
+              {/* Buscador */}
+              <div className="w-full sm:flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground w-4 h-4" />
                   <Input
@@ -63,22 +68,25 @@ const doctores = [
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
-                
+
+              {/* Selects */}
+              <div className="flex gap-2 flex-wrap w-full sm:w-auto">
                 <Select defaultValue="todos">
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full sm:w-48">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todos">Todos los doctores</SelectItem>
-                     {doctores.map((doctor) => (
-                            <SelectItem key={doctor.nombre} value={doctor.nombre}>
-                            <div>
-                            <p className="font-medium">{doctor.nombre}</p>
-                             <p className="text-sm text-muted-foreground">{doctor.especialidad}</p>
-                            </div>
-                        </SelectItem>
-                     ))}
+                    {doctores.map((doctor) => (
+                      <SelectItem key={doctor.nombre} value={doctor.nombre}>
+                        <div>
+                          <p className="font-medium">{doctor.nombre}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {doctor.especialidad}
+                          </p>
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -93,7 +101,6 @@ const doctores = [
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Expediente</TableHead>
                     <TableHead>Paciente</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Doctor</TableHead>
@@ -106,11 +113,6 @@ const doctores = [
                     
                     return (
                       <TableRow key={diagnostico.id} className="hover:bg-muted/50">
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            {diagnostico.expediente}
-                          </div>
-                        </TableCell>
                          <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             {diagnostico.paciente}
@@ -188,67 +190,52 @@ const doctores = [
         </div>
 
         {/* Pagination */}
-        <Card >
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Mostrar</span>
-                <Select defaultValue="10">
-                  <SelectTrigger className="w-20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="25">25</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                    <SelectItem value="100">100</SelectItem>
-                  </SelectContent>
-                </Select>
-                <span className="text-sm text-muted-foreground">
-                  de {2} registros
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-       
-                  disabled
-                >
-                  <ChevronsLeft className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                
+                {/* Selector de cantidad */}
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-sm">
+                  <span className="text-muted-foreground">Mostrar</span>
+                  <Select defaultValue="10">
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span className="text-muted-foreground">
+                    de {2} registros
+                  </span>
+                </div>
 
-                  disabled
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                
-                <span className="text-sm px-4">
-                  Página 1 de 2
-                </span>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled
-                >
-                  <ChevronsRight className="w-4 h-4" />
-                </Button>
+                {/* Controles de paginación */}
+                <div className="flex items-center justify-center gap-1 sm:gap-2">
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronsLeft className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+
+                  <span className="text-sm px-2 sm:px-4">
+                    Página 1 de 2
+                  </span>
+
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronsRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
         </div>
     )
 }

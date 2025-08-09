@@ -11,7 +11,7 @@ import {
   FormSelect,
   FormError,
 } from '@/components/ui/Form'
-import { Diagnostico} from '@/types/Diagnostico'
+import { Consent} from '@/types/Consent'
 import { formatDateForInput } from '@/lib/utils'
 
 
@@ -21,8 +21,8 @@ const doctors = [
     ]
 
 
-interface DiagnosticoFormProps {
-  diagnostico?: Diagnostico,
+interface ConsentFormProps {
+  consent?: Consent,
   isEditing?: boolean
 }
 
@@ -32,10 +32,10 @@ const initialState: ActionResponse = {
   errors: undefined,
 }
 
-export default function DiagnosisForm({
-  diagnostico,
+export default function NewConsent({
+  consent,
   isEditing = false,
-}: DiagnosticoFormProps) {
+}: ConsentFormProps) {
 
     const router = useRouter()
 
@@ -57,8 +57,8 @@ export default function DiagnosisForm({
       // Call the appropriate action based on whether we're editing or creating
       /*
       const result = isEditing
-        ? await updateDiagnostico(Number(diagnostico!.id), data)
-        : await createDiagnostico(data)
+        ? await updateConsent(Number(consent!.id), data)
+        : await createConsent(data)
       */
       const result = {
         success: false,
@@ -102,12 +102,12 @@ export default function DiagnosisForm({
       )}
 
       <FormGroup>
-        <FormLabel htmlFor="expediente">Expediente</FormLabel>
+        <FormLabel htmlFor="paciente">Nombre del Paciente</FormLabel>
         <FormInput
-          id="expediente"
-          name="expediente"
-          placeholder="Expediente del paciente"
-          defaultValue={diagnostico?.expediente || ''}
+          id="paciente"
+          name="paciente"
+          placeholder="colocar el paciente..."
+          defaultValue={consent?.paciente ?? ''}
           required
           minLength={3}
           maxLength={100}
@@ -124,12 +124,12 @@ export default function DiagnosisForm({
 
 
       <FormGroup>
-        <FormLabel htmlFor="paciente">Paciente</FormLabel>
+        <FormLabel htmlFor="cedula">Cedula</FormLabel>
         <FormInput
-          id="paciente"
-          name="paciente"
+          id="cedula"
+          name="cedula"
           placeholder="Documento de identidad del paciente"
-          defaultValue={diagnostico?.paciente || ''}
+          defaultValue={consent?.cedula ?? ''}
           required
           minLength={3}
           maxLength={12}
@@ -150,45 +150,44 @@ export default function DiagnosisForm({
           id="doctor"
           name="doctor"
           options={doctors}
-          defaultValue={diagnostico?.doctor|| ''}
+          defaultValue={consent?.doctor|| ''}
           disabled={isPending}
           aria-describedby="description-error"
-          className={state?.errors?.description ? 'border-red-500' : ''}
+          className={state?.errors?.doctor ? 'border-red-500' : ''}
         />
-        {state?.errors?.description && (
+        {state?.errors?.doctor && (
           <p id="description-error" className="text-sm text-red-500">
-            {state.errors.description[0]}
+            {state.errors.doctor[0]}
           </p>
         )}
       </FormGroup>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormGroup >
+          <FormLabel htmlFor="fecha">Fecha</FormLabel>
+          <FormInput
+          id="fecha"
+          name="fecha"
+          placeholder="fecha del consent"
+          defaultValue={formatDateForInput(consent?.fechaCreacion) || ''}
+          required
+          disabled={isPending}
+          aria-describedby="fecha-error"
+          className={state?.errors?.fechaCreacion? 'border-red-500' : ''}
+        />
+          {state?.errors?.status && (
+            <p id="fecha-error" className="text-sm text-red-500">
+              {state.errors.status[0]}
+            </p>
+          )}
+        </FormGroup>
         <FormGroup>
-                <FormLabel htmlFor="fecha">fecha</FormLabel>
-                <FormInput
-                  id="fecha"
-                  name="fecha"
-                  placeholder=""
-                  defaultValue={formatDateForInput(diagnostico?.fecha) || ''}
-                  type="date"
-                  required
-                  disabled={isPending}
-                  aria-describedby="title-error"
-                  className={state?.errors?.title ? 'border-red-500' : ''}
-                />
-                {state?.errors?.title && (
-                  <p id="title-error" className="text-sm text-red-500">
-                    {state.errors.title[0]}
-                  </p>
-                )}
-              </FormGroup>
-        <FormGroup>
-        <FormLabel htmlFor="diagnostico">Diagnostico</FormLabel>
+        <FormLabel htmlFor="tratamiento">Tratamiento</FormLabel>
         <FormTextarea
-          id="diagnostico"
-          name="diagnostico"
-          placeholder="coloque un diagnostico..."
-          defaultValue={diagnostico?.diagnostico || ''}
+          id="tratamiento"
+          name="tratamiento"
+          placeholder="coloque el tratmiento adecuado..."
+          defaultValue={consent?.tratamiento ?? ''}
           required
           rows={4}
           minLength={3}
@@ -216,7 +215,7 @@ export default function DiagnosisForm({
           Cancel
         </Button>
         <Button type="submit" disabled>
-          {isEditing ? 'Confirmar cambios' : 'Crear diagnostico'}
+          {isEditing ? 'Confirmar cambios' : 'Crear acta de consentimiento'}
         </Button>
       </div>
     </Form>

@@ -2,6 +2,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import MobileMenu from "@/components/MobileMenu";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import {
   BarChart3,
   Settings,
@@ -14,11 +15,15 @@ export const UserDasboardHeader = async () => {
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
       <div className="flex items-center gap-3">
-        <Link
-          href={"/"}
-          className="text-lg md:text-2xl text-text-primary font-semibold"
-        >
-          Clinica Esteban Porras
+        <Link href="/" className="flex items-center">
+          <Image
+        src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/logo.webp"
+        alt="Clínica Esteban Porras"
+        width={95}
+        height={48}
+        className="object-contain"
+        priority
+      />
         </Link>
       </div>
 

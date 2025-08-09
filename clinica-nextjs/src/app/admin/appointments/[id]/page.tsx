@@ -1,9 +1,15 @@
 import EditAppointment from '@/components/EditAppointment'
 import { StatusAppointment } from '@/types/Appointment'
-import { ArrowLeftIcon } from 'lucide-react'
+import { ArrowLeftIcon, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
-
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 
 
@@ -27,14 +33,24 @@ export default function CitaPorId(){
         <ArrowLeftIcon size={16} className="mr-1" />
         Regresar a expedientes
       </Link>
-
-      <h1 className="text-2xl font-bold mb-6">Editar cita</h1>
-
-      <div className="bg-card  rounded-lg shadow-sm p-6">
-        <Suspense fallback={<div>Loading...</div>}>
-          <EditAppointment isEditing={true} appointment={mock}/>
-        </Suspense>
-        </div>
+      <Card className="bg-card shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle>
+                  <div className="flex items-center gap-2">
+              <Edit className="w-5 h-5 text-text-primary" />
+              <h2 className="text-lg lg:text-2xl font-semibold text-text-primary">
+                Editar cita
+              </h2>
+            </div>
+                </CardTitle>
+                <CardDescription>Editar la cita de un paciente</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Suspense fallback={<div>loading...</div>}>
+                <EditAppointment isEditing={true} appointment={mock}/>
+                </Suspense>
+              </CardContent>
+            </Card>
     </div>
     )
 }

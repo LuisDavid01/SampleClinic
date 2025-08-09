@@ -12,7 +12,7 @@ import MobileMenu from "../MobileMenu/index";
 import ThemeToggle from "../ThemeToggle";
 import { LogOut, LogIn } from "lucide-react";
 import { checkRole } from "@/utils/roles";
-
+import Image from "next/image";
 
 
 export const Header = async () => {
@@ -21,21 +21,21 @@ export const Header = async () => {
     <header className="bg-background shadow-sm sticky z-60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center sm:px-6 lg:px-8 h-20">
-          <div className="flex items-center  ">
-            <Link
-              href={"/"}
-              className="text-lg md:text-2xl text-text-primary font-semibold"
-            >
-              Clinica Esteban Porras
-            </Link>
-          </div>
+        <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center">
+          <Image
+        src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/logo.webp"
+        alt="Clínica Esteban Porras"
+        width={95}
+        height={48}
+        className="object-contain"
+        priority
+      />
+        </Link>
+      </div>
 
           <div className="hidden md:flex md:justify-center space-x-2 md:space-x-4">
             <ul className="flex justify-between items-center space-x-2 md:space-x-4 text-text-primary">
-             
-
-              
-
               <SignedIn>
                 {await checkRole("admin") ? (
                   <li>

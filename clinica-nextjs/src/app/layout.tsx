@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "Clínica Esteban Porras - Fisioterapia y Rehabilitación",
   description:
     "Centro especializado en fisioterapia, rehabilitación y terapia manual en Costa Rica. Profesionales certificados para tu recuperación integral.",
+    icons: [{ rel: "icon", url: "/favicon.ico" }]
 };
 
 export default async function RootLayout({

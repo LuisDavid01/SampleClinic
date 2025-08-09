@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { useDropzone } from 'react-dropzone'
-import { Trash2, Upload, FileText, Image, FlaskConical, File, Download } from 'lucide-react'
+import { Trash2, Upload, FileText, Image, FlaskConical, File, Download, ChevronRight,
+   ChevronLeft,
+   ChevronsLeft,
+   ChevronsRight, } from 'lucide-react'
 import clsx from 'clsx'
 
 interface ArchivoGuardado {
@@ -194,12 +197,7 @@ export default function DocumentosExpediente() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <FileText className="w-5 h-5 text-text-primary" />
-        <h2 className="text-lg font-semibold text-text-primary">
-          Documentos del expediente
-        </h2>
-      </div>
+      
 
       {/* Archivos ya subidos */}
       {archivosMock.length > 0 && (
@@ -210,47 +208,112 @@ export default function DocumentosExpediente() {
             </h3>
           </div>
           
-          <div className="grid gap-3">
-            {archivosMock.map((archivo) => (
-              <Card key={archivo.id} className="transition-all hover:shadow-md">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      {getFileIconByExtension(archivo.extension)}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs px-2 py-1 bg-accent text-white rounded-full font-medium">
-                            {archivo.tipo}
-                          </span>
-                        </div>
-                        <p className="text-sm font-medium text-text-primary truncate">
-                          {archivo.nombre}.{archivo.extension}
-                        </p>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                          <span>{archivo.tamaño}</span>
-                          <span>•</span>
-                          <span>Subido el {formatearFecha(archivo.fechaSubida)}</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDescargarArchivo(archivo)}
-                      className="flex items-center gap-2 shrink-0"
-                    >
-                      <Download className="w-4 h-4" />
-                      
-                    </Button>
-                    <Button variant="outline" size="sm" className=" hover:bg-red-500">
-                        <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+  {archivosMock.map((archivo) => {
+    const IconComponent = getFileIconByExtension(archivo.extension)
+    return (
+      <div
+        key={archivo.id}
+        className="border border-border rounded-lg p-4 bg-card hover:bg-muted-foreground/10 transition-colors"
+      >
+        <div className="flex items-start gap-3">
+          {/* Icono del archivo */}
+          <div className="p-2 bg-accent/10 rounded-lg">
+            {IconComponent}
           </div>
+
+          {/* Contenido */}
+          <div className="flex-1 min-w-0">
+            {/* Encabezado con tipo y acciones */}
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs px-2 py-1 bg-accent text-white rounded-full font-medium">
+                  {archivo.tipo}
+                </span>
+              </div>
+              <div className="flex gap-1 ml-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  onClick={() => handleDescargarArchivo(archivo)}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="h-8 w-8 p-0 "
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Nombre del archivo */}
+            <h4 className="font-medium text-text-primary text-sm mb-1 truncate">
+              {archivo.nombre}.{archivo.extension}
+            </h4>
+
+            {/* Detalles */}
+            <div className="text-xs text-text-primary space-y-1">
+              <p>{archivo.tamaño}</p>
+              <p>Subido el {formatearFecha(archivo.fechaSubida)}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  })}
+   
+</div>
+{/* Pagination */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                
+                {/* Selector de cantidad */}
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-sm">
+                  <span className="text-muted-foreground">Mostrar</span>
+                  <Select defaultValue="10">
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span className="text-muted-foreground">
+                    de {2} registros
+                  </span>
+                </div>
+
+                {/* Controles de paginación */}
+                <div className="flex items-center justify-center gap-1 sm:gap-2">
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronsLeft className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+
+                  <span className="text-sm px-2 sm:px-4">
+                    Página 1 de 2
+                  </span>
+
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                    <ChevronsRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 

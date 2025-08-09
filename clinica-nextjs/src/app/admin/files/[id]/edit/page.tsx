@@ -1,9 +1,15 @@
-import { ArrowLeftIcon } from 'lucide-react'
+import { ArrowLeftIcon,  Edit,  FileSignatureIcon, FileText, LucideBookUser } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import NewExpediente from '@/components/NewExpediente'
 import { Status } from '@/types/Expediente'
-import { Card, CardContent } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import DocumentosExpediente from '@/components/DocuementosExpediente'
 import ConsentManagement from '@/components/ConsentManagment'
 import DiagnosticoTable from '@/components/DiagnosticoTable'
@@ -11,7 +17,7 @@ import DiagnosticoTable from '@/components/DiagnosticoTable'
 export default function EditFilePage() {
     const mock = {
         id: 2,
-          pacienteID: 3123,
+          pacienteID: "luis angel",
           descripcion: "Prueba de funcionalidad",
           cedula: "2-8732-0032",
           doctor: "Maria",
@@ -19,7 +25,7 @@ export default function EditFilePage() {
     }
 
    return (
-       <div className="min-h-screen bg-background p-6">
+       <div className="space-y-6 p-6 bg-background min-h-screen">
          <Link
         href="/admin/files"
         className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 mb-6"
@@ -28,50 +34,91 @@ export default function EditFilePage() {
         Regresar a expedientes
       </Link>
 
-      <h1 className="text-2xl font-bold mb-6">Editar expediente</h1>
+       <Card className="bg-card shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle>
+            <div className="flex items-center gap-2">
+        <Edit className="w-5 h-5 text-text-primary" />
+        <h2 className="text-lg lg:text-2xl font-semibold text-text-primary">
+          Editar expediente
+        </h2>
+      </div>
+          </CardTitle>
+          <CardDescription>Información general del paciente</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Suspense fallback={<div>loading...</div>}>
+          <NewExpediente expediente={mock} isEditing/>
+          </Suspense>
+        </CardContent>
+      </Card>
 
-        <Suspense fallback={<div>Loading...</div>}>
-        <Card>
+      {/* Grid para Diagnósticos y Consentimientos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Diagnósticos y Consultas */}
+        <Card className="bg-card shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle>
+              <div className="flex items-center gap-2">
+        <LucideBookUser className="w-5 h-5 text-text-primary" />
+        <h2 className="text-lg font-semibold text-text-primary">
+          Diagnosticos & consultas
+        </h2>
+      </div>
+            </CardTitle>
+            <CardDescription>
+              Diagnosticos del paciente
+            </CardDescription>
+          </CardHeader>
           <CardContent>
-            <NewExpediente expediente={mock} isEditing/>
+            <Suspense fallback={<div>loading...</div>}>
+            <DiagnosticoTable/>
+            </Suspense>
           </CardContent>
-          
         </Card>
-          
-        </Suspense>
 
-        <div className='my-6'>
-          <h2 className="text-2xl font-bold mb-6">Contenido del expediente</h2>
-          <Card >
-            <CardContent className='p-6'>
-              <Suspense fallback={<div>Loading...</div>}>
-                <DiagnosticoTable/>
-              </Suspense>
-              
-            </CardContent>
-          </Card>
-        </div>
+        {/* Gestión de Consentimientos */}
+        <Card className="bg-card shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle> 
+               <div className="flex items-center gap-2">
+        <FileSignatureIcon className="w-5 h-5 text-text-primary" />
+        <h2 className="text-lg font-semibold text-text-primary">
+          Consentimiento del paciente
+        </h2>
+      </div>
+              </CardTitle>
+              <CardDescription>
+              Consentimiento del paciente
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Suspense fallback={<div>loading...</div>}>
+            <ConsentManagement/>
+            </Suspense>
+          </CardContent>
+        </Card>
+      </div>
 
-       <div className='my-6'>
-          <Card >
-            <CardContent className='p-6'>
-              <Suspense fallback={<div>Loading...</div>}>
-                <ConsentManagement/>
-              </Suspense>
-              
-            </CardContent>
-          </Card>
-        </div>
-         <div className='my-6'>
-          <Card>
-              <CardContent className="p-6">
-                <Suspense fallback={<div>Loading...</div>}>
-                <DocumentosExpediente />
-                </Suspense>
-              </CardContent>
-          </Card>
-        </div>
-
+      {/* Documentos del Expediente */}
+      <Card className="bg-card shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle>
+            <div className="flex items-center gap-2">
+        <FileText className="w-5 h-5 text-text-primary" />
+        <h2 className="text-lg font-semibold text-text-primary">
+          Documentos del expediente
+        </h2>
+      </div>
+          </CardTitle>
+          <CardDescription>Documentos guardados</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Suspense fallback={<div>loading...</div>}>
+          <DocumentosExpediente/>
+          </Suspense>
+        </CardContent>
+      </Card>
     </div>
     )
 }

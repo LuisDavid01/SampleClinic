@@ -103,11 +103,11 @@ export default function ExpedienteForm({
       )}
 
       <FormGroup>
-        <FormLabel htmlFor="title">Title</FormLabel>
+        <FormLabel htmlFor="pacienteID">Nombre del paciente</FormLabel>
         <FormInput
-          id="title"
-          name="title"
-          placeholder="Issue title"
+          id="paciente"
+          name="paciente"
+          placeholder="Paciente"
           defaultValue={expediente?.pacienteID || ''}
           required
           minLength={3}

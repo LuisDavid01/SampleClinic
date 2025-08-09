@@ -134,7 +134,7 @@ const recentPatients = [
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground">Hoy</p>
-            <p className="text-lg font-semibold text-text-primary">15 Enero, 2025</p>
+            <p className="text-lg font-semibold text-text-primary">{new Date().toLocaleDateString("es-ES", { timeZone: "UTC" })}</p>
           </div>
         </div>
 
@@ -148,7 +148,7 @@ const recentPatients = [
                   <p className="text-3xl font-bold text-text-primary">12</p>
                   <div className="flex items-center mt-2">
                     <TrendingUp className="h-4 w-4 text-accent mr-1" />
-                    <span className="text-sm text-primary font-medium">+8%</span>
+                    <span className="text-sm text-accent font-medium">+8%</span>
                     <span className="text-sm text-muted-foreground ml-1">vs ayer</span>
                   </div>
                 </div>
