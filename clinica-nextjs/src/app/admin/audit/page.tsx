@@ -229,7 +229,7 @@ export default function AuditDashboard() {
 
   // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
-    let filtered = mockAuditLogs.filter(log => {
+    const filtered = mockAuditLogs.filter(log => {
       const matchesSearch = searchTerm === "" || 
         log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

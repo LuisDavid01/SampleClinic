@@ -1,4 +1,4 @@
-import { clerkConfig } from '@clerk/nextjs/server';
+//import { clerkConfig } from '@clerk/nextjs/server';
 
 export const clerkConfigOptions = {
   publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_demo',
