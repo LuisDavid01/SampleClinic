@@ -213,10 +213,10 @@ export default function CitaDetallePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando detalles de la cita...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando detalles de la cita...</p>
         </div>
       </div>
     );
@@ -224,12 +224,12 @@ export default function CitaDetallePage() {
 
   if (!cita) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-600 mb-2">
+          <h2 className="text-xl font-semibold text-muted-foreground mb-2">
             Cita no encontrada
           </h2>
-          <p className="text-gray-500 mb-4">
+          <p className="text-muted-foreground mb-4">
             La cita que buscas no existe o no tienes permisos para verla.
           </p>
           <Button asChild>
@@ -244,7 +244,7 @@ export default function CitaDetallePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header con diseño médico */}
         <div className="mb-8">
@@ -254,7 +254,7 @@ export default function CitaDetallePage() {
                 variant="outline" 
                 size="sm" 
                 asChild
-                className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                className="border-primary/20 text-primary hover:bg-primary/5"
               >
                 <Link href="/pacientes">
                   <ArrowLeft className="w-4 h-4 mr-2" />
@@ -262,14 +262,14 @@ export default function CitaDetallePage() {
                 </Link>
               </Button>
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 rounded-full">
+                <div className="p-3 bg-primary/10 rounded-full">
                   {getTipoIcon(cita.tipo)}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">
+                  <h1 className="text-3xl font-bold text-foreground">
                     Detalles de la Cita
                   </h1>
-                  <p className="text-gray-600 mt-1">
+                  <p className="text-muted-foreground mt-1">
                     {getTipoText(cita.tipo)} - {formatFecha(cita.fecha)}
                   </p>
                 </div>
@@ -280,7 +280,7 @@ export default function CitaDetallePage() {
                 variant="outline" 
                 size="sm" 
                 onClick={handlePrint}
-                className="border-gray-200 text-gray-700 hover:bg-gray-50"
+                className="border-border text-muted-foreground hover:bg-muted"
               >
                 <Printer className="w-4 h-4 mr-2" />
                 Imprimir
@@ -289,7 +289,7 @@ export default function CitaDetallePage() {
                 variant="outline" 
                 size="sm" 
                 onClick={handleExportPDF}
-                className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                className="border-primary/20 text-primary hover:bg-primary/5"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Exportar PDF
@@ -299,10 +299,10 @@ export default function CitaDetallePage() {
         </div>
 
         {/* Información General de la Cita */}
-        <Card className="bg-white border-0 shadow-sm mb-8">
+        <Card className="bg-card border-0 shadow-sm mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
-              <Calendar className="w-5 h-5 text-blue-600" />
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Calendar className="w-5 h-5 text-primary" />
               Información General
             </CardTitle>
           </CardHeader>
@@ -310,17 +310,17 @@ export default function CitaDetallePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-700 mb-1">Fecha y Hora</h4>
-                  <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                  <h4 className="font-semibold text-sm text-foreground mb-1">Fecha y Hora</h4>
+                  <p className="text-sm text-muted-foreground bg-muted p-2 rounded">
                     {formatFecha(cita.fecha)} a las {cita.hora}
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-700 mb-1">Duración</h4>
-                  <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">{cita.duracion} minutos</p>
+                  <h4 className="font-semibold text-sm text-foreground mb-1">Duración</h4>
+                  <p className="text-sm text-muted-foreground bg-muted p-2 rounded">{cita.duracion} minutos</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-700 mb-1">Estado</h4>
+                  <h4 className="font-semibold text-sm text-foreground mb-1">Estado</h4>
                   <Badge className={`${getEstadoColor(cita.estado)} border`}>
                     {getEstadoText(cita.estado)}
                   </Badge>
@@ -328,12 +328,12 @@ export default function CitaDetallePage() {
               </div>
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-700 mb-1">Fisioterapeuta</h4>
-                  <p className="text-sm text-gray-600 bg-blue-50 p-2 rounded">{cita.fisioterapeutaNombre}</p>
+                  <h4 className="font-semibold text-sm text-foreground mb-1">Fisioterapeuta</h4>
+                  <p className="text-sm text-muted-foreground bg-primary/5 p-2 rounded">{cita.fisioterapeutaNombre}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-700 mb-1">Tipo de Cita</h4>
-                  <p className="text-sm text-gray-600 bg-blue-50 p-2 rounded">{getTipoText(cita.tipo)}</p>
+                  <h4 className="font-semibold text-sm text-foreground mb-1">Tipo de Cita</h4>
+                  <p className="text-sm text-muted-foreground bg-primary/5 p-2 rounded">{getTipoText(cita.tipo)}</p>
                 </div>
               </div>
             </div>
@@ -342,48 +342,48 @@ export default function CitaDetallePage() {
 
         {/* Diagnóstico */}
         {diagnostico && (
-          <Card className="bg-white border-0 shadow-sm mb-8">
+          <Card className="bg-card border-0 shadow-sm mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
-                <Stethoscope className="w-5 h-5 text-blue-600" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Stethoscope className="w-5 h-5 text-primary" />
                 Diagnóstico y Evaluación
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">
                   <Activity className="w-4 h-4" />
                   Síntomas Reportados
                 </h4>
-                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">{diagnostico.sintomas}</p>
+                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">{diagnostico.sintomas}</p>
               </div>
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Evaluación Física
                 </h4>
-                <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">{diagnostico.evaluacion}</p>
+                <p className="text-sm text-muted-foreground bg-primary/5 p-3 rounded-lg">{diagnostico.evaluacion}</p>
               </div>
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">
                   <Stethoscope className="w-4 h-4" />
                   Diagnóstico
                 </h4>
-                <p className="text-sm text-gray-600 bg-green-50 p-3 rounded-lg">{diagnostico.diagnostico}</p>
+                <p className="text-sm text-muted-foreground bg-green-500/5 dark:bg-green-400/10 p-3 rounded-lg">{diagnostico.diagnostico}</p>
               </div>
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">
                   <TrendingUp className="w-4 h-4" />
                   Plan de Tratamiento
                 </h4>
-                <p className="text-sm text-gray-600 bg-purple-50 p-3 rounded-lg whitespace-pre-line">{diagnostico.planTratamiento}</p>
+                <p className="text-sm text-muted-foreground bg-purple-500/5 dark:bg-purple-400/10 p-3 rounded-lg whitespace-pre-line">{diagnostico.planTratamiento}</p>
               </div>
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
+                <h4 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">
                   <Activity className="w-4 h-4" />
                   Recomendaciones
                 </h4>
-                <p className="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg whitespace-pre-line">{diagnostico.recomendaciones}</p>
+                <p className="text-sm text-muted-foreground bg-yellow-500/5 dark:bg-yellow-400/10 p-3 rounded-lg whitespace-pre-line">{diagnostico.recomendaciones}</p>
               </div>
             </CardContent>
           </Card>
@@ -391,26 +391,26 @@ export default function CitaDetallePage() {
 
         {/* Medicamentos */}
         {diagnostico?.medicamentos && diagnostico.medicamentos.length > 0 && (
-          <Card className="bg-white border-0 shadow-sm mb-8">
+          <Card className="bg-card border-0 shadow-sm mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
-                <Pill className="w-5 h-5 text-blue-600" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Pill className="w-5 h-5 text-primary" />
                 Medicamentos Recetados
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {diagnostico.medicamentos.map((medicamento) => (
-                  <div key={medicamento.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div key={medicamento.id} className="border border-border rounded-lg p-4 bg-muted">
                     <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-semibold text-sm text-gray-700">{medicamento.nombre}</h4>
+                      <h4 className="font-semibold text-sm text-foreground">{medicamento.nombre}</h4>
                       {medicamento.receta && (
-                        <Badge className="bg-orange-100 text-orange-800 text-xs border-orange-200">
+                        <Badge className="bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200 text-xs border-orange-200 dark:border-orange-800">
                           Requiere Receta
                         </Badge>
                       )}
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
                       <div>
                         <span className="font-medium">Dosis:</span> {medicamento.dosis}
                       </div>
@@ -423,8 +423,8 @@ export default function CitaDetallePage() {
                     </div>
                     {medicamento.instrucciones && (
                       <div className="mt-3">
-                        <span className="font-medium text-sm text-gray-700">Instrucciones:</span>
-                        <p className="text-sm text-gray-600 mt-1 bg-white p-2 rounded">{medicamento.instrucciones}</p>
+                        <span className="font-medium text-sm text-foreground">Instrucciones:</span>
+                        <p className="text-sm text-muted-foreground mt-1 bg-card p-2 rounded">{medicamento.instrucciones}</p>
                       </div>
                     )}
                   </div>
@@ -436,32 +436,32 @@ export default function CitaDetallePage() {
 
         {/* Archivos */}
         {diagnostico?.archivos && diagnostico.archivos.length > 0 && (
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="bg-card border-0 shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
-                <FileText className="w-5 h-5 text-blue-600" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <FileText className="w-5 h-5 text-primary" />
                 Archivos Adjuntos
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {diagnostico.archivos.map((archivo) => (
-                  <div key={archivo.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-gray-50">
+                  <div key={archivo.id} className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow bg-muted">
                     <div className="flex items-center gap-3 mb-3">
                       {getArchivoIcon(archivo.tipo)}
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm text-gray-700 truncate">
+                        <h4 className="font-medium text-sm text-foreground truncate">
                           {archivo.nombre}
                         </h4>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {new Date(archivo.fechaSubida).toLocaleDateString('es-ES')}
                         </p>
                       </div>
                     </div>
                     {archivo.descripcion && (
-                      <p className="text-xs text-gray-600 mb-3">{archivo.descripcion}</p>
+                      <p className="text-xs text-muted-foreground mb-3">{archivo.descripcion}</p>
                     )}
-                    <Button variant="outline" size="sm" className="w-full border-blue-200 text-blue-700 hover:bg-blue-50">
+                    <Button variant="outline" size="sm" className="w-full border-primary/20 text-primary hover:bg-primary/5">
                       <Download className="w-4 h-4 mr-2" />
                       Descargar
                     </Button>

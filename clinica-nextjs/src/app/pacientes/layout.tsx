@@ -22,7 +22,7 @@ export default async function pacientesLayout({
     <PacienteRouteGuard>
       <UserDasboardHeader />
       <div className="flex">
-        <aside className="hidden md:block w-64 p-6 border-r border-gray-800">
+        <aside className="hidden md:block w-64 p-6 border-r border-border bg-card">
           <div className="flex items-center justify-center gap-3 mb-8">
             <UserButton
               showName
@@ -34,17 +34,17 @@ export default async function pacientesLayout({
           <nav className="space-y-2">
             <Button
               variant="ghost"
-              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
               asChild
             >
               <Link href="/pacientes">
                 <Users className="w-4 h-4 mr-3" />
-                Mis Citas
+                Mis Cita
               </Link>
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
               asChild
             >
               <Link href="/pacientes/citas">
@@ -54,7 +54,7 @@ export default async function pacientesLayout({
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
               asChild
             >
               <Link href="/pacientes/expedientes">
@@ -64,7 +64,7 @@ export default async function pacientesLayout({
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
               asChild
             >
               <Link href="/pacientes/tratamientos">
@@ -74,7 +74,7 @@ export default async function pacientesLayout({
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
               asChild
             >
               <Link href="/pacientes/consentimientos">
@@ -84,7 +84,7 @@ export default async function pacientesLayout({
             </Button>
             <Button
               variant="ghost"
-              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
               asChild
             >
               <Link href="/user">
@@ -94,7 +94,7 @@ export default async function pacientesLayout({
             </Button>
           </nav>
         </aside>
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-6 bg-background">{children}</main>
       </div>
       <Footer />
     </PacienteRouteGuard>
