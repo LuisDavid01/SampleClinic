@@ -21,15 +21,44 @@ import {
    ChevronRight,
    ChevronLeft,
    ChevronsLeft,
-   ChevronsRight
+   ChevronsRight,
+   Star
 } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils"
 
 // Mock data
-const files = [
-  {id: 1, nombre: "Luis Vargas", status: "activo", updatedAt: new Date(2025, 0, 3), doctor: "Dra. María García"},
-  {id: 2, nombre: "Diego Vargas", status: "activo", updatedAt: new Date(2025, 2, 5), doctor: "Dr. Carlos Rodríguez"},
-]
+const reviews = [
+    {
+        id: 1,
+      name: "María González",
+      role: "Paciente desde 2023",
+      text: "Después de mi lesión de rodilla, pensé que no volvería a caminar normalmente. El tratamiento personalizado y la dedicación del equipo me ayudaron a recuperar completamente mi movilidad. ¡Incluso puedo correr otra vez!",
+      rating: 5,
+      avatar: "M",
+      created: new Date(2025, 0, 3),
+      status: 'activo'
+    },
+    {
+        id: 2,
+      name: "Carlos Ruiz",
+      role: "Atleta profesional",
+      text: "Como deportista de alto rendimiento, necesito un cuidado especializado y preciso. Aquí encontré profesionales que realmente entienden las demandas del deporte y me ayudaron a volver más fuerte que antes.",
+      rating: 5,
+      avatar: "C",
+      created: new Date(2025, 3, 3),
+      status: 'activo'
+    },
+    {
+        id: 3,
+      name: "Ana López",
+      role: "Recuperación post-cirugía",
+      text: "El seguimiento continuo y la dedicación personalizada del equipo fueron fundamentales en mi proceso de rehabilitación. Su apoyo emocional fue tan importante como el tratamiento físico.",
+      rating: 5,
+      avatar: "A",
+      created: new Date(2025, 2, 3),
+      status: 'activo'
+    },
+  ];
 
 const statusConfig = {
   activo: {
@@ -50,20 +79,20 @@ export default function FilesPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-center gap-3">
              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-card">
-              <Folder className="h-6 w-6 text-accent" />
+              <Star className="h-6 w-6 fill-accent text-accent" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Expedientes</h1>
+              <h1 className="text-3xl font-bold">Testimonios</h1>
               <p className="text-muted-foreground">
-                Gestiona los expedientes de los pacientes
+                Modera los testimonios que envian los pacientes
               </p>
             </div>
           </div>
           
-          <Link href="files/new">
+          <Link href="/admin/testimonials/new">
             <Button className="cursor-pointer">
               <PlusIcon className="w-4 h-4 mr-2" />
-              Nuevo expediente
+              Nuevo testimonio
             </Button>
           </Link>
         </div>
@@ -88,22 +117,27 @@ export default function FilesPage() {
                         </div>
                       </div>
                       
-                      <Select value="all" >
+                      <Select defaultValue="all" >
                         <SelectTrigger>
-                          <SelectValue placeholder="Diagnostico" />
+                          <SelectValue placeholder="Usuarios" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Todas los diagnosticos</SelectItem>
+                          <SelectItem value="all">Todas los Usuarios</SelectItem>
                           
                         </SelectContent>
                       </Select>
         
-                      <Select value="all">
+                      <Select defaultValue="all">
                         <SelectTrigger>
-                          <SelectValue placeholder="Usuario" />
+                          <SelectValue placeholder="Rating" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Todos los doctores</SelectItem>
+                          <SelectItem value="all">Todas las reseñas</SelectItem>
+                          <SelectItem value="1">1 estrella</SelectItem>
+                          <SelectItem value="2">2 estrellas</SelectItem>
+                          <SelectItem value="3">3 estrellas</SelectItem>
+                          <SelectItem value="4">4 estrellas</SelectItem>
+                          <SelectItem value="5">5 estrellas</SelectItem>
                           
                         </SelectContent>
                       </Select>
@@ -135,22 +169,23 @@ export default function FilesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Paciente</TableHead>
+                    <TableHead>Usuario</TableHead>
                     <TableHead>Estado</TableHead>
-                    <TableHead>Médico</TableHead>
-                    <TableHead>Actualizado</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead>Creado</TableHead>
+                    <TableHead>resumen</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {files.map((file) => {
-                    const statusConfig_ = statusConfig[file.status as keyof typeof statusConfig]
+                  {reviews.map((review) => {
+                    const statusConfig_ = statusConfig[review.status as keyof typeof statusConfig]
                     
                     return (
-                      <TableRow key={file.id} className="hover:bg-muted/50">
+                      <TableRow key={review.id} className="hover:bg-muted/50">
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
-                            {file.nombre}
+                            {review.name}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -158,19 +193,32 @@ export default function FilesPage() {
                             {statusConfig_?.label}
                           </Badge>
                         </TableCell>
-                        <TableCell>{file.doctor}</TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-1">
+                                <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                                <span className="font-mono text-sm whitespace-nowrap">
+                                {review.rating}
+                                </span>
+                            </div>
+                        </TableCell>
                         <TableCell className="font-mono text-sm">
-                          {formatRelativeTime(file.updatedAt)}
+                          {formatRelativeTime(review.created)}
+                        </TableCell>
+                        <TableCell className="max-w-xs overflow-hidden truncate">
+                          {review.text}
                         </TableCell>
                         <TableCell>
-                          <Link href={`files/${file.id}/edit`}>
+                          <Link href={`testimonials/edit/${review.id}`} >
                             <Button variant="outline" size="sm" className="mr-3">
                               Ver
                             </Button>
+                          </Link>
+
+                          
                             <Button variant="destructive" size="sm" className="mr-3">
                               Eliminar
                             </Button>
-                          </Link>
+                          
                         </TableCell>
                       </TableRow>
                     )
@@ -183,11 +231,11 @@ export default function FilesPage() {
 
         {/* Mobile Cards */}
         <div className="lg:hidden space-y-4">
-          {files.map((file) => {
-            const statusConfig_ = statusConfig[file.status as keyof typeof statusConfig]
+          {reviews.map((review) => {
+            const statusConfig_ = statusConfig[review.status as keyof typeof statusConfig]
             
             return (
-              <Card key={file.id}>
+              <Card key={review.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -195,8 +243,15 @@ export default function FilesPage() {
                         <User className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div>
-                        <h3 className="font-medium">{file.nombre}</h3>
-                        <p className="text-sm text-muted-foreground">{file.doctor}</p>
+                        <h3 className="font-medium">{review.name}</h3>
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+
+                                <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                                <span className="font-mono text-sm whitespace-nowrap">
+                                {review.rating}
+                                </span>
+
+                            </div>
                       </div>
                     </div>
                     <Badge className={statusConfig_?.color}>
@@ -207,16 +262,17 @@ export default function FilesPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="text-sm text-muted-foreground">Actualizado</p>
-                      <p className="text-sm font-medium">{file.updatedAt.getDate()}</p>
+                      <p className="text-sm font-medium">{formatRelativeTime(review.created)}</p>
                     </div>
                     
                     <div className="flex gap-2 pt-2">
-                      <Link href={`files/${file.id}/edit`} className="flex-1">
-                        <Button variant="outline" className="w-full mb-3">
-                          Ver expediente
+                      <Link href={`testimonials/edit/${review.id}`} className="flex-1">
+                        <Button variant="outline" className="w-full">
+                          Ver testimonio
                         </Button>
                       </Link>
-                      <Button variant="destructive" size="sm" className="w-full mb-3">
+
+                       <Button variant="destructive" size="sm" className="w-full mb-3">
                               Eliminar
                             </Button>
                     </div>

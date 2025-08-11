@@ -53,10 +53,12 @@ export default function EditFilePage() {
         </CardContent>
       </Card>
 
+      <h2 className='pb-4 text-xl md:text-3xl font-semibold text-center'>Contenidos del expediente</h2>
+
       {/* Grid para Diagnósticos y Consentimientos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Diagnósticos y Consultas */}
-        <Card className="bg-card shadow-sm">
+        <Card className="bg-card/50 shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle>
               <div className="flex items-center gap-2">
@@ -78,7 +80,7 @@ export default function EditFilePage() {
         </Card>
 
         {/* Gestión de Consentimientos */}
-        <Card className="bg-card shadow-sm">
+        <Card className="bg-card/50 shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle> 
                <div className="flex items-center gap-2">
@@ -101,7 +103,7 @@ export default function EditFilePage() {
       </div>
 
       {/* Documentos del Expediente */}
-      <Card className="bg-card shadow-sm">
+      <Card className="bg-card/50 shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle>
             <div className="flex items-center gap-2">

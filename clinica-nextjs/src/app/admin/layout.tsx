@@ -4,11 +4,13 @@ import { DasboardHeader } from "@/components/DashboardHeader";
 import {
   BarChart3,
   Settings,
-  Grid3X3,
-  Inbox,
-  TrendingUp,
   User,
-  Home
+  Home,
+  Star,
+  Folder,
+  CalendarDays,
+  Shield,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 import { checkRole } from "@/utils/roles";
@@ -72,7 +74,7 @@ export default async function dasboardLayout({
               asChild
             >
               <Link href={"/admin/appointments"}>
-                <Inbox className="w-4 h-4 mr-3" />
+                <CalendarDays className="w-4 h-4 mr-3" />
                 <span>Citas</span>
               </Link>
             </Button>
@@ -83,8 +85,28 @@ export default async function dasboardLayout({
               asChild
             >
               <Link href={"/admin/files"}>
-                <Grid3X3 className="w-4 h-4 mr-3" />
+                <Folder className="w-4 h-4 mr-3" />
                 <span>Expedientes</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/team"}>
+                <Users className="w-4 h-4 mr-3 " />
+                <span>Equipo</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/testimonials"}>
+                <Star className="w-4 h-4 mr-3 " />
+                <span>Testimonios</span>
               </Link>
             </Button>
 
@@ -94,7 +116,7 @@ export default async function dasboardLayout({
               asChild
             >
               <Link href={"/admin/audit"}>
-                <TrendingUp className="w-4 h-4 mr-3" />
+                <Shield className="w-4 h-4 mr-3" />
                 <span>Auditoria</span>
               </Link>
             </Button>

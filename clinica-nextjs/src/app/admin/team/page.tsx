@@ -12,8 +12,7 @@ import {
 } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
-  PlusIcon, 
-  Folder, 
+  PlusIcon,  
   User,
   RefreshCw,
    Filter,
@@ -21,15 +20,52 @@ import {
    ChevronRight,
    ChevronLeft,
    ChevronsLeft,
-   ChevronsRight
+   ChevronsRight,
+   Star,
+   Users
 } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils"
 
 // Mock data
-const files = [
-  {id: 1, nombre: "Luis Vargas", status: "activo", updatedAt: new Date(2025, 0, 3), doctor: "Dra. María García"},
-  {id: 2, nombre: "Diego Vargas", status: "activo", updatedAt: new Date(2025, 2, 5), doctor: "Dr. Carlos Rodríguez"},
-]
+const teamMembers = [
+    {
+      id: 1,
+      name: "Dr. María González",
+      role: "Fisioterapeuta Principal",
+      status: 'activo',
+      createdAt: new Date(2025,0,3),
+      experience: "12+ años",
+      description:
+        "Especialista en terapia manual y rehabilitación deportiva con más de 12 años de experiencia",
+      specialties: [
+        "Terapia Manual",
+        "Rehabilitación Deportiva",
+        "Electroterapia",
+      ],
+    },
+    {
+      id: 2,
+      name: "Lic. Carlos Mendez",
+      role: "Especialista en Rehabilitación",
+      status: 'activo',
+      createdAt: new Date(2025,0,3),
+      experience: "8+ años",
+      description:
+        "Experto en recuperación post-quirúrgica y tratamiento de lesiones musculoesqueléticas",
+      specialties: ["Post-Quirúrgica", "Lesiones Musculares", "Kinesiología"],
+    },
+    {
+      id: 3,
+      name: "Dra. Ana Rodríguez",
+      role: "Terapeuta Especializada",
+      status: 'activo',
+      createdAt: new Date(2025,0,3),
+      experience: "10+ años",
+      description:
+        "Certificada en técnicas de electroterapia y ejercicios terapéuticos personalizados",
+      specialties: ["Electroterapia", "Ejercicios Terapéuticos", "Masoterapia"],
+    },
+  ];
 
 const statusConfig = {
   activo: {
@@ -42,7 +78,7 @@ const statusConfig = {
   }
 }
 
-export default function FilesPage() {
+export default function TeamPage() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -50,20 +86,20 @@ export default function FilesPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-center gap-3">
              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-card">
-              <Folder className="h-6 w-6 text-accent" />
+              <Users className="h-6 w-6  text-accent" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Expedientes</h1>
+              <h1 className="text-3xl font-bold">Equipo</h1>
               <p className="text-muted-foreground">
-                Gestiona los expedientes de los pacientes
+                Gestiona el personal de la clinica
               </p>
             </div>
           </div>
           
-          <Link href="files/new">
+          <Link href="/admin/team/new">
             <Button className="cursor-pointer">
               <PlusIcon className="w-4 h-4 mr-2" />
-              Nuevo expediente
+              Nuevo miembro del equipo
             </Button>
           </Link>
         </div>
@@ -88,22 +124,12 @@ export default function FilesPage() {
                         </div>
                       </div>
                       
-                      <Select value="all" >
+                      <Select defaultValue="all" >
                         <SelectTrigger>
-                          <SelectValue placeholder="Diagnostico" />
+                          <SelectValue placeholder="Roles" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Todas los diagnosticos</SelectItem>
-                          
-                        </SelectContent>
-                      </Select>
-        
-                      <Select value="all">
-                        <SelectTrigger>
-                          <SelectValue placeholder="Usuario" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos los doctores</SelectItem>
+                          <SelectItem value="all">Todas los Roles</SelectItem>
                           
                         </SelectContent>
                       </Select>
@@ -135,22 +161,28 @@ export default function FilesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Paciente</TableHead>
+                    <TableHead>Usuario</TableHead>
+                    <TableHead>Rol</TableHead>
                     <TableHead>Estado</TableHead>
-                    <TableHead>Médico</TableHead>
-                    <TableHead>Actualizado</TableHead>
+                    <TableHead>Creado</TableHead>
+                    <TableHead>resumen</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {files.map((file) => {
-                    const statusConfig_ = statusConfig[file.status as keyof typeof statusConfig]
+                  {teamMembers.map((member) => {
+                    const statusConfig_ = statusConfig[member.status as keyof typeof statusConfig]
                     
                     return (
-                      <TableRow key={file.id} className="hover:bg-muted/50">
+                      <TableRow key={member.id} className="hover:bg-muted/50">
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
-                            {file.nombre}
+                            {member.name}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          <div className="flex items-center gap-2">
+                            {member.role}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -158,19 +190,24 @@ export default function FilesPage() {
                             {statusConfig_?.label}
                           </Badge>
                         </TableCell>
-                        <TableCell>{file.doctor}</TableCell>
                         <TableCell className="font-mono text-sm">
-                          {formatRelativeTime(file.updatedAt)}
+                          {formatRelativeTime(member.createdAt)}
+                        </TableCell>
+                        <TableCell className="max-w-xs overflow-hidden truncate">
+                          {member.description}
                         </TableCell>
                         <TableCell>
-                          <Link href={`files/${file.id}/edit`}>
+                          <Link href={`team/edit/${member.id}`} >
                             <Button variant="outline" size="sm" className="mr-3">
                               Ver
                             </Button>
+                          </Link>
+
+                          
                             <Button variant="destructive" size="sm" className="mr-3">
                               Eliminar
                             </Button>
-                          </Link>
+                          
                         </TableCell>
                       </TableRow>
                     )
@@ -183,11 +220,11 @@ export default function FilesPage() {
 
         {/* Mobile Cards */}
         <div className="lg:hidden space-y-4">
-          {files.map((file) => {
-            const statusConfig_ = statusConfig[file.status as keyof typeof statusConfig]
+          {teamMembers.map((member) => {
+            const statusConfig_ = statusConfig[member.status as keyof typeof statusConfig]
             
             return (
-              <Card key={file.id}>
+              <Card key={member.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -195,8 +232,15 @@ export default function FilesPage() {
                         <User className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div>
-                        <h3 className="font-medium">{file.nombre}</h3>
-                        <p className="text-sm text-muted-foreground">{file.doctor}</p>
+                        <h3 className="font-medium">{member.name}</h3>
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+
+                                
+                                <span className="font-mono text-sm whitespace-nowrap">
+                                {member.role}
+                                </span>
+
+                            </div>
                       </div>
                     </div>
                     <Badge className={statusConfig_?.color}>
@@ -207,16 +251,17 @@ export default function FilesPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <p className="text-sm text-muted-foreground">Actualizado</p>
-                      <p className="text-sm font-medium">{file.updatedAt.getDate()}</p>
+                      <p className="text-sm font-medium">{formatRelativeTime(member.createdAt)}</p>
                     </div>
                     
                     <div className="flex gap-2 pt-2">
-                      <Link href={`files/${file.id}/edit`} className="flex-1">
-                        <Button variant="outline" className="w-full mb-3">
-                          Ver expediente
+                      <Link href={`team/edit/${member.id}`} className="flex-1">
+                        <Button variant="outline" className="w-full">
+                          Ver testimonio
                         </Button>
                       </Link>
-                      <Button variant="destructive" size="sm" className="w-full mb-3">
+
+                       <Button variant="destructive" size="sm" className="w-full mb-3">
                               Eliminar
                             </Button>
                     </div>

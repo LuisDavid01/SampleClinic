@@ -4,6 +4,14 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+   --animate-scroll: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
+ 
+  @keyframes scroll {
+    to {
+      transform: translate(calc(-50% - 0.5rem));
+    }
+  }
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -80,7 +88,7 @@
   --muted-foreground: oklch(0.5 0.01 240);
   --accent: oklch(46.924% 0.07835 159.789); /* Usando tu complementario */
   --accent-foreground: oklch(0.98 0.02 240);
-  --input: oklch(78.577% 0.00009 271.152);
+  --input: oklch(86.227% 0.00218 14.724);
   --border: oklch(22.213% 0.00003 271.152);
 }
 
@@ -92,7 +100,7 @@
   --text-accent: oklch(76.78% 0.14 176.53);
   --secondary-button: oklch(42.769% 0.11629 47.347);
   /* Colores base del sistema en dark mode */
-  --card: oklch(23.78% 0.04142 178.878);
+  --card: oklch(20.5% 0 0);
   --card-secondary: oklch(22.01% 0.052 43.11);
   --card-foreground: oklch(0.9 0.02 240);
   --destructive: oklch(63.021% 0.23694 27.46);
@@ -107,6 +115,7 @@
   --accent: oklch(0.6 0.1 160); /* Mantiene tu complementario */
   --accent-foreground: oklch(0.9 0.02 240);
   --border: oklch(0.9 0.02 240);
+  --input: oklch(39.793% 0.00005 271.152);
 }
 
 @layer base {

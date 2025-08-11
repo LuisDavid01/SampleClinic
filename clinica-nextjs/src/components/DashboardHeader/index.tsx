@@ -10,23 +10,23 @@ import {
   TrendingUp,
   ExternalLink,
   Home,
-  User
+  User,
+  Shield,
+  Star,
+  Users,
+  Folder,
+  CalendarDays
 } from "lucide-react";
-import Image from "next/image";
 export const DasboardHeader = async () => {
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
      <div className="flex items-center gap-3">
-        <Link href="/" className="flex items-center">
-          <Image
-        src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/logo.webp"
-        alt="Clínica Esteban Porras"
-        width={95}
-        height={48}
-        className="object-contain"
-        priority
-      />
-        </Link>
+        <Link
+              href={"/"}
+              className="text-lg md:text-2xl text-text-primary font-semibold"
+            >
+              Clinica Esteban Porras
+            </Link>
       </div>
 
       <nav className="hidden md:flex items-center gap-6">
@@ -72,7 +72,7 @@ export const DasboardHeader = async () => {
               asChild
             >
               <Link href={"/admin/appointments"}>
-                <Inbox className="w-4 h-4 mr-3" />
+                <CalendarDays className="w-4 h-4 mr-3" />
                 <span>Citas</span>
               </Link>
             </Button>
@@ -83,8 +83,28 @@ export const DasboardHeader = async () => {
               asChild
             >
               <Link href={"/admin/files"}>
-                <Grid3X3 className="w-4 h-4 mr-3" />
+                <Folder className="w-4 h-4 mr-3" />
                 <span>Expedientes</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/team"}>
+                <Users className="w-4 h-4 mr-3 " />
+                <span>Equipo</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/testimonials"}>
+                <Star className="w-4 h-4 mr-3 " />
+                <span>Testimonios</span>
               </Link>
             </Button>
 
@@ -94,7 +114,7 @@ export const DasboardHeader = async () => {
               asChild
             >
               <Link href={"/admin/audit"}>
-                <TrendingUp className="w-4 h-4 mr-3" />
+                <Shield className="w-4 h-4 mr-3" />
                 <span>Auditoria</span>
               </Link>
             </Button>

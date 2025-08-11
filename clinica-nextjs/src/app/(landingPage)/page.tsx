@@ -1,11 +1,12 @@
 
-import { Award, Heart } from "lucide-react";
+import { Award, Heart, MessageSquareShare } from "lucide-react";
 
 import { TeamSection } from "@/components/TeamSection";
 import { ReviewsSection } from "@/components/ReviewSection";
 import { AcercaDeSection } from "@/components/AcercaDeSection";
 import { HomeHero } from "@/components/HomeHero";
 import { AppointmentForm } from "@/components/AppointmentForm";
+import { NewTestimonio } from "@/components/NewTestimonio";
 
 export default function Home() {
   return (
@@ -191,28 +192,16 @@ export default function Home() {
               cada día
             </p>
           </div>
-
           {/*Contenido de los testimonios */}
 		      <ReviewsSection/>
           <div className="text-center mt-12">
-            <button className="group  backdrop-blur-sm  border-2 border-primary px-8 py-4 rounded-xl font-semibold bg-primary text-black hover:-translate-y-1 shadow-xl hover:shadow-cyan-500/50  transition-all duration-300 flex items-center justify-center gap-2 mx-auto">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                ></path>
-              </svg>
-              Comparte tu Experiencia
-            </button>
+            <NewTestimonio/>
           </div>
+
+          
+          
         </div>
+        
       </section>
       <section id="equipo" className="relative bg-gradient-to-br from-card/50 to-background py-24 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
