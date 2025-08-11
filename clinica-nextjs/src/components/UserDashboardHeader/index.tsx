@@ -10,6 +10,7 @@ import {
   Inbox,
   TrendingUp,
   ExternalLink,
+  Home,
 } from "lucide-react";
 export const UserDasboardHeader = async () => {
   return (
@@ -77,6 +78,17 @@ export const UserDasboardHeader = async () => {
             <Link href={"/user"}>
               <Settings className="w-4 h-4 mr-3" />
               Cuenta
+            </Link>
+          </Button>
+
+          <Button
+            variant="link"
+            className="w-full justify-start text-text-primary "
+            asChild
+          >
+            <Link href={"/"}>
+              <Home className="w-4 h-4 mr-3" />
+              Regresar al inicio
             </Link>
           </Button>
 

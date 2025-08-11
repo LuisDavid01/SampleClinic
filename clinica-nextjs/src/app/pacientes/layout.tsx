@@ -9,7 +9,8 @@ import {
   FileText, 
   Activity, 
   Settings, 
-  Plus
+  Plus,
+  Home
 } from "lucide-react";
 import Link from "next/link";
 
@@ -22,7 +23,11 @@ export default async function pacientesLayout({
     <PacienteRouteGuard>
       <UserDasboardHeader />
       <div className="flex">
-        <aside className="hidden md:block w-64 p-6 border-r border-border bg-card">
+
+        <aside className="hidden md:block w-64 p-6 border-r border-gray-800
+            sticky top-0 self-start h-[calc(100vh)] overflow-auto
+            bg-background">
+
           <div className="flex items-center justify-center gap-3 mb-8">
             <UserButton
               showName
@@ -92,11 +97,21 @@ export default async function pacientesLayout({
                 Configuración
               </Link>
             </Button>
+
+             <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href="/">
+                <Home className="w-4 h-4 mr-3" />
+                Regresar al inicio
+              </Link>
+            </Button>
           </nav>
         </aside>
         <main className="flex-1 p-6 bg-background">{children}</main>
       </div>
-      <Footer />
     </PacienteRouteGuard>
   );
 } 

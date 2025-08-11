@@ -17,7 +17,9 @@ export default function PacientesPage() {
   const { user } = useUser();
 
   return (
+o
     <div className="min-h-screen bg-background">
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header con diseño médico */}
         <div className="mb-8">
@@ -27,11 +29,13 @@ export default function PacientesPage() {
                 <Stethoscope className="w-8 h-8 text-primary" />
               </div>
               <div>
+
                 <h1 className="text-3xl font-bold text-foreground">
                   Mi Historial Médico
                 </h1>
                 <p className="text-muted-foreground mt-1">
                   Seguimiento de tu progreso médico y tratamientos
+
                 </p>
               </div>
             </div>
@@ -54,8 +58,10 @@ export default function PacientesPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
+
                   <p className="text-sm font-medium text-muted-foreground">Estado General</p>
                   <p className="text-2xl font-bold text-green-600 dark:text-green-400">Mejorando</p>
+
                 </div>
                 <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
                   <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -68,8 +74,10 @@ export default function PacientesPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
+
                   <p className="text-sm font-medium text-muted-foreground">Tratamientos Activos</p>
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">2</p>
+
                 </div>
                 <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
                   <Activity className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -82,9 +90,11 @@ export default function PacientesPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
+
                   <p className="text-sm font-medium text-muted-foreground">Próxima Evaluación</p>
                   <p className="text-lg font-semibold text-foreground">
                     En 2 semanas
+
                   </p>
                 </div>
                 <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
@@ -148,9 +158,11 @@ export default function PacientesPage() {
                   </ul>
                 </div>
               </div>
+
             </div>
           </CardContent>
         </Card>
+
 
         {/* Ejercicios de Rehabilitación */}
         <Card className="bg-card border-0 shadow-sm mb-8">
@@ -291,6 +303,7 @@ export default function PacientesPage() {
             </div>
           </CardContent>
         </Card>
+
       </div>
     </div>
   );
