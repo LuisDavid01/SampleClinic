@@ -1,0 +1,155 @@
+.rbc-btn-group .rbc-btn {
+  color: hsl(var(--foreground)) !important;
+  background: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  transition: all 0.2s ease !important;
+}
+
+.rbc-btn-group .rbc-btn:hover {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+.rbc-btn-group .rbc-active {
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+.rbc-day-bg {
+  border-bottom: 1px solid hsl(var(--border)) !important;
+}
+
+/* Estilos para días fuera del mes actual en dark mode */
+@media (prefers-color-scheme: dark) {
+  .rbc-off-range {
+    background-color: hsl(var(--muted) / 0.3) !important;
+    color: hsl(var(--muted-foreground) / 0.5) !important;
+  }
+
+  .rbc-off-range-bg {
+    background-color: hsl(var(--muted) / 0.3) !important;
+  }
+
+  .rbc-today {
+    background-color: hsl(var(--accent) / 0.2) !important;
+  }
+
+  /* Botones del toolbar con text-primary en dark mode */
+  .rbc-btn-group .rbc-btn {
+    color: hsl(var(--primary)) !important;
+    background: hsl(var(--background)) !important;
+  }
+
+  /* Hover con texto negro en dark mode, excepto el seleccionado */
+  .rbc-btn-group .rbc-btn:hover:not(.rbc-active) {
+    color: hsl(var(--accent-foreground)) !important;
+    background: hsl(var(--accent)) !important;
+  }
+
+  /* Botón activo con texto negro en dark mode */
+  .rbc-btn-group .rbc-active {
+    color: hsl(var(--primary-foreground)) !important;
+    background: hsl(var(--primary)) !important;
+  }
+
+  .rbc-toolbar-label {
+    color: hsl(var(--primary)) !important;
+  }
+
+  /* Botones de navegación con text-primary en dark mode */
+  .rbc-btn-group button {
+    color: hsl(var(--primary)) !important;
+    background: hsl(var(--background)) !important;
+  }
+
+  .rbc-btn-group button:hover:not(.rbc-active) {
+    color: hsl(var(--accent-foreground)) !important;
+    background: hsl(var(--accent)) !important;
+  }
+
+  /* Botón activo específico para navegación */
+  .rbc-btn-group button.rbc-active {
+    color: hsl(var(--primary-foreground)) !important;
+    background: hsl(var(--primary)) !important;
+  }
+}
+
+/* Para modo claro también */
+.rbc-off-range {
+  background-color: hsl(var(--muted) / 0.5) !important;
+  color: hsl(var(--muted-foreground) / 0.6) !important;
+}
+
+.rbc-off-range-bg {
+  background-color: hsl(var(--muted) / 0.5) !important;
+}
+
+.rbc-today {
+  background-color: hsl(var(--accent) / 0.1) !important;
+}
+
+/* Toolbar del calendario */
+.rbc-toolbar {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  padding: 1rem !important;
+  margin-bottom: 1rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.rbc-toolbar-label {
+  color: hsl(var(--foreground)) !important;
+  font-weight: 600 !important;
+}
+
+/* Navegación del calendario */
+.rbc-btn-group button {
+  margin: 0 2px !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0.375rem !important;
+  font-size: 0.875rem !important;
+}
+
+/* Eventos en el calendario */
+.rbc-event {
+  font-size: 0.75rem !important;
+  padding: 2px 4px !important;
+}
+
+/* Estilo para las líneas de tiempo */
+.rbc-time-slot {
+  border-top: 1px solid hsl(var(--border)) !important;
+}
+
+.rbc-time-gutter {
+  background: hsl(var(--muted) / 0.3) !important;
+  border-right: 1px solid hsl(var(--border)) !important;
+}
+
+.rbc-time-header {
+  border-bottom: 1px solid hsl(var(--border)) !important;
+}
+
+/* Día actual destacado */
+.rbc-today .rbc-button-link {
+  color: hsl(var(--primary)) !important;
+  font-weight: bold !important;
+}
+
+.rbc-button-link.rbc-show-more {
+  background-color: var(--muted-foreground) !important; /* bg-gray-400 */
+  color: hsl(var(--color-text-primary)) !important; /* text-text-primary */
+  font-size: 0.75rem !important;
+  padding: 2px 4px !important;
+  border-radius: 0.25rem !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Opcional: hover effect */
+.rbc-button-link.rbc-show-more:hover {
+  background-color: #6b7280 !important; /* Un poco más oscuro en hover */
+  color: hsl(var(--primary-foreground)) !important;
+}

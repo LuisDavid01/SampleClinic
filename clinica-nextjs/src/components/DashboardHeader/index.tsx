@@ -9,17 +9,24 @@ import {
   Inbox,
   TrendingUp,
   ExternalLink,
+  Home,
+  User,
+  Shield,
+  Star,
+  Users,
+  Folder,
+  CalendarDays
 } from "lucide-react";
 export const DasboardHeader = async () => {
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
-      <div className="flex items-center gap-3">
+     <div className="flex items-center gap-3">
         <Link
-          href={"/"}
-          className="text-lg md:text-2xl text-text-primary font-semibold"
-        >
-          Clinica Esteban Porras
-        </Link>
+              href={"/"}
+              className="text-lg md:text-2xl text-text-primary font-semibold"
+            >
+              Clinica Esteban Porras
+            </Link>
       </div>
 
       <nav className="hidden md:flex items-center gap-6">
@@ -37,62 +44,106 @@ export const DasboardHeader = async () => {
       {/* Mobile Menu - Solo visible en móvil */}
       <div className="md:hidden">
         <MobileMenu>
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-            asChild
-          >
-            <Link href={"/admin"}>
-              <BarChart3 className="w-4 h-4 mr-3" />
-              Vista general
-            </Link>
-          </Button>
+           <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin"}>
+                <BarChart3 className="w-4 h-4 mr-3" />
+                Vista general
+              </Link>
+            </Button>
 
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-          >
-            <TrendingUp className="w-4 h-4 mr-3" />
-            Analíticas
-          </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/ManageUsers"}>
+                <User className="w-4 h-4 mr-3" />
+                <span>Gestionar usuarios</span>
+              </Link>
+            </Button>
 
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-            asChild
-          >
-            <Link href={"/admin/ManageUsers"}>
-              <BarChart3 className="w-4 h-4 mr-3" />
-              <span>Gestionar usuarios</span>
-            </Link>
-          </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/appointments"}>
+                <CalendarDays className="w-4 h-4 mr-3" />
+                <span>Citas</span>
+              </Link>
+            </Button>
 
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-          >
-            <Inbox className="w-4 h-4 mr-3" />
-            Citas
-          </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/files"}>
+                <Folder className="w-4 h-4 mr-3" />
+                <span>Expedientes</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/team"}>
+                <Users className="w-4 h-4 mr-3 " />
+                <span>Equipo</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/testimonials"}>
+                <Star className="w-4 h-4 mr-3 " />
+                <span>Testimonios</span>
+              </Link>
+            </Button>
 
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-          >
-            <Grid3X3 className="w-4 h-4 mr-3" />
-            Registros
-          </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/audit"}>
+                <Shield className="w-4 h-4 mr-3" />
+                <span>Auditoria</span>
+              </Link>
+            </Button>
 
-          <Button
-            variant="link"
-            className="w-full justify-start text-text-primary "
-            asChild
-          >
-            <Link href={"/user"}>
-              <Settings className="w-4 h-4 mr-3" />
-              Cuenta
-            </Link>
-          </Button>
+            
+
+            <Button
+              variant="ghost"
+              className="w-full  justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/user"}>
+                <Settings className="w-4 h-4 mr-3" />
+                Cuenta
+              </Link>
+            </Button>
+
+            
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/"}>
+                <Home className="w-4 h-4 mr-3" />
+                Regresar al inicio
+              </Link>
+            </Button>
+
           <Button
             variant="link"
             className="w-full justify-start text-text-primary "

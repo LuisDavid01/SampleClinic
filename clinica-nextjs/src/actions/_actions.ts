@@ -16,6 +16,7 @@ export async function setRole(formData: FormData) {
   const user = await currentUser();
   // prevents users from removing themselfs
   if (user?.id === userId) {
+     console.log("This user tried to remove himself")
     return;
   }
 
@@ -36,11 +37,14 @@ export async function removeRole(formData: FormData) {
 
   const client = await clerkClient();
   const userId = formData.get("id") as string;
+
   const user = await currentUser();
   // prevents users from removing themselfs
   if (user?.id === userId) {
+    console.log("This user tried to remove himself")
     return;
   }
+
   await client.users.updateUserMetadata(userId, {
     publicMetadata: {
       role: null,

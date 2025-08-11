@@ -3,7 +3,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Inter } from "next/font/google";
 import { esES } from "@clerk/localizations";
 import "./globals.css";
-import ChatWithSuspense from "@/components/ChatWithSuspense";
+import ChatSelect from "@/components/ChatSelect";
+import { ClerkErrorBoundary } from "@/components/ClerkErrorBoundary";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
   title: "Clínica Esteban Porras - Fisioterapia y Rehabilitación",
   description:
     "Centro especializado en fisioterapia, rehabilitación y terapia manual en Costa Rica. Profesionales certificados para tu recuperación integral.",
+    icons: [{ rel: "icon", url: "/favicon.ico" }]
 };
 
 export default async function RootLayout({
@@ -23,6 +25,7 @@ export default async function RootLayout({
 }>) {
   return (
     <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_demo'}
       appearance={{
         variables: {
           colorPrimary: "var(--complementario)",
@@ -37,10 +40,29 @@ export default async function RootLayout({
       }}
       localization={esES}
     >
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    var theme = localStorage.getItem('theme');
+                    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (theme === 'dark' || (!theme && prefersDark)) {
+                      document.documentElement.classList.add('dark');
+                    }
+                  } catch (e) {}
+                })();
+              `,
+            }}
+          />
+        </head>
         <body className={`${inter.variable} font-sans antialiased`}>
-          {children}
-          <ChatWithSuspense />
+          <ClerkErrorBoundary>
+            {children}
+            <ChatSelect />
+          </ClerkErrorBoundary>
         </body>
       </html>
     </ClerkProvider>

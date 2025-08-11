@@ -369,7 +369,9 @@ export default function SupportChat() {
       {/* Botón flotante */}
       <Button
         onClick={toggleChat}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform duration-200 z-50"
+        className="fixed bottom-6 right-6 h-14 w-14 
+        rounded-full shadow-lg hover:scale-110 transition-transform duration-200 z-50
+        cursor-pointer"
         size="icon"
         name="chat-soporte"
         aria-label="chat-soporte"
@@ -380,7 +382,7 @@ export default function SupportChat() {
           <div className="relative">
             <MessageCircle className="h-6 w-6" />
             {totalUnreadCount > 0 && (
-              <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
+              <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500 text-white">
                 {totalUnreadCount > 99 ? "99+" : totalUnreadCount}
               </Badge>
             )}
@@ -439,13 +441,13 @@ export default function SupportChat() {
                             />
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-white">
+                            <span className="text-xs text-text-primary">
                               {formatTime(chat.lastMessageTime)}
                             </span>
                             {chat.unreadCount > 0 && (
                               <Badge
                                 variant="outline"
-                                className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-600"
+                                className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-600 text-white"
                               >
                                 {chat.unreadCount}
                               </Badge>

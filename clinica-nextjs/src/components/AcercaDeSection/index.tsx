@@ -1,5 +1,7 @@
 import { Suspense } from "react"
 import Image from "next/image";
+import Link from "next/link";
+import { CometCard } from "../ui/comet-card";
 export const AcercaDeSection = () =>  {
     return (
         <Suspense fallback={<div>loading....</div>}>
@@ -79,7 +81,7 @@ export const AcercaDeSection = () =>  {
                 ))}
               </div>
 
-              <button className="group  backdrop-blur-sm  border-2 border-primary px-8 py-4 rounded-xl font-semibold bg-primary text-black hover:-translate-y-1 shadow-xl hover:shadow-cyan-500/50  transition-all duration-300 flex items-center justify-center gap-2">
+              <a href='#citas' className="group  backdrop-blur-sm  border-2 border-primary px-8 py-4 rounded-xl font-semibold bg-primary text-black hover:-translate-y-1 shadow-xl hover:shadow-cyan-500/50  transition-all duration-300 flex items-center justify-center gap-2">
                 Comenzar Evaluación
                 <svg
                   className="w-5 h-5"
@@ -94,23 +96,29 @@ export const AcercaDeSection = () =>  {
                     d="M17 8l4 4m0 0l-4 4m4-4H3"
                   ></path>
                 </svg>
-              </button>
+              </a>
             </div>
 
-            <div className="order-1 lg:order-2">
-              <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-2xl"></div>
-                <div className="relative overflow-hidden rounded-3xl shadow-2xl ">
-                  <Image
-                    src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/acerca-de.webp"
-                    priority={true}
-                    width={600}
-                    height={600}
-                    alt="Fisioterapeuta profesional trabajando con paciente en tratamiento especializado"
-                    className="object-cover object-center hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-              </div>
+            <div className="order-1 lg:order-2 lg:justify-end">
+              <CometCard rotateDepth={10} translateDepth={5}>
+                
+                  
+                    <Image
+                        src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/acerca-de.webp"
+                        priority={true}
+                        width={600}
+                        height={600}
+                        alt="Fisioterapeuta profesional trabajando con paciente en tratamiento especializado"
+                        className="object-cover object-center hover:scale-105 transition-transform duration-700"
+                      />
+                    
+                  
+              </CometCard>
+                
+                
+                 
+                
+              
             </div>
           </div>
         </div>

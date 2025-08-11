@@ -2,6 +2,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import MobileMenu from "@/components/MobileMenu";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import {
   BarChart3,
   Settings,
@@ -9,17 +10,18 @@ import {
   Inbox,
   TrendingUp,
   ExternalLink,
+  Home,
 } from "lucide-react";
 export const UserDasboardHeader = async () => {
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
       <div className="flex items-center gap-3">
         <Link
-          href={"/"}
-          className="text-lg md:text-2xl text-text-primary font-semibold"
-        >
-          Clinica Esteban Porras
-        </Link>
+              href={"/"}
+              className="text-lg md:text-2xl text-text-primary font-semibold"
+            >
+              Clinica Esteban Porras
+            </Link>
       </div>
 
       <nav className="hidden md:flex items-center gap-6">
@@ -76,6 +78,17 @@ export const UserDasboardHeader = async () => {
             <Link href={"/user"}>
               <Settings className="w-4 h-4 mr-3" />
               Cuenta
+            </Link>
+          </Button>
+
+          <Button
+            variant="link"
+            className="w-full justify-start text-text-primary "
+            asChild
+          >
+            <Link href={"/"}>
+              <Home className="w-4 h-4 mr-3" />
+              Regresar al inicio
             </Link>
           </Button>
 

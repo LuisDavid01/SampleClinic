@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 
-export const AppointmentForm = () => {
+export const CitasForm = () => {
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -235,7 +235,7 @@ export const AppointmentForm = () => {
                   value={formData.telefono}
                   onChange={handleInputChange}
                   className={inputStyles}
-                  placeholder="+1 (555) 123-4567"
+                  placeholder="+506 8888-8888"
                 />
               </div>
 
