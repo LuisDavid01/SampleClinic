@@ -141,10 +141,10 @@ export const LandingPageHeader: React.FC = () => {
                       asChild
                     >
                       <Link
-                        href="/dashboard"
+                        href="/pacientes"
                         className="text-text-primary font-medium"
                       >
-                        Dashboard
+                        Area pacientes
                       </Link>
                     </Button>
                   </li>
@@ -257,10 +257,10 @@ export const LandingPageHeader: React.FC = () => {
                       asChild
                     >
                       <Link
-                        href="/dashboard"
+                        href="/pacientes"
                         className="text-text-primary font-medium"
                       >
-                        Dashboard
+                        Area pacientes
                       </Link>
                     </Button>
                   </li>

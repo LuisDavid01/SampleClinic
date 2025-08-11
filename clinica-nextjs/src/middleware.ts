@@ -1,5 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from "next/server";
 
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+//route matcher solo para las rutas de paciente
+const isPacienteRoute = createRouteMatcher(["/pacientes(.*)"]);
 //estas rutas estan protegidas
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
@@ -8,11 +12,12 @@ const isProtectedRoute = createRouteMatcher([
   "/pacientes(.*)",
 ]);
 export default clerkMiddleware(async (auth, req) => {
+
   if (isProtectedRoute(req)) await auth.protect();
-  
+  const authData = await auth();
   const isAdmin = isAdminRoute(req);
   if (isAdmin) {
-    const authData = await auth();
+    
     const userRole = authData.sessionClaims?.metadata?.role;
     // Solo administradores pueden acceder a rutas de admin
     if (userRole !== "admin") {
@@ -22,9 +27,8 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   // Para rutas de pacientes: usar la misma lógica que checkRole
-  const isPacienteRoute = req.url.includes('/pacientes');
-  if (isPacienteRoute) {
-    const authData = await auth();
+  //const isPacienteRoute = req.url.includes('/pacientes');
+  if (isPacienteRoute(req)) {
     const userRole = authData.sessionClaims?.metadata?.role;
 
     // Si el usuario no tiene rol específico, se considera paciente por defecto

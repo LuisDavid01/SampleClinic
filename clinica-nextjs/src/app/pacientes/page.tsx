@@ -174,7 +174,7 @@ export default function PacientesPage() {
   )[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header con diseño médico */}
         <div className="mb-8">
@@ -184,10 +184,10 @@ export default function PacientesPage() {
                 <Calendar className="w-8 h-8 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl font-bold text-accent">
                   Mi Historial Médico
                 </h1>
-                <p className="text-gray-600 mt-1">
+                <p className="text-text-primary mt-1">
                   Seguimiento de tus citas y tratamientos en la clínica
                 </p>
               </div>
@@ -207,12 +207,12 @@ export default function PacientesPage() {
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="bg-card border-0 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total de Citas</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalCitas}</p>
+                  <p className="text-sm font-medium text-text-primary">Total de Citas</p>
+                  <p className="text-2xl font-bold text-accent">{totalCitas}</p>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-full">
                   <Calendar className="w-6 h-6 text-blue-600" />
@@ -221,11 +221,11 @@ export default function PacientesPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="bg-card border-0 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Citas Completadas</p>
+                  <p className="text-sm font-medium text-text-primary">Citas Completadas</p>
                   <p className="text-2xl font-bold text-green-600">{citasCompletadas}</p>
                 </div>
                 <div className="p-3 bg-green-100 rounded-full">
@@ -235,12 +235,12 @@ export default function PacientesPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="bg-card border-0 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Próxima Cita</p>
-                  <p className="text-lg font-semibold text-gray-900">
+                  <p className="text-sm font-medium text-text-primary">Próxima Cita</p>
+                  <p className="text-lg font-semibold text-accent">
                     {proximaCita ? formatFecha(proximaCita.fecha) : 'No programada'}
                   </p>
                 </div>
@@ -253,7 +253,7 @@ export default function PacientesPage() {
         </div>
 
         {/* Filtros */}
-        <Card className="bg-white border-0 shadow-sm mb-8">
+        <Card className="bg-card border-0 shadow-sm mb-8">
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
@@ -261,13 +261,13 @@ export default function PacientesPage() {
                 <input
                   type="text"
                   placeholder="Buscar por fisioterapeuta, tipo de cita o síntomas..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent "
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
                 />
               </div>
               <select
-                className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                className="px-4 py-3 border border-gray-200 text-text-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent "
                 value={filtroEstado}
                 onChange={(e) => setFiltroEstado(e.target.value)}
               >
@@ -285,10 +285,10 @@ export default function PacientesPage() {
         {/* Lista de Citas */}
         <div className="space-y-4">
           {citasOrdenadas.length === 0 ? (
-            <Card className="bg-white border-0 shadow-sm">
+            <Card className="bg-card border-0 shadow-sm">
               <CardContent className="p-12 text-center">
-                <CalendarDays className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                <CalendarDays className="w-16 h-16 text-accent mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-text-primary mb-2">
                   No hay citas encontradas
                 </h3>
                 <p className="text-gray-500">
@@ -298,18 +298,18 @@ export default function PacientesPage() {
             </Card>
           ) : (
             citasOrdenadas.map((cita) => (
-              <Card key={cita.id} className="bg-white border-0 shadow-sm hover:shadow-md transition-shadow">
+              <Card key={cita.id} className="bg-card border-0 shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader className="pb-4">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-blue-100 rounded-full">
+                      <div className="p-3 bg-blue-100 text-accent rounded-full">
                         {getTipoIcon(cita.tipo)}
                       </div>
                       <div>
-                        <CardTitle className="text-xl text-gray-900">
+                        <CardTitle className="text-xl text-accent">
                           {getTipoText(cita.tipo)} - {formatFecha(cita.fecha)}
                         </CardTitle>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-4 mt-2 text-sm text-text-primary">
                           <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4" />
                             {cita.hora} ({cita.duracion} min)
@@ -347,7 +347,7 @@ export default function PacientesPage() {
                           <Stethoscope className="w-4 h-4" />
                           Síntomas Reportados:
                         </h4>
-                        <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">{cita.sintomas}</p>
+                        <p className="text-sm text-text-primary  p-3 rounded-lg">{cita.sintomas}</p>
                       </div>
                       {cita.diagnostico && (
                         <div>
@@ -355,7 +355,7 @@ export default function PacientesPage() {
                             <FileText className="w-4 h-4" />
                             Diagnóstico:
                           </h4>
-                          <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">{cita.diagnostico}</p>
+                          <p className="text-sm text-text-primary bg-blue-50 p-3 rounded-lg">{cita.diagnostico}</p>
                         </div>
                       )}
                       {cita.recomendaciones && (
@@ -364,7 +364,7 @@ export default function PacientesPage() {
                             <Activity className="w-4 h-4" />
                             Recomendaciones:
                           </h4>
-                          <p className="text-sm text-gray-600 bg-green-50 p-3 rounded-lg">{cita.recomendaciones}</p>
+                          <p className="text-sm text-text-primary bg-green-50 p-3 rounded-lg">{cita.recomendaciones}</p>
                         </div>
                       )}
                     </div>
