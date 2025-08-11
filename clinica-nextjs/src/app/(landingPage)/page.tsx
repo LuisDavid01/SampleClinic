@@ -5,8 +5,11 @@ import { TeamSection } from "@/components/TeamSection";
 import { ReviewsSection } from "@/components/ReviewSection";
 import { AcercaDeSection } from "@/components/AcercaDeSection";
 import { HomeHero } from "@/components/HomeHero";
-import { AppointmentForm } from "@/components/AppointmentForm";
+
+import { CitasForm } from "@/components/CitasForm";
+
 import { NewTestimonio } from "@/components/NewTestimonio";
+
 
 export default function Home() {
   return (
@@ -272,8 +275,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Appointment Form Section */}
-      <AppointmentForm />
+      {/* Formulario de Citas */}
+      <CitasForm />
     </div>
   );
 }

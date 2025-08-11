@@ -3,11 +3,21 @@ import { auth } from "@clerk/nextjs/server";
 
 export const checkRole = async (role: Roles) => {
   const { sessionClaims } = await auth();
-  return sessionClaims?.metadata.role === role;
+  const userRole = sessionClaims?.metadata?.role;
+  
+  // Si el usuario no tiene rol específico, se considera paciente por defecto
+  if (!userRole && role === "paciente") {
+    return true;
+  }
+  
+  return userRole === role;
 };
 
-// Función para verificar roles en el lado del cliente
-export const useCheckRole = (role: Roles) => {
-  const { user } = require("@clerk/nextjs").useUser();
-  return user?.publicMetadata?.role === role;
+// Función específica para verificar si un usuario es paciente (servidor)
+export const checkIsPaciente = async () => {
+  const { sessionClaims } = await auth();
+  const userRole = sessionClaims?.metadata?.role;
+  
+  // Si el usuario no tiene rol específico, se considera paciente por defecto
+  return !userRole || userRole === "paciente";
 };
