@@ -125,7 +125,7 @@ const mockAppointments = [
 ]
 
 const statusColors = {
-  "programada": "bg-primary text-text-primary",
+  "programada": "bg-primary text-black",
   "completada": "bg-accent text-accent-foreground",
   "cancelada": "bg-muted text-muted-foreground",
   "en-proceso": "bg-secondary text-secondary-foreground"

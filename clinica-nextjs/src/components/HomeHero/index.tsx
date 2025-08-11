@@ -36,7 +36,7 @@ export const HomeHero = () => {
                 enfoque integral para tu salud y recuperación completa.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <button className="group bg-secondary-button text-text-primary px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2">
+                <a href={"#citas"} className="group bg-secondary-button text-text-primary px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2">
                   <svg
                     className="w-5 h-5 group-hover:rotate-12 transition-transform"
                     fill="none"
@@ -51,8 +51,8 @@ export const HomeHero = () => {
                     ></path>
                   </svg>
                   Agendar Cita
-                </button>
-                <Link
+                </a>
+                <a
                   href={"#about"}
                   className="group bg-primary/10 backdrop-blur-sm text-white border-2 border-primary px-8 py-4 rounded-xl font-semibold hover:bg-primary hover:text-black hover:-translate-y-1 shadow-xl hover:shadow-cyan-500  transition-all duration-300 flex items-center justify-center gap-2"
                 >
@@ -70,7 +70,7 @@ export const HomeHero = () => {
                       d="M17 8l4 4m0 0l-4 4m4-4H3"
                     ></path>
                   </svg>
-                </Link>
+                </a>
               </div>
             </div>
           </div>
