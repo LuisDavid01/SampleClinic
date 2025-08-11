@@ -4,191 +4,38 @@ import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { 
-  Calendar, 
-  Clock, 
-  User, 
-  FileText, 
   Download, 
-  Eye,
-  Search,
-  Filter,
-  CalendarDays,
   Stethoscope,
   Activity,
-  TrendingUp
+  TrendingUp,
+  FileText,
+  User
 } from "lucide-react";
-import { Cita, Diagnostico } from "@/types/paciente";
-import Link from "next/link";
-
-// Datos de ejemplo - en producción vendrían de una API
-const citasEjemplo: Cita[] = [
-  {
-    id: "1",
-    pacienteId: "paciente1",
-    fisioterapeutaId: "fisio1",
-    fisioterapeutaNombre: "Dr. Esteban Porras",
-    fecha: new Date("2024-01-15"),
-    hora: "09:00",
-    duracion: 60,
-    estado: "completada",
-    tipo: "consulta",
-    sintomas: "Dolor en la rodilla derecha",
-    diagnostico: "Tendinitis rotuliana",
-    tratamiento: "Terapia manual y ejercicios de fortalecimiento",
-    recomendaciones: "Aplicar hielo 3 veces al día, evitar actividades de alto impacto"
-  },
-  {
-    id: "2",
-    pacienteId: "paciente1",
-    fisioterapeutaId: "fisio1",
-    fisioterapeutaNombre: "Dr. Esteban Porras",
-    fecha: new Date("2024-01-22"),
-    hora: "10:30",
-    duracion: 45,
-    estado: "completada",
-    tipo: "tratamiento",
-    sintomas: "Mejora del dolor, pero aún presente",
-    diagnostico: "Tendinitis rotuliana - Mejoría",
-    tratamiento: "Continuar con ejercicios de fortalecimiento, agregar estiramientos",
-    recomendaciones: "Mantener rutina de ejercicios, evitar escaleras"
-  },
-  {
-    id: "3",
-    pacienteId: "paciente1",
-    fisioterapeutaId: "fisio2",
-    fisioterapeutaNombre: "Dra. María González",
-    fecha: new Date("2024-02-05"),
-    hora: "14:00",
-    duracion: 60,
-    estado: "programada",
-    tipo: "seguimiento",
-    sintomas: "Dolor reducido significativamente",
-    diagnostico: "Tendinitis rotuliana - Recuperación avanzada",
-    tratamiento: "Evaluación de progreso y ajuste de tratamiento",
-    recomendaciones: "Continuar con ejercicios, programar próxima cita"
-  }
-];
-
-const getEstadoColor = (estado: Cita['estado']) => {
-  switch (estado) {
-    case 'programada':
-      return 'bg-blue-100 text-blue-800 border-blue-200';
-    case 'confirmada':
-      return 'bg-green-100 text-green-800 border-green-200';
-    case 'en_proceso':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'completada':
-      return 'bg-gray-100 text-gray-800 border-gray-200';
-    case 'cancelada':
-      return 'bg-red-100 text-red-800 border-red-200';
-    default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
-  }
-};
-
-const getEstadoText = (estado: Cita['estado']) => {
-  switch (estado) {
-    case 'programada':
-      return 'Programada';
-    case 'confirmada':
-      return 'Confirmada';
-    case 'en_proceso':
-      return 'En Proceso';
-    case 'completada':
-      return 'Completada';
-    case 'cancelada':
-      return 'Cancelada';
-    default:
-      return estado;
-  }
-};
-
-const getTipoText = (tipo: Cita['tipo']) => {
-  switch (tipo) {
-    case 'consulta':
-      return 'Consulta';
-    case 'tratamiento':
-      return 'Tratamiento';
-    case 'evaluacion':
-      return 'Evaluación';
-    case 'seguimiento':
-      return 'Seguimiento';
-    default:
-      return tipo;
-  }
-};
-
-const getTipoIcon = (tipo: Cita['tipo']) => {
-  switch (tipo) {
-    case 'consulta':
-      return <Stethoscope className="w-5 h-5" />;
-    case 'tratamiento':
-      return <Activity className="w-5 h-5" />;
-    case 'evaluacion':
-      return <FileText className="w-5 h-5" />;
-    case 'seguimiento':
-      return <TrendingUp className="w-5 h-5" />;
-    default:
-      return <Calendar className="w-5 h-5" />;
-  }
-};
 
 export default function PacientesPage() {
   const { user } = useUser();
-  const [citas, setCitas] = useState<Cita[]>(citasEjemplo);
-  const [filtroEstado, setFiltroEstado] = useState<string>('todos');
-  const [busqueda, setBusqueda] = useState<string>('');
-
-  // Filtrar citas
-  const citasFiltradas = citas.filter(cita => {
-    const cumpleEstado = filtroEstado === 'todos' || cita.estado === filtroEstado;
-    const cumpleBusqueda = busqueda === '' || 
-      cita.fisioterapeutaNombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      cita.tipo.toLowerCase().includes(busqueda.toLowerCase()) ||
-      cita.sintomas?.toLowerCase().includes(busqueda.toLowerCase());
-    
-    return cumpleEstado && cumpleBusqueda;
-  });
-
-  // Ordenar por fecha (más reciente primero)
-  const citasOrdenadas = [...citasFiltradas].sort((a, b) => 
-    new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
-  );
-
-  const formatFecha = (fecha: Date) => {
-    return new Intl.DateTimeFormat('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(fecha);
-  };
-
-  // Estadísticas
-  const totalCitas = citas.length;
-  const citasCompletadas = citas.filter(c => c.estado === 'completada').length;
-  const proximaCita = citas.filter(c => c.estado === 'programada').sort((a, b) => 
-    new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
-  )[0];
 
   return (
-    <div className="min-h-screen ">
+o
+    <div className="min-h-screen bg-background">
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header con diseño médico */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-100 rounded-full">
-                <Calendar className="w-8 h-8 text-blue-600" />
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Stethoscope className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-accent">
+
+                <h1 className="text-3xl font-bold text-foreground">
                   Mi Historial Médico
                 </h1>
-                <p className="text-text-primary mt-1">
-                  Seguimiento de tus citas y tratamientos en la clínica
+                <p className="text-muted-foreground mt-1">
+                  Seguimiento de tu progreso médico y tratamientos
+
                 </p>
               </div>
             </div>
@@ -196,7 +43,7 @@ export default function PacientesPage() {
               <Button 
                 variant="outline" 
                 size="sm"
-                className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                className="border-primary/20 text-primary hover:bg-primary/5"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Exportar Historial
@@ -205,17 +52,19 @@ export default function PacientesPage() {
           </div>
         </div>
 
-        {/* Estadísticas */}
+        {/* Resumen de Salud */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="bg-card border-0 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-text-primary">Total de Citas</p>
-                  <p className="text-2xl font-bold text-accent">{totalCitas}</p>
+
+                  <p className="text-sm font-medium text-muted-foreground">Estado General</p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">Mejorando</p>
+
                 </div>
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Calendar className="w-6 h-6 text-blue-600" />
+                <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
+                  <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
               </div>
             </CardContent>
@@ -225,11 +74,13 @@ export default function PacientesPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-text-primary">Citas Completadas</p>
-                  <p className="text-2xl font-bold text-green-600">{citasCompletadas}</p>
+
+                  <p className="text-sm font-medium text-muted-foreground">Tratamientos Activos</p>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">2</p>
+
                 </div>
-                <div className="p-3 bg-green-100 rounded-full">
-                  <Activity className="w-6 h-6 text-green-600" />
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
+                  <Activity className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </CardContent>
@@ -239,141 +90,220 @@ export default function PacientesPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-text-primary">Próxima Cita</p>
-                  <p className="text-lg font-semibold text-accent">
-                    {proximaCita ? formatFecha(proximaCita.fecha) : 'No programada'}
+
+                  <p className="text-sm font-medium text-muted-foreground">Próxima Evaluación</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    En 2 semanas
+
                   </p>
                 </div>
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <Clock className="w-6 h-6 text-purple-600" />
+                <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
+                  <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filtros */}
+        {/* Progreso del Tratamiento */}
         <Card className="bg-card border-0 shadow-sm mb-8">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Buscar por fisioterapeuta, tipo de cita o síntomas..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent "
-                  value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
-                />
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              Progreso del Tratamiento
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Diagnóstico Principal */}
+              <div className="border border-border rounded-lg p-4">
+                <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Stethoscope className="w-4 h-4" />
+                  Diagnóstico Principal: Tendinitis Rotuliana
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">75%</div>
+                    <div className="text-sm text-muted-foreground">Recuperación</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">8</div>
+                    <div className="text-sm text-muted-foreground">Sesiones Completadas</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">2</div>
+                    <div className="text-sm text-muted-foreground">Semanas Restantes</div>
+                  </div>
+                </div>
               </div>
-              <select
-                className="px-4 py-3 border border-gray-200 text-text-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent "
-                value={filtroEstado}
-                onChange={(e) => setFiltroEstado(e.target.value)}
-              >
-                <option value="todos">Todos los estados</option>
-                <option value="programada">Programada</option>
-                <option value="confirmada">Confirmada</option>
-                <option value="en_proceso">En Proceso</option>
-                <option value="completada">Completada</option>
-                <option value="cancelada">Cancelada</option>
-              </select>
+
+              {/* Síntomas y Mejoras */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="border border-border rounded-lg p-4">
+                  <h5 className="font-semibold text-foreground mb-2">Síntomas Iniciales</h5>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Dolor agudo en rodilla derecha</li>
+                    <li>• Dificultad para subir escaleras</li>
+                    <li>• Dolor al realizar sentadillas</li>
+                    <li>• Molestias después del ejercicio</li>
+                  </ul>
+                </div>
+                <div className="border border-border rounded-lg p-4">
+                  <h5 className="font-semibold text-foreground mb-2">Mejoras Observadas</h5>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>✅ Dolor reducido en 70%</li>
+                    <li>✅ Mejor movilidad articular</li>
+                    <li>✅ Capacidad de subir escaleras</li>
+                    <li>🔄 Ejercicios sin dolor</li>
+                  </ul>
+                </div>
+              </div>
+
             </div>
           </CardContent>
         </Card>
 
-        {/* Lista de Citas */}
-        <div className="space-y-4">
-          {citasOrdenadas.length === 0 ? (
-            <Card className="bg-card border-0 shadow-sm">
-              <CardContent className="p-12 text-center">
-                <CalendarDays className="w-16 h-16 text-accent mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-text-primary mb-2">
-                  No hay citas encontradas
-                </h3>
-                <p className="text-gray-500">
-                  No se encontraron citas con los filtros aplicados.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            citasOrdenadas.map((cita) => (
-              <Card key={cita.id} className="bg-card border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="pb-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-blue-100 text-accent rounded-full">
-                        {getTipoIcon(cita.tipo)}
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl text-accent">
-                          {getTipoText(cita.tipo)} - {formatFecha(cita.fecha)}
-                        </CardTitle>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-text-primary">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            {cita.hora} ({cita.duracion} min)
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <User className="w-4 h-4" />
-                            {cita.fisioterapeutaNombre}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge className={`${getEstadoColor(cita.estado)} border`}>
-                        {getEstadoText(cita.estado)}
-                      </Badge>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                        className="border-blue-200 text-blue-700 hover:bg-blue-50"
-                      >
-                        <Link href={`/pacientes/citas/${cita.id}`}>
-                          <Eye className="w-4 h-4 mr-2" />
-                          Ver Detalles
-                        </Link>
-                      </Button>
-                    </div>
+
+        {/* Ejercicios de Rehabilitación */}
+        <Card className="bg-card border-0 shadow-sm mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Activity className="w-5 h-5 text-primary" />
+              Ejercicios de Rehabilitación
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="border border-border rounded-lg p-4 bg-muted">
+                <h5 className="font-semibold text-foreground mb-2">Ejercicios Diarios</h5>
+                <p className="text-sm text-muted-foreground mb-3">3 series de 15 repeticiones</p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm text-muted-foreground">Sentadillas asistidas</span>
                   </div>
-                </CardHeader>
-                {cita.sintomas && (
-                  <CardContent className="pt-0">
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
-                          <Stethoscope className="w-4 h-4" />
-                          Síntomas Reportados:
-                        </h4>
-                        <p className="text-sm text-text-primary  p-3 rounded-lg">{cita.sintomas}</p>
-                      </div>
-                      {cita.diagnostico && (
-                        <div>
-                          <h4 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
-                            <FileText className="w-4 h-4" />
-                            Diagnóstico:
-                          </h4>
-                          <p className="text-sm text-text-primary bg-blue-50 p-3 rounded-lg">{cita.diagnostico}</p>
-                        </div>
-                      )}
-                      {cita.recomendaciones && (
-                        <div>
-                          <h4 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
-                            <Activity className="w-4 h-4" />
-                            Recomendaciones:
-                          </h4>
-                          <p className="text-sm text-text-primary bg-green-50 p-3 rounded-lg">{cita.recomendaciones}</p>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            ))
-          )}
-        </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm text-muted-foreground">Estiramientos de cuádriceps</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span className="text-sm text-muted-foreground">Ejercicios de equilibrio</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border border-border rounded-lg p-4 bg-muted">
+                <h5 className="font-semibold text-foreground mb-2">Ejercicios Semanales</h5>
+                <p className="text-sm text-muted-foreground mb-3">2-3 veces por semana</p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm text-muted-foreground">Bicicleta estática</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm text-muted-foreground">Natación suave</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="text-sm text-muted-foreground">Caminata moderada</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border border-border rounded-lg p-4 bg-muted">
+                <h5 className="font-semibold text-foreground mb-2">Próximos Objetivos</h5>
+                <p className="text-sm text-muted-foreground mb-3">Para las próximas 2 semanas</p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm text-muted-foreground">Retorno al running</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm text-muted-foreground">Deportes de impacto</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm text-muted-foreground">Evaluación final</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recomendaciones Médicas */}
+        <Card className="bg-card border-0 shadow-sm mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <FileText className="w-5 h-5 text-primary" />
+              Recomendaciones Médicas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h5 className="font-semibold text-foreground mb-3">Actividades Recomendadas</h5>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Continuar con ejercicios de fortalecimiento</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Mantener rutina de estiramientos</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Aplicar hielo si hay inflamación</span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h5 className="font-semibold text-foreground mb-3">Actividades a Evitar</h5>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Deportes de alto impacto</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Escaleras excesivas</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Sentadillas profundas</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notas del Fisioterapeuta */}
+        <Card className="bg-card border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <User className="w-5 h-5 text-primary" />
+              Notas del Fisioterapeuta
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="border-l-4 border-primary pl-4">
+                <p className="text-sm text-muted-foreground italic">
+                  "El paciente muestra excelente progreso en la recuperación. La movilidad articular ha mejorado significativamente y el dolor se ha reducido considerablemente. Continuar con el programa de ejercicios actual y programar evaluación en 2 semanas para considerar el retorno gradual a actividades deportivas."
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  - Dr. Esteban Porras, 15 de Enero 2024
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
       </div>
     </div>
   );
