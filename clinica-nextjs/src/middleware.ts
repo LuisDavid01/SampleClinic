@@ -1,11 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-
 import { NextResponse } from "next/server";
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 //route matcher solo para las rutas de paciente
 const isPacienteRoute = createRouteMatcher(["/pacientes(.*)"]);
-
 //estas rutas estan protegidas
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
@@ -13,9 +11,6 @@ const isProtectedRoute = createRouteMatcher([
   "/user(.*)",
   "/pacientes(.*)",
 ]);
-
-// Función para verificar si es una ruta de admin
-const isAdminRoute = (req: Request) => req.url.includes('/admin');
 export default clerkMiddleware(async (auth, req) => {
 
   if (isProtectedRoute(req)) await auth.protect();
