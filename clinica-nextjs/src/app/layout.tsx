@@ -3,7 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Inter } from "next/font/google";
 import { esES } from "@clerk/localizations";
 import "./globals.css";
-import ChatWithSuspense from "@/components/ChatWithSuspense";
+import ChatSelect from "@/components/ChatSelect";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "Clínica Esteban Porras - Fisioterapia y Rehabilitación",
   description:
     "Centro especializado en fisioterapia, rehabilitación y terapia manual en Costa Rica. Profesionales certificados para tu recuperación integral.",
+    icons: [{ rel: "icon", url: "/favicon.ico" }]
 };
 
 export default async function RootLayout({
@@ -40,7 +41,7 @@ export default async function RootLayout({
       <html lang="en">
         <body className={`${inter.variable} font-sans antialiased`}>
           {children}
-          <ChatWithSuspense />
+          <ChatSelect />
         </body>
       </html>
     </ClerkProvider>

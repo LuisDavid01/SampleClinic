@@ -1,9 +1,11 @@
 import { Suspense } from "react"
 import Link from "next/link";
+import { HeroSkeleton } from "../HeroSkeleton";
 export const HomeHero = () => {
     return (
-        <Suspense>
+        
             <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        <Suspense fallback={<HeroSkeleton/>}>
         <video
           autoPlay
           loop
@@ -11,10 +13,11 @@ export const HomeHero = () => {
           className="absolute top-0 left-0 w-full h-full object-cover object-[35%_75%]  md:object-cover  z-0"
         >
           <source
-            src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/massage.mp4"
+            src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/output.mp4"
             type="video/mp4"
           />
         </video>
+        </Suspense>
 
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-black/40 via-black/20 to-black/40 z-10"></div>
 
@@ -73,6 +76,5 @@ export const HomeHero = () => {
           </div>
         </div>
       </section>
-        </Suspense>
     )
 }

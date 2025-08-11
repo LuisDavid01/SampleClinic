@@ -1,19 +1,46 @@
 import { UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { DasboardHeader } from "@/components/DashboardHeader";
-import { BarChart3, Settings, Grid3X3, Inbox, TrendingUp } from "lucide-react";
+import {
+  BarChart3,
+  Settings,
+  User,
+  Home,
+  Star,
+  Folder,
+  CalendarDays,
+  Shield,
+  Users
+} from "lucide-react";
 import Link from "next/link";
+import { checkRole } from "@/utils/roles";
+import { redirect } from "next/navigation";
 
 export default async function dasboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // ahora validamos las rutas de admin por el layout
+  const isAdmin = await checkRole("admin");
+  if (!isAdmin) {
+    redirect("/");
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <DasboardHeader />
+
+      {/* Contenedor principal debajo del header */}
       <div className="flex">
-        <aside className="hidden md:block w-64 p-6 border-r border-gray-800">
+        {/* Aside sticky */}
+        <aside
+          className="
+            hidden md:block w-64 p-6 border-r border-gray-800
+            sticky top-0 self-start h-[calc(100vh)] overflow-auto
+            bg-background
+          "
+        >
           <div className="flex items-center justify-center gap-3 mb-8">
             <UserButton showName userProfileUrl="/user" />
           </div>
@@ -33,18 +60,10 @@ export default async function dasboardLayout({
             <Button
               variant="ghost"
               className="w-full justify-start text-text-primary hover:bg-gray-800"
-            >
-              <TrendingUp className="w-4 h-4 mr-3" />
-              Analíticas
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-text-primary hover:bg-gray-800"
               asChild
             >
               <Link href={"/admin/ManageUsers"}>
-                <BarChart3 className="w-4 h-4 mr-3" />
+                <User className="w-4 h-4 mr-3" />
                 <span>Gestionar usuarios</span>
               </Link>
             </Button>
@@ -52,18 +71,57 @@ export default async function dasboardLayout({
             <Button
               variant="ghost"
               className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
             >
-              <Inbox className="w-4 h-4 mr-3" />
-              Citas
+              <Link href={"/admin/appointments"}>
+                <CalendarDays className="w-4 h-4 mr-3" />
+                <span>Citas</span>
+              </Link>
             </Button>
 
             <Button
               variant="ghost"
               className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
             >
-              <Grid3X3 className="w-4 h-4 mr-3" />
-              Registros
+              <Link href={"/admin/files"}>
+                <Folder className="w-4 h-4 mr-3" />
+                <span>Expedientes</span>
+              </Link>
             </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/team"}>
+                <Users className="w-4 h-4 mr-3 " />
+                <span>Equipo</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/testimonials"}>
+                <Star className="w-4 h-4 mr-3 " />
+                <span>Testimonios</span>
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/audit"}>
+                <Shield className="w-4 h-4 mr-3" />
+                <span>Auditoria</span>
+              </Link>
+            </Button>
+
+            
 
             <Button
               variant="ghost"
@@ -75,11 +133,24 @@ export default async function dasboardLayout({
                 Cuenta
               </Link>
             </Button>
+
+            
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/"}>
+                <Home className="w-4 h-4 mr-3" />
+                Regresar al inicio
+              </Link>
+            </Button>
+
           </nav>
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 p-6">{children}</main>
+        {/* Contenido principal; permite scroll sin afectar el sticky */}
+        <main className="flex-1 p-6 min-h-[calc(100vh)]">{children}</main>
       </div>
     </div>
   );

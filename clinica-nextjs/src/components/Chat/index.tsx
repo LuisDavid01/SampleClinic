@@ -29,7 +29,9 @@ export default function FloatingChat() {
       {/* Botón flotante */}
       <Button
         onClick={toggleChat}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform duration-200 z-50"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg 
+        hover:scale-110 transition-transform duration-200 z-50
+        cursor-pointer"
         size="icon"
         name="chat"
         aria-label="chat"

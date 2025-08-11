@@ -1,7 +1,8 @@
-export {};
 
 // Create a type for the roles
-export type Roles = "admin" | "moderator" | "paciente";
+
+export type Roles = "paciente" | "admin" | "moderator" | "fisioterapeuta" | "recepcion";
+
 
 declare global {
   interface CustomJwtSessionClaims {
@@ -9,4 +10,16 @@ declare global {
       role?: Roles;
     };
   }
+
+  // tipo generico para las respuestas de los formularios
+
+export type ActionResponse = {
+  success: boolean
+  message: string
+  errors?: Record<string, string[]>
+  error?: string
 }
+}
+
+
+

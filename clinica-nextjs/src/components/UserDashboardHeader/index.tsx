@@ -2,6 +2,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import MobileMenu from "@/components/MobileMenu";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import {
   BarChart3,
   Settings,
@@ -15,11 +16,11 @@ export const UserDasboardHeader = async () => {
     <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
       <div className="flex items-center gap-3">
         <Link
-          href={"/"}
-          className="text-lg md:text-2xl text-text-primary font-semibold"
-        >
-          Clinica Esteban Porras
-        </Link>
+              href={"/"}
+              className="text-lg md:text-2xl text-text-primary font-semibold"
+            >
+              Clinica Esteban Porras
+            </Link>
       </div>
 
       <nav className="hidden md:flex items-center gap-6">
