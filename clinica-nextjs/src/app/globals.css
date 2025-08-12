@@ -64,7 +64,7 @@
   --radius: 0.625rem;
   --text-primary: oklch(15.34% 0.056 260.53);
   --destructive: oklch(63.021% 0.23694 27.46);
-  --text-accent: oklch(76.78% 0.14 176.53);
+  --text-accent: oklch(61.63% 0.081 181.33);
   --secondary-button: oklch(91.82% 0.036 43.83);
   --complementario: oklch(0.6 0.1 160);
 
@@ -82,11 +82,11 @@
   --popover-foreground: oklch(0.1 0.02 240);
   --primary: oklch(85.24% 0.14 178.87); /* Usando tu primario */
   --primary-foreground: oklch(0.1 0.02 240);
-  --secondary: oklab(64.63% 0.145 0.12); /* Usando tu secundario */
+  --secondary: oklch(64.63% 0.188 39.61); /* Usando tu secundario */
   --secondary-foreground: oklch(0.98 0.02 240);
   --muted: oklch(0.95 0.01 240);
   --muted-foreground: oklch(0.5 0.01 240);
-  --accent: oklch(46.924% 0.07835 159.789); /* Usando tu complementario */
+  --accent: oklch(61.63% 0.081 181.33); /* Usando tu complementario */
   --accent-foreground: oklch(0.98 0.02 240);
   --input: oklch(86.227% 0.00218 14.724);
   --border: oklch(22.213% 0.00003 271.152);
@@ -108,11 +108,11 @@
   --popover-foreground: oklch(0.9 0.02 240);
   --primary: oklch(85.24% 0.14 178.87); /* Mantiene tu primario */
   --primary-foreground: oklch(0.05 0.02 240);
-  --secondary: oklab(64.63% 0.145 0.12); /* Mantiene tu secundario */
+  --secondary: oklch(64.63% 0.188 39.61); /* Mantiene tu secundario */
   --secondary-foreground: oklch(0.9 0.02 240);
   --muted: oklch(0.15 0.02 240);
   --muted-foreground: oklch(83.591% 0.0001 271.152);
-  --accent: oklch(0.6 0.1 160); /* Mantiene tu complementario */
+  --accent: oklch(61.63% 0.081 181.33);/* Mantiene tu complementario */
   --accent-foreground: oklch(0.9 0.02 240);
   --border: oklch(0.9 0.02 240);
   --input: oklch(39.793% 0.00005 271.152);

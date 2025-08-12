@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import Image from "next/image";
 import Link from "next/link";
 import { CometCard } from "../ui/comet-card";
+import { Button } from "../ui/button";
 export const AcercaDeSection = () =>  {
     return (
         <Suspense fallback={<div>loading....</div>}>
@@ -52,7 +53,7 @@ export const AcercaDeSection = () =>  {
                 ].map((item, index) => (
                   <div
                     key={index}
-                    className="group flex items-start space-x-4 p-4 rounded-xl hover:bg-card-secondary/50 transition-all duration-300"
+                    className="group flex items-start space-x-4 p-4 rounded-xl  transition-all duration-300"
                   >
                     <div className="flex-shrink-0 w-12 h-12 bg-accent rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                       <svg
@@ -80,23 +81,30 @@ export const AcercaDeSection = () =>  {
                   </div>
                 ))}
               </div>
-
-              <a href='#citas' className="group  backdrop-blur-sm  border-2 border-primary px-8 py-4 rounded-xl font-semibold bg-primary text-black hover:-translate-y-1 shadow-xl hover:shadow-cyan-500/50  transition-all duration-300 flex items-center justify-center gap-2">
-                Comenzar Evaluación
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  ></path>
-                </svg>
-              </a>
+              <a
+  href="#citas"
+  className="group px-4 py-2 rounded-md backdrop-blur-sm border-2 border-primary 
+              font-semibold bg-primary text-black hover:-translate-y-1
+             shadow-xl hover:shadow-cyan-500/50 transition-all duration-300
+             flex items-center justify-center gap-2 mx-auto"
+>
+  <span>Comenzar Evaluación</span>
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M17 8l4 4m0 0l-4 4m4-4H3"
+    />
+  </svg>
+</a>
+              
             </div>
 
             <div className="order-1 lg:order-2 lg:justify-end">

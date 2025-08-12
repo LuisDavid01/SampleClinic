@@ -321,7 +321,7 @@ export const CitasForm = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-primary to-primary/80 text-black hover:from-primary/90 hover:to-primary/70 font-semibold py-4 text-lg rounded-xl transition-all duration-300 hover:-translate-y-1 shadow-xl hover:shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full bg-gradient-to-r from-primary to-primary/80 text-black hover:from-primary/90 hover:to-primary/70 font-semibold py-4 text-lg rounded-md transition-all duration-300 hover:-translate-y-1 shadow-xl hover:shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">

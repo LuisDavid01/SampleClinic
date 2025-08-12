@@ -5,7 +5,7 @@ export const TeamSection = () => {
   const teamMembers = [
     {
       id: 1,
-      name: "Dr. María González",
+      name: "Lic. Esteban josé Porras Balladares",
       role: "Fisioterapeuta Principal",
       experience: "12+ años",
       description:
@@ -19,11 +19,11 @@ export const TeamSection = () => {
     },
     {
       id: 2,
-      name: "Lic. Carlos Mendez",
+      name: "Ms. María Eugenia Centeno Avila",
       role: "Especialista en Rehabilitación",
       experience: "8+ años",
       description:
-        "Experto en recuperación post-quirúrgica y tratamiento de lesiones musculoesqueléticas",
+        "Dentro de lo que me describe como terapeuta fisica, me interesa ayudar a los demás y el bien de los que más lo necesitan mejorando las habilidades de aquellos que las han perdido.",
       specialties: ["Post-Quirúrgica", "Lesiones Musculares", "Kinesiología"],
       bgGradient: "from-accent/20 via-primary/10 to-accent/5",
     },

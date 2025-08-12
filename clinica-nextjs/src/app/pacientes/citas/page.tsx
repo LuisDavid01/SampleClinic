@@ -9,11 +9,9 @@ import {
   Calendar, 
   Clock, 
   User, 
-  FileText, 
-  Download, 
+  FileText,  
   Eye,
   Search,
-  Filter,
   CalendarDays,
   Stethoscope,
   Activity,
@@ -201,7 +199,7 @@ export default function CitasPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-primary/10 rounded-full">
-                <Calendar className="w-8 h-8 text-primary" />
+                <Calendar className="w-8 h-8 text-accent" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-foreground">
@@ -216,7 +214,7 @@ export default function CitasPage() {
               <Button 
                 variant="outline" 
                 size="sm"
-                className="border-primary/20 text-primary hover:bg-primary/5"
+                className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Nueva Cita
@@ -235,7 +233,7 @@ export default function CitasPage() {
                   <p className="text-2xl font-bold text-foreground">{totalCitas}</p>
                 </div>
                 <div className="p-3 bg-primary/10 rounded-full">
-                  <Calendar className="w-6 h-6 text-primary" />
+                  <Calendar className="w-6 h-6 text-accent" />
                 </div>
               </div>
             </CardContent>
@@ -374,7 +372,7 @@ export default function CitasPage() {
                         variant="outline"
                         size="sm"
                         asChild
-                        className="border-primary/20 text-primary hover:bg-primary/5"
+                        className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
                       >
                         <Link href={`/pacientes/citas/${cita.id}`}>
                           <Eye className="w-4 h-4 mr-2" />
