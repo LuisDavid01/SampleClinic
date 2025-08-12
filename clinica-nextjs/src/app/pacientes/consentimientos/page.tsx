@@ -212,7 +212,7 @@ export default function ConsentimientosPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-primary/10 rounded-full">
-                <FileText className="w-8 h-8 text-primary" />
+                <FileText className="w-8 h-8 text-accent" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-foreground">
@@ -227,7 +227,7 @@ export default function ConsentimientosPage() {
               <Button 
                 variant="outline" 
                 size="sm"
-                className="border-primary/20 text-primary hover:bg-primary/5"
+                className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Exportar Todos
@@ -246,7 +246,7 @@ export default function ConsentimientosPage() {
                   <p className="text-2xl font-bold text-foreground">{totalConsentimientos}</p>
                 </div>
                 <div className="p-3 bg-primary/10 rounded-full">
-                  <FileText className="w-6 h-6 text-primary" />
+                  <FileText className="w-6 h-6 text-accent" />
                 </div>
               </div>
             </CardContent>
@@ -387,7 +387,7 @@ export default function ConsentimientosPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleView(consentimiento)}
-                        className="border-primary/20 text-primary hover:bg-primary/5"
+                        className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         Ver
@@ -396,7 +396,7 @@ export default function ConsentimientosPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDownload(consentimiento)}
-                        className="border-primary/20 text-primary hover:bg-primary/5"
+                        className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Descargar
@@ -413,7 +413,7 @@ export default function ConsentimientosPage() {
         <Card className="bg-card border-0 shadow-sm mt-8">
           <CardHeader>
             <CardTitle className="text-lg text-foreground flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
+              <Shield className="w-5 h-5 text-accent" />
               Información Importante
             </CardTitle>
           </CardHeader>

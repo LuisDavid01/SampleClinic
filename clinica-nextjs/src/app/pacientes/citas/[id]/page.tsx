@@ -254,7 +254,7 @@ export default function CitaDetallePage() {
                 variant="outline" 
                 size="sm" 
                 asChild
-                className="border-primary/20 text-primary hover:bg-primary/5"
+                className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
               >
                 <Link href="/pacientes">
                   <ArrowLeft className="w-4 h-4 mr-2" />
@@ -289,7 +289,7 @@ export default function CitaDetallePage() {
                 variant="outline" 
                 size="sm" 
                 onClick={handleExportPDF}
-                className="border-primary/20 text-primary hover:bg-primary/5"
+                className="border-primary/20 text-accent hover:bg-primary/5"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Exportar PDF
@@ -302,7 +302,7 @@ export default function CitaDetallePage() {
         <Card className="bg-card border-0 shadow-sm mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
-              <Calendar className="w-5 h-5 text-primary" />
+              <Calendar className="w-5 h-5 text-accent" />
               Información General
             </CardTitle>
           </CardHeader>
@@ -345,7 +345,7 @@ export default function CitaDetallePage() {
           <Card className="bg-card border-0 shadow-sm mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
-                <Stethoscope className="w-5 h-5 text-primary" />
+                <Stethoscope className="w-5 h-5 text-accent" />
                 Diagnóstico y Evaluación
               </CardTitle>
             </CardHeader>
@@ -394,7 +394,7 @@ export default function CitaDetallePage() {
           <Card className="bg-card border-0 shadow-sm mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
-                <Pill className="w-5 h-5 text-primary" />
+                <Pill className="w-5 h-5 text-accent" />
                 Medicamentos Recetados
               </CardTitle>
             </CardHeader>
@@ -439,7 +439,7 @@ export default function CitaDetallePage() {
           <Card className="bg-card border-0 shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
-                <FileText className="w-5 h-5 text-primary" />
+                <FileText className="w-5 h-5 text-accent" />
                 Archivos Adjuntos
               </CardTitle>
             </CardHeader>
@@ -461,7 +461,7 @@ export default function CitaDetallePage() {
                     {archivo.descripcion && (
                       <p className="text-xs text-muted-foreground mb-3">{archivo.descripcion}</p>
                     )}
-                    <Button variant="outline" size="sm" className="w-full border-primary/20 text-primary hover:bg-primary/5">
+                    <Button variant="outline" size="sm" className="w-full border-primary/20 text-accent hover:bg-primary/5 hover:text-accent">
                       <Download className="w-4 h-4 mr-2" />
                       Descargar
                     </Button>

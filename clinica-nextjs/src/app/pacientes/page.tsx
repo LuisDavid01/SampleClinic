@@ -25,7 +25,7 @@ export default function PacientesPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-primary/10 rounded-full">
-                <Stethoscope className="w-8 h-8 text-primary" />
+                <Stethoscope className="w-8 h-8 text-accent" />
               </div>
               <div>
 
@@ -42,7 +42,7 @@ export default function PacientesPage() {
               <Button 
                 variant="outline" 
                 size="sm"
-                className="border-primary/20 text-primary hover:bg-primary/5"
+                className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Exportar Historial
@@ -108,7 +108,7 @@ export default function PacientesPage() {
         <Card className="bg-card border-0 shadow-sm mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
-              <TrendingUp className="w-5 h-5 text-primary" />
+              <TrendingUp className="w-5 h-5 text-accent" />
               Progreso del Tratamiento
             </CardTitle>
           </CardHeader>
@@ -167,7 +167,7 @@ export default function PacientesPage() {
         <Card className="bg-card border-0 shadow-sm mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
-              <Activity className="w-5 h-5 text-primary" />
+              <Activity className="w-5 h-5 text-accent" />
               Ejercicios de Rehabilitación
             </CardTitle>
           </CardHeader>
@@ -237,7 +237,7 @@ export default function PacientesPage() {
         <Card className="bg-card border-0 shadow-sm mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
-              <FileText className="w-5 h-5 text-primary" />
+              <FileText className="w-5 h-5 text-accent" />
               Recomendaciones Médicas
             </CardTitle>
           </CardHeader>
@@ -285,7 +285,7 @@ export default function PacientesPage() {
         <Card className="bg-card border-0 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-foreground">
-              <User className="w-5 h-5 text-primary" />
+              <User className="w-5 h-5 text-accent" />
               Notas del Fisioterapeuta
             </CardTitle>
           </CardHeader>

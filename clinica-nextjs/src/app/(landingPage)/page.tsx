@@ -1,5 +1,5 @@
 
-import { Award, Heart, MessageSquareShare } from "lucide-react";
+import { ArrowRight, Award, Calendar, Heart, MessageSquareShare } from "lucide-react";
 
 import { TeamSection } from "@/components/TeamSection";
 import { ReviewsSection } from "@/components/ReviewSection";
@@ -66,7 +66,7 @@ export default function Home() {
                 tratamiento efectivo de lesiones musculoesqueléticas y mejora de
                 la función corporal.
               </p>
-              <button className="text-text-primary font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+              <a href="#citas" className="text-text-primary font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
                 Saber más
                 <svg
                   className="w-4 h-4"
@@ -81,7 +81,7 @@ export default function Home() {
                     d="M17 8l4 4m0 0l-4 4m4-4H3"
                   ></path>
                 </svg>
-              </button>
+              </a>
             </div>
 
             {/* Servicio 2 */}
@@ -108,7 +108,7 @@ export default function Home() {
                 Programas personalizados de rehabilitación post-quirúrgica,
                 deportiva y funcional para recuperar tu máximo potencial físico.
               </p>
-              <button className="text-text-primary font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+              <a href="#citas" className="text-text-primary font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
                 Saber más
                 <svg
                   className="w-4 h-4"
@@ -123,25 +123,13 @@ export default function Home() {
                     d="M17 8l4 4m0 0l-4 4m4-4H3"
                   ></path>
                 </svg>
-              </button>
+              </a>
             </div>
 
             {/* Servicio 3 */}
             <div className="group bg-card rounded-2xl p-8 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-primary/10 hover:border-primary/30">
               <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  ></path>
-                </svg>
+                <Calendar className="text-white"/>
               </div>
               <h3 className="text-2xl font-bold text-text-primary mb-3  transition-colors">
                 Prevención
@@ -150,22 +138,10 @@ export default function Home() {
                 Evaluaciones biomecánicas y programas preventivos especializados
                 para mantener tu salud óptima y prevenir lesiones futuras.
               </p>
-              <button className="text-text-primary font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
+              <a href="#citas" className="text-text-primary font-semibold flex items-center gap-2 group-hover:gap-3 transition-all">
                 Saber más
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  ></path>
-                </svg>
-              </button>
+                <ArrowRight/>
+              </a>
             </div>
           </div>
         </div>
