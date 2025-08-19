@@ -51,7 +51,7 @@ export default function FloatingChat() {
             "shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col bg-background",
 
             // Clases base (móvil: <640px) - centrado y full-screen
-            "fixed inset-0 m-auto w-full h-[480] rounded-none",
+            "fixed inset-0 m-auto w-full h-[640] rounded-none",
 
             // Clases para PC (≥640px) - posición fija en esquina, tamaño fijo
             "sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-96 sm:h-[600px] sm:rounded-lg",
