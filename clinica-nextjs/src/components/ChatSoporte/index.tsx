@@ -398,7 +398,7 @@ export default function SupportChat() {
             "shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col bg-background",
 
             // Clases base (móvil: <640px) - centrado y full-screen
-            "fixed inset-0 m-auto w-full h-[480] rounded-none",
+            "fixed inset-0 m-auto w-full h-[640] rounded-none",
 
             // Clases para PC (≥640px) - posición fija en esquina, tamaño fijo
             "sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-96 sm:h-[600px] sm:rounded-lg",
@@ -513,34 +513,33 @@ export default function SupportChat() {
                   </div>
                 </div>
 
-                {/* Botones de acciones */}
                 <div className="flex gap-2 mt-3">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1"
+                    className="flex-1 sm:flex-none"
                     onClick={bloquearChat}
                   >
-                    <Lock className="h-4 w-4 mr-1" />
-                    Bloquear
+                    <Lock className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Bloquear</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1"
+                    className="flex-1 sm:flex-none"
                     onClick={downloadChat}
                   >
-                    <Download className="h-4 w-4 mr-1" />
-                    Exportar
+                    <Download className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Exportar</span>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1"
+                    className="flex-1 sm:flex-none"
                     onClick={transferirChat}
                   >
-                    <Forward className="h-4 w-4 mr-1" />
-                    Transferir
+                    <Forward className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Transferir</span>
                   </Button>
                 </div>
               </CardHeader>

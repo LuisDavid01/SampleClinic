@@ -4,7 +4,6 @@ import { checkRole } from "@/utils/roles";
 
 const ChatSelect = async () => {
   const isAdmin = await checkRole("admin");
-
   return <>{isAdmin ? <SupportChat /> : <FloatingChat />}</>;
 };
 
