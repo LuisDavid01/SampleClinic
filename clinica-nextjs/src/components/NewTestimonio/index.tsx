@@ -20,7 +20,7 @@ export function NewTestimonio() {
 	return (
 		<div className=" flex items-center justify-center">
 			<Modal>
-				<ModalTrigger className="group  backdrop-blur-sm  border-2 border-primary px-8 py-4 rounded-xl font-semibold bg-primary  hover:-translate-y-1  transition-all duration-300 flex items-center justify-center gap-2 mx-auto">
+				<ModalTrigger className="group  backdrop-blur-sm   border-2 border-primary px-8 py-4 rounded-xl font-semibold bg-primary  hover:-translate-y-1  transition-all duration-300 flex items-center justify-center gap-2 mx-auto">
 					<span className=" ">
 						<MessageSquareShare />
 					</span>

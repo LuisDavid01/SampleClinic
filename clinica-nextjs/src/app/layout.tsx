@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Inter, EB_Garamond } from "next/font/google";
+import localFont from 'next/font/local'
 import { esES } from "@clerk/localizations";
 import "./globals.css";
 import ChatSelect from "@/components/ChatSelect";
@@ -14,6 +15,26 @@ const inter = Inter({
 const garamod = EB_Garamond({
 	subsets: ["latin"],
 	variable: "--font-garamond",
+	weight: ["400", "500", "600", "700"],
+});
+
+const kiona = localFont({
+	src: [
+		{
+			path: "../../public/fonts/Kiona-Regular.ttf",
+			weight: '400',
+			style: 'normal',
+		},
+		{
+			path: '../../public/fonts/Kiona-Itallic.ttf',
+			weight: '400',
+			style: 'italic',
+		},
+	],
+	fallback: ['Inter', 'system-ui'],
+	variable: '--font-kiona',
+	display: 'swap',
+
 })
 
 export const metadata: Metadata = {
@@ -62,7 +83,7 @@ export default async function RootLayout({
 						}}
 					/>
 				</head>
-				<body className={`${inter.variable} ${garamod.variable} font-sans antialiased`}>
+				<body className={`${inter.className} ${garamod.className} ${kiona.className} font-sans antialiased`}>
 					<ClerkErrorBoundary>
 						{children}
 						<ChatSelect />

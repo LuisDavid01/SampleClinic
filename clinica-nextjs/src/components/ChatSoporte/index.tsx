@@ -518,24 +518,6 @@ export default function SupportChat() {
 										variant="outline"
 										size="sm"
 										className="flex-1 sm:flex-none"
-										onClick={bloquearChat}
-									>
-										<Lock className="h-4 w-4 sm:mr-1" />
-										<span className="hidden sm:inline">Bloquear</span>
-									</Button>
-									<Button
-										variant="outline"
-										size="sm"
-										className="flex-1 sm:flex-none"
-										onClick={downloadChat}
-									>
-										<Download className="h-4 w-4 sm:mr-1" />
-										<span className="hidden sm:inline">Exportar</span>
-									</Button>
-									<Button
-										variant="outline"
-										size="sm"
-										className="flex-1 sm:flex-none"
 										onClick={transferirChat}
 									>
 										<Forward className="h-4 w-4 sm:mr-1" />
