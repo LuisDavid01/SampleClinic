@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +15,11 @@ import {
 	Clock,
 	User,
 	Mail,
-	Lock,
-	Download,
 	Forward,
 } from "lucide-react";
 import type { Chat, Message } from "@/types/chat";
 import { cn } from "@/lib/utils";
+import { OfflineChat } from "../OfflineChat";
 // Datos mock para simular chats existentes - agregar más chats
 const mockChats: Chat[] = [
 	{
@@ -256,6 +255,49 @@ export default function SupportChat() {
 	const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
 	const [chats, setChats] = useState<Chat[]>(mockChats);
 	const [newMessage, setNewMessage] = useState("");
+	const [connectionStatus, setConnectionStatus] = useState<'connected' | 'error' | null>(null);
+	const wsRef = useRef<WebSocket | null>(null);
+
+	useEffect(() => {
+		// Solo se ejecuta en el cliente
+		if (typeof window !== 'undefined' && window.WebSocket) {
+			console.log("WebSocket supported");
+
+			if (!wsRef.current) {
+				wsRef.current = new WebSocket("ws://localhost:8080/ws");
+
+				wsRef.current.onerror = (error) => {
+					console.log("WebSocket error:", error);
+					setConnectionStatus('error');
+				};
+
+
+				wsRef.current.onopen = () => {
+					console.log("WebSocket connected");
+					setConnectionStatus('connected');
+				};
+
+				wsRef.current.onmessage = (event) => {
+					console.log("Message received:", event.data);
+				};
+
+				wsRef.current.onclose = () => {
+					console.log("WebSocket disconnected");
+				};
+
+			}
+		} else {
+			console.log("WebSocket not supported");
+		}
+
+		// Cleanup: cerrar conexión cuando el componente se desmonte
+		return () => {
+			if (wsRef.current) {
+				wsRef.current.close();
+			}
+		};
+	}, []);
+
 
 	const totalUnreadCount = chats.reduce(
 		(total, chat) => total + chat.unreadCount,
@@ -314,13 +356,7 @@ export default function SupportChat() {
 		setNewMessage("");
 	};
 
-	const downloadChat = () => {
-		alert("Descargando chat....");
-	};
 
-	const bloquearChat = () => {
-		alert("Usuario bloqueado");
-	};
 
 	const transferirChat = () => {
 		alert("Transfiriendo chat a recepcionista desocupado....");
@@ -404,179 +440,185 @@ export default function SupportChat() {
 						"sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-96 sm:h-[600px] sm:rounded-lg",
 					)}
 				>
-					{!selectedChat ? (
-						// Vista de lista de chats
+					{connectionStatus === 'error' ? (
+						<OfflineChat />
+					) :
 						<>
-							<CardHeader className="pb-3">
-								<CardTitle className="text-lg flex items-center gap-2">
-									<MessageCircle className="h-5 w-5" />
-									Chats de Soporte
-									{totalUnreadCount > 0 && (
-										<Badge
-											variant="outline"
-											className="ml-auto rounded-full bg-red-600 text-white"
-										>
-											{totalUnreadCount}
-										</Badge>
-									)}
-								</CardTitle>
-							</CardHeader>
-
-							<CardContent className="flex-1 p-0 overflow-hidden">
-								<ScrollArea className="h-full">
-									{chats.map((chat, index) => (
-										<div key={chat.id}>
-											<div
-												onClick={() => selectChat(chat)}
-												className="p-4  hover:bg-card/70 cursor-pointer transition-colors"
-											>
-												<div className="flex items-start justify-between mb-2">
-													<div className="flex items-center gap-2">
-														<User className="h-4 w-4 text-text-primary" />
-														<span className="font-medium text-sm">
-															{chat.customerName}
-														</span>
-														<div
-															className={`w-2 h-2 rounded-full ${getStatusColor(chat.status)}`}
-														/>
-													</div>
-													<div className="flex items-center gap-2">
-														<span className="text-xs text-text-primary">
-															{formatTime(chat.lastMessageTime)}
-														</span>
-														{chat.unreadCount > 0 && (
-															<Badge
-																variant="outline"
-																className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-600 text-white"
-															>
-																{chat.unreadCount}
-															</Badge>
-														)}
-													</div>
-												</div>
-
-												<div className="flex items-center gap-1 mb-1">
-													<Mail className="h-3 w-3 text-text-primary" />
-													<span className="text-xs text-text-primary">
-														{chat.customerEmail}
-													</span>
-												</div>
-
-												<p className="text-sm font-medium text-text-primary mb-1">
-													{chat.subject}
-												</p>
-
-												{chat.lastMessage && (
-													<p className="text-xs text-text-primary truncate">
-														{chat.lastMessage}
-													</p>
-												)}
-
-												<div className="flex items-center justify-between mt-2">
-													<Badge variant="outline" className="text-xs">
-														{getStatusText(chat.status)}
-													</Badge>
-												</div>
-											</div>
-											{index < chats.length - 1 && <Separator />}
-										</div>
-									))}
-								</ScrollArea>
-							</CardContent>
-						</>
-					) : (
-						// Vista de chat específico
-						<>
-							<CardHeader className="pb-3">
-								<div className="flex items-center gap-2">
-									<Button
-										variant="ghost"
-										size="icon"
-										onClick={() => setSelectedChat(null)}
-										className="h-8 w-8"
-									>
-										<ArrowLeft className="h-4 w-4" />
-									</Button>
-									<div className="flex-1">
-										<div className="flex items-center gap-2">
-											<User className="h-4 w-4" />
-											<span className="font-medium">
-												{selectedChat.customerName}
-											</span>
-											<div
-												className={`w-2 h-2 rounded-full ${getStatusColor(selectedChat.status)}`}
-											/>
-										</div>
-										<p className="text-xs text-gray-500">
-											{selectedChat.subject}
-										</p>
-									</div>
-								</div>
-
-								<div className="flex gap-2 mt-3">
-									<Button
-										variant="outline"
-										size="sm"
-										className="flex-1 sm:flex-none"
-										onClick={transferirChat}
-									>
-										<Forward className="h-4 w-4 sm:mr-1" />
-										<span className="hidden sm:inline">Transferir</span>
-									</Button>
-								</div>
-							</CardHeader>
-
-							<CardContent className="flex-1 px-4 overflow-hidden">
-								<ScrollArea className="h-full pr-4">
-									<div className="space-y-3">
-										{selectedChat.messages.map((message) => (
-											<div
-												key={message.id}
-												className={`flex ${message.isFromSupport ? "justify-end" : "justify-start"}`}
-											>
-												<div
-													className={`max-w-[80%] p-3 rounded-lg text-sm ${message.isFromSupport
-														? "bg-blue-500 text-white"
-														: "bg-card text-text-primary"
-														}`}
+							{!selectedChat ? (
+								// Vista de lista de chats
+								<>
+									<CardHeader className="pb-3">
+										<CardTitle className="text-lg flex items-center gap-2">
+											<MessageCircle className="h-5 w-5" />
+											Chats de Soporte
+											{totalUnreadCount > 0 && (
+												<Badge
+													variant="outline"
+													className="ml-auto rounded-full bg-red-600 text-white"
 												>
-													<p>{message.content}</p>
-													<div className="flex items-center gap-1 mt-1">
-														<Clock className="h-3 w-3 opacity-70" />
-														<span className="text-xs opacity-70">
-															{message.timestamp.toLocaleTimeString([], {
-																hour: "2-digit",
-																minute: "2-digit",
-															})}
-														</span>
-													</div>
-												</div>
-											</div>
-										))}
-									</div>
-								</ScrollArea>
-							</CardContent>
+													{totalUnreadCount}
+												</Badge>
+											)}
+										</CardTitle>
+									</CardHeader>
 
-							<div className=" px-3">
-								<div className="flex gap-2 w-full space-x-2">
-									<Input
-										value={newMessage}
-										onChange={(e) => setNewMessage(e.target.value)}
-										placeholder="Escribe tu respuesta..."
-										className="flex-1 text-sm md:text-lg"
-										onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-									/>
-									<Button
-										onClick={sendMessage}
-										size="icon"
-										disabled={!newMessage.trim()}
-									>
-										<Send className="h-4 w-4" />
-									</Button>
-								</div>
-							</div>
+									<CardContent className="flex-1 p-0 overflow-hidden">
+										<ScrollArea className="h-full">
+											{chats.map((chat, index) => (
+												<div key={chat.id}>
+													<div
+														onClick={() => selectChat(chat)}
+														className="p-4  hover:bg-card/70 cursor-pointer transition-colors"
+													>
+														<div className="flex items-start justify-between mb-2">
+															<div className="flex items-center gap-2">
+																<User className="h-4 w-4 text-text-primary" />
+																<span className="font-medium text-sm">
+																	{chat.customerName}
+																</span>
+																<div
+																	className={`w-2 h-2 rounded-full ${getStatusColor(chat.status)}`}
+																/>
+															</div>
+															<div className="flex items-center gap-2">
+																<span className="text-xs text-text-primary">
+																	{formatTime(chat.lastMessageTime)}
+																</span>
+																{chat.unreadCount > 0 && (
+																	<Badge
+																		variant="outline"
+																		className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-600 text-white"
+																	>
+																		{chat.unreadCount}
+																	</Badge>
+																)}
+															</div>
+														</div>
+
+														<div className="flex items-center gap-1 mb-1">
+															<Mail className="h-3 w-3 text-text-primary" />
+															<span className="text-xs text-text-primary">
+																{chat.customerEmail}
+															</span>
+														</div>
+
+														<p className="text-sm font-medium text-text-primary mb-1">
+															{chat.subject}
+														</p>
+
+														{chat.lastMessage && (
+															<p className="text-xs text-text-primary truncate">
+																{chat.lastMessage}
+															</p>
+														)}
+
+														<div className="flex items-center justify-between mt-2">
+															<Badge variant="outline" className="text-xs">
+																{getStatusText(chat.status)}
+															</Badge>
+														</div>
+													</div>
+													{index < chats.length - 1 && <Separator />}
+												</div>
+											))}
+										</ScrollArea>
+									</CardContent>
+								</>
+							) : (
+								// Vista de chat específico
+								<>
+									<CardHeader className="pb-3">
+										<div className="flex items-center gap-2">
+											<Button
+												variant="ghost"
+												size="icon"
+												onClick={() => setSelectedChat(null)}
+												className="h-8 w-8"
+											>
+												<ArrowLeft className="h-4 w-4" />
+											</Button>
+											<div className="flex-1">
+												<div className="flex items-center gap-2">
+													<User className="h-4 w-4" />
+													<span className="font-medium">
+														{selectedChat.customerName}
+													</span>
+													<div
+														className={`w-2 h-2 rounded-full ${getStatusColor(selectedChat.status)}`}
+													/>
+												</div>
+												<p className="text-xs text-gray-500">
+													{selectedChat.subject}
+												</p>
+											</div>
+										</div>
+
+										<div className="flex gap-2 mt-3">
+											<Button
+												variant="outline"
+												size="sm"
+												className="flex-1 sm:flex-none"
+												onClick={transferirChat}
+											>
+												<Forward className="h-4 w-4 sm:mr-1" />
+												<span className="hidden sm:inline">Transferir</span>
+											</Button>
+										</div>
+									</CardHeader>
+
+									<CardContent className="flex-1 px-4 overflow-hidden">
+										<ScrollArea className="h-full pr-4">
+											<div className="space-y-3">
+												{selectedChat.messages.map((message) => (
+													<div
+														key={message.id}
+														className={`flex ${message.isFromSupport ? "justify-end" : "justify-start"}`}
+													>
+														<div
+															className={`max-w-[80%] p-3 rounded-lg text-sm ${message.isFromSupport
+																? "bg-blue-500 text-white"
+																: "bg-card text-text-primary"
+																}`}
+														>
+															<p>{message.content}</p>
+															<div className="flex items-center gap-1 mt-1">
+																<Clock className="h-3 w-3 opacity-70" />
+																<span className="text-xs opacity-70">
+																	{message.timestamp.toLocaleTimeString([], {
+																		hour: "2-digit",
+																		minute: "2-digit",
+																	})}
+																</span>
+															</div>
+														</div>
+													</div>
+												))}
+											</div>
+										</ScrollArea>
+									</CardContent>
+
+									<div className=" px-3">
+										<div className="flex gap-2 w-full space-x-2">
+											<Input
+												value={newMessage}
+												onChange={(e) => setNewMessage(e.target.value)}
+												placeholder="Escribe tu respuesta..."
+												className="flex-1 text-sm md:text-lg"
+												onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+											/>
+											<Button
+												onClick={sendMessage}
+												size="icon"
+												disabled={!newMessage.trim()}
+											>
+												<Send className="h-4 w-4" />
+											</Button>
+										</div>
+									</div>
+								</>
+							)}
 						</>
-					)}
+					}
 				</Card>
 			)}
 		</>
