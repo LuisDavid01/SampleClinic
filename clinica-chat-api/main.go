@@ -3,12 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/app"
+	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/routes"
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/app"
-	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/routes"
 	//"github.com/joho/godotenv"
 )
 
@@ -36,5 +35,5 @@ func main() {
 	}
 	app.Logger.Printf("the server started successfuly on port: %d !!", port)
 
-	log.Fatal(server.ListenAndServeTLS("server.crt", "server.key"))
+	log.Fatal(server.ListenAndServe())
 }
