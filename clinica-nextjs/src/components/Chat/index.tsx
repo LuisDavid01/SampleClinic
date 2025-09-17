@@ -13,20 +13,28 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { chatEvent } from "../../types/chat"
+import { useUser } from "@clerk/nextjs";
 
 
 export default function FloatingChat() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [connectionStatus, setConnectionStatus] = useState<'connected' | 'error' | null>(null);
 	const wsRef = useRef<WebSocket | null>(null);
+	const { user, isLoaded } = useUser();
+	const [messages, setMessages] = useState<Array<{
+		id: string; text: string; sender: 'user' | 'support'; timestamp: string
+	}>>([]);
 
 	useEffect(() => {
-		// Solo se ejecuta en el cliente
+
+
 		if (typeof window !== 'undefined' && window.WebSocket) {
 			console.log("WebSocket supported");
 
 			if (!wsRef.current) {
-				wsRef.current = new WebSocket("ws://localhost:8080/ws");
+				const userId = user?.id ?? "12345";
+				const username = user?.username ?? "user-1234";
+				wsRef.current = new WebSocket(`ws://localhost:8080/ws`);
 
 				wsRef.current.onerror = (error) => {
 					console.log("WebSocket error:", error);
@@ -70,6 +78,15 @@ export default function FloatingChat() {
 		switch (event.type) {
 			case "new_message":
 				console.log("new message");
+				setMessages(prev => [
+					...prev,
+					{
+						id: crypto.randomUUID(),
+						sender: 'support',
+						text: event.payload,
+						timestamp: new Date().toLocaleTimeString()
+					}
+				]);
 				break;
 			default:
 				alert("unsupported event type");
@@ -80,12 +97,25 @@ export default function FloatingChat() {
 	function sendEvent(eventName: string, payload: string) {
 		const event = new chatEvent(eventName, payload);
 		wsRef.current?.send(JSON.stringify(event));
+
+
 	}
 	function sendMessage() {
-		var newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
+		let newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
 		console.log("message: ", newMessage?.value);
 		if (newMessage) {
 			sendEvent("send_message", newMessage.value);
+			setMessages(prev => [
+				...prev,
+				{
+					id: crypto.randomUUID(),
+					sender: 'user',
+					text: newMessage.value,
+					timestamp: new Date().toLocaleTimeString()
+				}
+			]);
+
+			newMessage.value = ""; // limpiar campo
 		}
 
 	}
@@ -159,83 +189,22 @@ export default function FloatingChat() {
 
 							<CardContent className="flex-1 px-4 overflow-hidden">
 								<ScrollArea className="h-full pr-4">
-
 									<div className="space-y-3">
-										{/*Estos mensajes son de prueba*/}
-										<div className={`flex justify-start`}>
-											<div
-												className={`max-w-[80%] p-3 rounded-lg text-sm bg-blue-500 text-white`}
-											>
-												<p>El chat aun no esta disponible</p>
-												<div className="flex items-center gap-1 mt-1">
-													<Clock className="h-3 w-3 opacity-70" />
-													<span className="text-xs opacity-70">18:02 2025</span>
+										{messages.map(msg => (
+											<div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+												<div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.sender === 'user'
+													? 'bg-card text-text-primary'
+													: 'bg-blue-500 text-white'
+													}`}>
+													<p>{msg.text}</p>
+													<div className="flex items-center gap-1 mt-1">
+														<Clock className="h-3 w-3 opacity-70" />
+														<span className="text-xs opacity-70">{msg.timestamp}</span>
+													</div>
 												</div>
 											</div>
-										</div>
-
-										<div className={`flex justify-start`}>
-											<div
-												className={`max-w-[80%] p-3 rounded-lg text-sm bg-blue-500 text-white`}
-											>
-												<p>El chat aun no esta disponible</p>
-												<div className="flex items-center gap-1 mt-1">
-													<Clock className="h-3 w-3 opacity-70" />
-													<span className="text-xs opacity-70">18:02 2025</span>
-												</div>
-											</div>
-										</div>
-
-										<div className={`flex justify-start`}>
-											<div
-												className={`max-w-[80%] p-3 rounded-lg text-sm bg-blue-500 text-white`}
-											>
-												<p>El chat aun no esta disponible</p>
-												<div className="flex items-center gap-1 mt-1">
-													<Clock className="h-3 w-3 opacity-70" />
-													<span className="text-xs opacity-70">18:02 2025</span>
-												</div>
-											</div>
-										</div>
-
-										{/*Mensaje usuario prueba*/}
-										<div className={`flex justify-end`}>
-											<div
-												className={`max-w-[80%] p-3 rounded-lg text-sm bg-card text-text-primary`}
-											>
-												<p>mensaje de prueba del usuario</p>
-												<div className="flex items-center gap-1 mt-1">
-													<Clock className="h-3 w-3 opacity-70" />
-													<span className="text-xs opacity-70">18:02 2025</span>
-												</div>
-											</div>
-										</div>
-
-										<div className={`flex justify-start`}>
-											<div
-												className={`max-w-[80%] p-3 rounded-lg text-sm bg-blue-500 text-white`}
-											>
-												<p>El chat aun no esta disponible</p>
-												<div className="flex items-center gap-1 mt-1">
-													<Clock className="h-3 w-3 opacity-70" />
-													<span className="text-xs opacity-70">18:02 2025</span>
-												</div>
-											</div>
-										</div>
-
-										<div className={`flex justify-end`}>
-											<div
-												className={`max-w-[80%] p-3 rounded-lg text-sm bg-card text-text-primary`}
-											>
-												<p>mensaje de prueba del usuario</p>
-												<div className="flex items-center gap-1 mt-1">
-													<Clock className="h-3 w-3 opacity-70" />
-													<span className="text-xs opacity-70">18:02 2025</span>
-												</div>
-											</div>
-										</div>
+										))}
 									</div>
-
 								</ScrollArea>
 							</CardContent>
 

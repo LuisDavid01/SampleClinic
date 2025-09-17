@@ -104,7 +104,7 @@ func (c *Client) Write() {
 				return
 			}
 
-			log.Printf("Message sent")
+			log.Println("Message sent")
 
 		case <-ticker.C:
 			log.Println("ping")
