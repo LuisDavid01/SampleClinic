@@ -101,7 +101,7 @@ export default function FloatingChat() {
 
 	}
 	function sendMessage() {
-		let newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
+		const newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
 		console.log("message: ", newMessage?.value);
 		if (newMessage) {
 			sendEvent("send_message", newMessage.value);
