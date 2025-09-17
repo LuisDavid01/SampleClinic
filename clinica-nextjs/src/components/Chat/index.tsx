@@ -12,7 +12,7 @@ import { MessageCircle, LogOut, Send, Clock, X, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
-
+import { chatEvent } from "../../types/chat"
 
 
 export default function FloatingChat() {
@@ -40,7 +40,10 @@ export default function FloatingChat() {
 				};
 
 				wsRef.current.onmessage = (event) => {
-					console.log("Message received:", event.data);
+					const eventData = JSON.parse(event.data);
+					const evnt = Object.assign(new chatEvent('', ''), eventData);
+
+					routeEvents(evnt);
 				};
 
 				wsRef.current.onclose = () => {
@@ -60,7 +63,32 @@ export default function FloatingChat() {
 		};
 	}, []);
 
+	function routeEvents(event: chatEvent) {
+		if (!event.type) {
+			alert("no  event");
+		}
+		switch (event.type) {
+			case "new_message":
+				console.log("new message");
+				break;
+			default:
+				alert("unsupported event type");
+				break;
+		}
+	}
 
+	function sendEvent(eventName: string, payload: string) {
+		const event = new chatEvent(eventName, payload);
+		wsRef.current?.send(JSON.stringify(event));
+	}
+	function sendMessage() {
+		var newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
+		console.log("message: ", newMessage?.value);
+		if (newMessage) {
+			sendEvent("send_message", newMessage.value);
+		}
+
+	}
 	const toggleChat = () => {
 		setIsOpen(!isOpen);
 	};
@@ -212,12 +240,17 @@ export default function FloatingChat() {
 							</CardContent>
 
 							<CardFooter className=" px-3">
-								<form className="flex gap-2 w-full space-x-2">
+								<form onSubmit={(e) => {
+									e.preventDefault();
+									sendMessage();
+								}
+								} className="flex gap-2 w-full space-x-2">
 									<Input
+										id="messageInput"
 										placeholder="Escribe tu mensaje..."
 										className="flex-1 text-sm"
 									/>
-									<Button type="submit" disabled size="icon">
+									<Button type="submit" size="icon">
 										<Send className="h-4 w-4" />
 									</Button>
 								</form>

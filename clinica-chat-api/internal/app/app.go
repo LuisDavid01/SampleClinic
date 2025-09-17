@@ -17,7 +17,7 @@ type Application struct {
 func NewApplication() (*Application, error) {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
-	manager := &ws.Manager{}
+	manager := ws.NewManager()
 
 	//we construct the application
 	app := &Application{
