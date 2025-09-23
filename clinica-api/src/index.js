@@ -147,6 +147,12 @@ app.use('*', (req, res) => {
 // Función para iniciar el servidor
 const startServer = async () => {
   try {
+    // En Docker, esperar a que la base de datos esté lista
+    if (process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('postgres:')) {
+      const waitForDatabase = require('../scripts/wait-for-db');
+      await waitForDatabase();
+    }
+    
     // Conectar a la base de datos
     await prisma.$connect();
     console.log('✅ Conectado a la base de datos PostgreSQL');
@@ -156,6 +162,7 @@ const startServer = async () => {
       console.log(`🚀 Servidor ejecutándose en puerto ${config.port}`);
       console.log(`📊 Entorno: ${config.nodeEnv}`);
       console.log(`🌐 URL: http://localhost:${config.port}`);
+      console.log(`📚 Documentación API: http://localhost:${config.port}/api-docs`);
     });
   } catch (error) {
     console.error('❌ Error al iniciar el servidor:', error);
