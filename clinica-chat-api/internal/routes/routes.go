@@ -13,6 +13,8 @@ func SetupRoutes(app *app.Application) *chi.Mux {
 
 	// Health check route
 	r.Get("/api/health", app.HealthCheck)
+
+	r.Post("/api/otp", app.Manager.OtpHandler)
 	//route enableing ws
 	r.Get("/ws", app.Manager.ServeWs)
 

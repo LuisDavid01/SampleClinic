@@ -1,12 +1,14 @@
 package app
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/ws"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/ws"
 )
 
 type Application struct {
@@ -16,8 +18,8 @@ type Application struct {
 
 func NewApplication() (*Application, error) {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
-
-	manager := ws.NewManager()
+	ctx := context.Background()
+	manager := ws.NewManager(ctx)
 
 	//we construct the application
 	app := &Application{
@@ -28,5 +30,6 @@ func NewApplication() (*Application, error) {
 }
 
 func (a *Application) HealthCheck(w http.ResponseWriter, r *http.Request) {
+	log.Println("someone hit this")
 	fmt.Fprintf(w, "Status is avaliable\n")
 }

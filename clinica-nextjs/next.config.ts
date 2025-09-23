@@ -14,14 +14,12 @@ module.exports = {
 	async rewrites() {
 		return [
 			{
-				source: '/chat/:path*',
-				destination: 'http://localhost:8080/:path*',
+				source: '/api/chat/:path*',
+				destination: 'http://localhost:8080/api/:path*',
 			},
 		];
 	},
-};
 
-module.exports = {
 	images: {
 		remotePatterns: [
 			{
@@ -38,4 +36,6 @@ module.exports = {
 			},
 		],
 	},
-}
+
+};
+

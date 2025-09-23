@@ -12,7 +12,7 @@ import { MessageCircle, LogOut, Send, Clock, X, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
-import { chatEvent } from "../../types/chat"
+import { chatEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
 import { useUser } from "@clerk/nextjs";
 
 
@@ -32,32 +32,7 @@ export default function FloatingChat() {
 			console.log("WebSocket supported");
 
 			if (!wsRef.current) {
-				const userId = user?.id ?? "12345";
-				const username = user?.username ?? "user-1234";
-				wsRef.current = new WebSocket(`ws://localhost:8080/ws`);
-
-				wsRef.current.onerror = (error) => {
-					console.log("WebSocket error:", error);
-					setConnectionStatus('error');
-				};
-
-
-				wsRef.current.onopen = () => {
-					console.log("WebSocket connected");
-					setConnectionStatus('connected');
-				};
-
-				wsRef.current.onmessage = (event) => {
-					const eventData = JSON.parse(event.data);
-					const evnt = Object.assign(new chatEvent('', ''), eventData);
-
-					routeEvents(evnt);
-				};
-
-				wsRef.current.onclose = () => {
-					console.log("WebSocket disconnected");
-				};
-
+				initializeWebSocket();
 			}
 		} else {
 			console.log("WebSocket not supported");
@@ -71,6 +46,58 @@ export default function FloatingChat() {
 		};
 	}, []);
 
+	const initializeWebSocket = async () => {
+		try {
+
+			const otp = await fetch('/api/chat/otp', {
+				method: 'post',
+				body: JSON.stringify({
+					username: "test-user",
+					phone_number: "+123455667",
+					clerk_token: "test"
+				}),
+				mode: 'cors'
+			}).then((resp) => {
+				if (resp.ok) {
+					return resp.json();
+				} else {
+					throw 'unathorized';
+				}
+			}).then((data) => {
+				return data.otp;
+			})
+			wsRef.current = new WebSocket(`ws://localhost:8080/ws?otp=` + otp);
+
+			wsRef.current.onerror = (error) => {
+				console.log("WebSocket error:", error);
+				setConnectionStatus('error');
+			};
+
+
+			wsRef.current.onopen = () => {
+				console.log("WebSocket connected");
+				setConnectionStatus('connected');
+			};
+
+			wsRef.current.onmessage = (event) => {
+				const eventData = JSON.parse(event.data);
+				const evnt = Object.assign(new chatEvent('', ''), eventData);
+
+				routeEvents(evnt);
+			};
+
+			wsRef.current.onclose = () => {
+				console.log("WebSocket disconnected");
+				setConnectionStatus('connected');
+
+			};
+
+		} catch (err) {
+			setConnectionStatus('error');
+		}
+
+	}
+
 	function routeEvents(event: chatEvent) {
 		if (!event.type) {
 			alert("no  event");
@@ -78,25 +105,34 @@ export default function FloatingChat() {
 		switch (event.type) {
 			case "new_message":
 				console.log("new message");
+				const payload = event.payload as NewMessageEvent;
+				const messageEvent = Object.assign(new NewMessageEvent(payload.message, payload.from, payload.sent))
 				setMessages(prev => [
 					...prev,
 					{
 						id: crypto.randomUUID(),
-						sender: 'support',
-						text: event.payload,
+						sender: messageEvent.from,
+						text: messageEvent.message,
 						timestamp: new Date().toLocaleTimeString()
 					}
 				]);
 				break;
+			case "change_chatroom":
+				console.log("change chatroom");
 			default:
 				alert("unsupported event type");
 				break;
 		}
 	}
 
-	function sendEvent(eventName: string, payload: string) {
-		const event = new chatEvent(eventName, payload);
-		wsRef.current?.send(JSON.stringify(event));
+	function sendEvent(eventName: string, payload: SendMessageEvent | NewMessageEvent) {
+		try {
+			const event = new chatEvent(eventName, payload);
+			wsRef.current?.send(JSON.stringify(event));
+		} catch (err) {
+			console.log("err: ", err);
+			setConnectionStatus('error');
+		}
 
 
 	}
@@ -104,7 +140,8 @@ export default function FloatingChat() {
 		const newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
 		console.log("message: ", newMessage?.value);
 		if (newMessage) {
-			sendEvent("send_message", newMessage.value);
+			sendEvent("send_message", new SendMessageEvent(newMessage.value, 'user'));
+			/*
 			setMessages(prev => [
 				...prev,
 				{
@@ -114,16 +151,25 @@ export default function FloatingChat() {
 					timestamp: new Date().toLocaleTimeString()
 				}
 			]);
+			*/
 
 			newMessage.value = ""; // limpiar campo
 		}
 
 	}
 	const toggleChat = () => {
+		if (!wsRef.current) {
+			console.log("Intentando reconectar...");
+			initializeWebSocket();
+		}
 		setIsOpen(!isOpen);
 	};
 
 	const handleExitChat = () => {
+		// Cierra la conexion y limpia los mensajes
+		wsRef.current?.close();
+		setMessages([]);
+		wsRef.current = null;
 		setIsOpen(false);
 	};
 

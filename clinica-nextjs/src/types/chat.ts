@@ -20,9 +20,32 @@ export interface Chat {
 
 export class chatEvent {
 	type: string;
-	payload: string;
-	constructor(type: string, payload: string) {
+	payload: SendMessageEvent | NewMessageEvent | string;
+	constructor(type: string, payload: SendMessageEvent | NewMessageEvent | string) {
 		this.type = type;
 		this.payload = payload;
+	}
+}
+
+
+export class NewMessageEvent {
+	message: string;
+	from: "user" | "support";
+	sent: Date
+	constructor(message: string, from: "user" | "support", sent: Date) {
+		this.message = message;
+		this.from = from;
+		this.sent = sent;
+	}
+}
+
+
+export class SendMessageEvent {
+	message: string;
+	from: "user" | "support";
+	constructor(message: string, from: "user" | "support") {
+		this.message = message;
+		this.from = from;
+
 	}
 }

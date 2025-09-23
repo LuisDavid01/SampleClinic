@@ -1,12 +1,16 @@
 package ws
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
+	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/auth"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -28,16 +32,29 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     checkOrigin,
 }
 
+type Room struct {
+	ID      string            `json:"id"`
+	Name    string            `json:"name"`
+	History []NewMessageEvent `json:"msg_history"`
+}
+
+// lista de salas de chat
+type RoomList map[string]*Room
+
 type Manager struct {
 	Clients ClientList
 	sync.RWMutex
+	Rooms    RoomList
+	opts     auth.RetentionMap
 	handlers map[string]EventHanlder
 }
 
-func NewManager() *Manager {
+func NewManager(ctx context.Context) *Manager {
 	m := &Manager{
 		Clients:  make(ClientList),
 		handlers: make(map[string]EventHanlder),
+		opts:     auth.NewRetentionMap(ctx, 5*time.Second),
+		Rooms:    make(RoomList),
 	}
 
 	m.setupEventHandlers()
@@ -45,6 +62,18 @@ func NewManager() *Manager {
 }
 
 func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
+
+	otp := r.URL.Query().Get("otp")
+
+	if otp == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if !m.opts.ValidateOTP(otp) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -90,7 +119,31 @@ func (m *Manager) setupEventHandlers() {
 }
 
 func sendMessage(event Event, c *Client) error {
-	fmt.Println(event)
+	var chatevent SendMessageEvent
+	log.Printf("Revived event: %+v", event)
+	if err := json.Unmarshal(event.Payload, &chatevent); err != nil {
+		return fmt.Errorf("Bad payload, %v", err)
+	}
+
+	var broadMessage NewMessageEvent
+
+	broadMessage.Sent = time.Now()
+	broadMessage.Message = chatevent.Message
+	broadMessage.From = chatevent.From
+
+	data, err := json.Marshal(broadMessage)
+	if err != nil {
+		return fmt.Errorf("Error marshalling the message: %v", err)
+	}
+	outgoingEvent := Event{
+		Payload: data,
+		Type:    EventNewMessage,
+	}
+
+	for client := range c.Manager.Clients {
+
+		client.egress <- outgoingEvent
+	}
 	return nil
 }
 
@@ -102,4 +155,45 @@ func (m *Manager) RouteEvent(event Event, c *Client) error {
 		return nil
 	}
 	return errors.New("Event not found")
+}
+
+// OTP GEN
+
+func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
+	type userLoginRequest struct {
+		Username    string `json:"username"`
+		PhoneNumber string `json:"phone_number"`
+		ClerkToken  string `json:"clerk_token"`
+	}
+
+	var req userLoginRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// eliminar en prod
+	log.Printf("Usuario loggeado: %+v", req)
+
+	//generamos la respuesta
+
+	otp := m.opts.NewOTP()
+
+	type response struct {
+		OTP string `json:"otp"`
+	}
+
+	resp := response{
+		OTP: otp.Key,
+	}
+
+	data, err := json.Marshal(resp)
+	if err != nil {
+		log.Printf("Error sending the OTP: %v", err)
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
+	return
+
 }
