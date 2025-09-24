@@ -1,0 +1,57 @@
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: clinica-postgres
+    environment:
+      POSTGRES_DB: salena_fisio
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: CHANGE_ME_DB_PASSWORD
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/docker-init.sql:/docker-entrypoint-initdb.d/docker-init.sql
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d salena_fisio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # API de la clínica
+  clinica-api:
+    container_name: clinica-api
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: "postgresql://postgres:CHANGE_ME_DB_PASSWORD@postgres:5432/salena_fisio?schema=public"
+      JWT_SECRET: "CHANGE_ME"
+      JWT_EXPIRES_IN: "7d"
+      PORT: 3001
+      NODE_ENV: "production"
+      CORS_ORIGIN: "http://localhost:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
