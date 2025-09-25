@@ -1,10 +1,10 @@
-const express = require('express');
-const prisma = require('../config/database');
-const { authenticateToken, requireRole, requireOwnershipOrAdmin } = require('../middleware/auth');
-const { ROLES, isPaciente, isFisioterapeuta, isAdministrador, canManageAppointments } = require('../constants/roles');
-const { validateCita, validateId } = require('../middleware/validation');
+import { Router } from 'express';
+import prisma from '../config/database.js';
+import { authenticateToken, requireRole, requireOwnershipOrAdmin } from '../middleware/auth.js';
+import { ROLES, isPaciente, isFisioterapeuta, isAdministrador, canManageAppointments } from '../constants/roles.js';
+import { validateCita, validateId } from '../middleware/validation.js';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger
@@ -104,112 +104,112 @@ const router = express.Router();
  */
 // GET /api/citas - Obtener todas las citas
 router.get('/', authenticateToken, async (req, res) => {
-  try {
-    const { 
-      page = 1, 
-      limit = 10, 
-      fechaInicio, 
-      fechaFin, 
-      estado, 
-      idPaciente, 
-      idMedico,
-      idServicio 
-    } = req.query;
-    const skip = (page - 1) * limit;
+	try {
+		const {
+			page = 1,
+			limit = 10,
+			fechaInicio,
+			fechaFin,
+			estado,
+			idPaciente,
+			idMedico,
+			idServicio
+		} = req.query;
+		const skip = (page - 1) * limit;
 
-    // Construir filtros
-    const where = {};
+		// Construir filtros
+		const where = {};
 
-    if (fechaInicio || fechaFin) {
-      where.fechaCita = {};
-      if (fechaInicio) where.fechaCita.gte = new Date(fechaInicio);
-      if (fechaFin) where.fechaCita.lte = new Date(fechaFin);
-    }
+		if (fechaInicio || fechaFin) {
+			where.fechaCita = {};
+			if (fechaInicio) where.fechaCita.gte = new Date(fechaInicio);
+			if (fechaFin) where.fechaCita.lte = new Date(fechaFin);
+		}
 
-    if (estado) {
-      where.estadoCita = estado;
-    }
+		if (estado) {
+			where.estadoCita = estado;
+		}
 
-    if (idPaciente) {
-      where.idPaciente = parseInt(idPaciente);
-    }
+		if (idPaciente) {
+			where.idPaciente = parseInt(idPaciente);
+		}
 
-    if (idMedico) {
-      where.idMedico = parseInt(idMedico);
-    }
+		if (idMedico) {
+			where.idMedico = parseInt(idMedico);
+		}
 
-    if (idServicio) {
-      where.idServicio = parseInt(idServicio);
-    }
+		if (idServicio) {
+			where.idServicio = parseInt(idServicio);
+		}
 
-    // Si es paciente, solo mostrar sus propias citas
-    if (isPaciente(req.user)) {
-      where.idPaciente = req.user.idUsuario;
-    } else if (isFisioterapeuta(req.user)) {
-      // Los fisioterapeutas pueden ver todas las citas o solo las suyas
-      if (req.query.soloMias === 'true') {
-        where.idMedico = req.user.idUsuario;
-      }
-    }
+		// Si es paciente, solo mostrar sus propias citas
+		if (isPaciente(req.user)) {
+			where.idPaciente = req.user.idUsuario;
+		} else if (isFisioterapeuta(req.user)) {
+			// Los fisioterapeutas pueden ver todas las citas o solo las suyas
+			if (req.query.soloMias === 'true') {
+				where.idMedico = req.user.idUsuario;
+			}
+		}
 
-    const [citas, total] = await Promise.all([
-      prisma.cita.findMany({
-        where,
-        include: {
-          paciente: {
-            select: { 
-              idUsuario: true, 
-              nombre: true, 
-              apellido1: true, 
-              apellido2: true,
-              telefonoPrincipal: true,
-              correoElectronico: true
-            }
-          },
-          medico: {
-            select: { 
-              idUsuario: true, 
-              nombre: true, 
-              apellido1: true, 
-              apellido2: true,
-              telefonoPrincipal: true,
-              correoElectronico: true
-            }
-          },
-          servicio: true,
-          notas: {
-            orderBy: { fechaCreacion: 'desc' },
-            take: 1
-          },
-          resultados: {
-            orderBy: { fechaRegistro: 'desc' },
-            take: 1
-          }
-        },
-        skip: parseInt(skip),
-        take: parseInt(limit),
-        orderBy: { fechaCita: 'desc' }
-      }),
-      prisma.cita.count({ where })
-    ]);
+		const [citas, total] = await Promise.all([
+			prisma.cita.findMany({
+				where,
+				include: {
+					paciente: {
+						select: {
+							idUsuario: true,
+							nombre: true,
+							apellido1: true,
+							apellido2: true,
+							telefonoPrincipal: true,
+							correoElectronico: true
+						}
+					},
+					medico: {
+						select: {
+							idUsuario: true,
+							nombre: true,
+							apellido1: true,
+							apellido2: true,
+							telefonoPrincipal: true,
+							correoElectronico: true
+						}
+					},
+					servicio: true,
+					notas: {
+						orderBy: { fechaCreacion: 'desc' },
+						take: 1
+					},
+					resultados: {
+						orderBy: { fechaRegistro: 'desc' },
+						take: 1
+					}
+				},
+				skip: parseInt(skip),
+				take: parseInt(limit),
+				orderBy: { fechaCita: 'desc' }
+			}),
+			prisma.cita.count({ where })
+		]);
 
-    res.json({
-      citas,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
+		res.json({
+			citas,
+			pagination: {
+				page: parseInt(page),
+				limit: parseInt(limit),
+				total,
+				pages: Math.ceil(total / limit)
+			}
+		});
 
-  } catch (error) {
-    console.error('Error al obtener citas:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudieron obtener las citas'
-    });
-  }
+	} catch (error) {
+		console.error('Error al obtener citas:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudieron obtener las citas'
+		});
+	}
 });
 
 /**
@@ -266,70 +266,70 @@ router.get('/', authenticateToken, async (req, res) => {
  */
 // GET /api/citas/:id - Obtener cita por ID
 router.get('/:id', authenticateToken, validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
+	try {
+		const { id } = req.params;
 
-    const cita = await prisma.cita.findUnique({
-      where: { idCita: parseInt(id) },
-      include: {
-        paciente: {
-          select: { 
-            idUsuario: true, 
-            nombre: true, 
-            apellido1: true, 
-            apellido2: true,
-            telefonoPrincipal: true,
-            correoElectronico: true
-          }
-        },
-        medico: {
-          select: { 
-            idUsuario: true, 
-            nombre: true, 
-            apellido1: true, 
-            apellido2: true,
-            telefonoPrincipal: true,
-            correoElectronico: true
-          }
-        },
-        servicio: true,
-        notas: {
-          orderBy: { fechaCreacion: 'desc' }
-        },
-        resultados: {
-          orderBy: { fechaRegistro: 'desc' }
-        }
-      }
-    });
+		const cita = await prisma.cita.findUnique({
+			where: { idCita: parseInt(id) },
+			include: {
+				paciente: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true,
+						telefonoPrincipal: true,
+						correoElectronico: true
+					}
+				},
+				medico: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true,
+						telefonoPrincipal: true,
+						correoElectronico: true
+					}
+				},
+				servicio: true,
+				notas: {
+					orderBy: { fechaCreacion: 'desc' }
+				},
+				resultados: {
+					orderBy: { fechaRegistro: 'desc' }
+				}
+			}
+		});
 
-    if (!cita) {
-      return res.status(404).json({
-        error: 'Cita no encontrada',
-        message: 'No existe una cita con el ID proporcionado'
-      });
-    }
+		if (!cita) {
+			return res.status(404).json({
+				error: 'Cita no encontrada',
+				message: 'No existe una cita con el ID proporcionado'
+			});
+		}
 
-    // Verificar permisos: solo el paciente, médico o admin pueden ver la cita
-    const isPaciente = cita.idPaciente === req.user.idUsuario;
-    const isMedico = cita.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		// Verificar permisos: solo el paciente, médico o admin pueden ver la cita
+		const isPaciente = cita.idPaciente === req.user.idUsuario;
+		const isMedico = cita.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
 
-    if (!isPaciente && !isMedico && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'No tiene permisos para ver esta cita'
-      });
-    }
+		if (!isPaciente && !isMedico && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'No tiene permisos para ver esta cita'
+			});
+		}
 
-    res.json(cita);
+		res.json(cita);
 
-  } catch (error) {
-    console.error('Error al obtener cita:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo obtener la cita'
-    });
-  }
+	} catch (error) {
+		console.error('Error al obtener cita:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo obtener la cita'
+		});
+	}
 });
 
 /**
@@ -419,75 +419,75 @@ router.get('/:id', authenticateToken, validateId, async (req, res) => {
  */
 // POST /api/citas - Crear nueva cita
 router.post('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateCita, async (req, res) => {
-  try {
-    const { fechaCita, idPaciente, idMedico, idServicio, descripcion, estadoCita } = req.body;
+	try {
+		const { fechaCita, idPaciente, idMedico, idServicio, descripcion, estadoCita } = req.body;
 
-    // Verificar que el paciente y médico existen
-    const [paciente, medico] = await Promise.all([
-      prisma.usuario.findUnique({ where: { idUsuario: idPaciente } }),
-      prisma.usuario.findUnique({ where: { idUsuario: idMedico } })
-    ]);
+		// Verificar que el paciente y médico existen
+		const [paciente, medico] = await Promise.all([
+			prisma.usuario.findUnique({ where: { idUsuario: idPaciente } }),
+			prisma.usuario.findUnique({ where: { idUsuario: idMedico } })
+		]);
 
-    if (!paciente || !medico) {
-      return res.status(400).json({
-        error: 'Datos inválidos',
-        message: 'El paciente o médico especificado no existe'
-      });
-    }
+		if (!paciente || !medico) {
+			return res.status(400).json({
+				error: 'Datos inválidos',
+				message: 'El paciente o médico especificado no existe'
+			});
+		}
 
-    // Verificar que el servicio existe si se proporciona
-    if (idServicio) {
-      const servicio = await prisma.servicio.findUnique({ where: { idServicio } });
-      if (!servicio) {
-        return res.status(400).json({
-          error: 'Datos inválidos',
-          message: 'El servicio especificado no existe'
-        });
-      }
-    }
+		// Verificar que el servicio existe si se proporciona
+		if (idServicio) {
+			const servicio = await prisma.servicio.findUnique({ where: { idServicio } });
+			if (!servicio) {
+				return res.status(400).json({
+					error: 'Datos inválidos',
+					message: 'El servicio especificado no existe'
+				});
+			}
+		}
 
-    const cita = await prisma.cita.create({
-      data: {
-        fechaCita: fechaCita ? new Date(fechaCita) : null,
-        idPaciente,
-        idMedico,
-        idServicio,
-        descripcion,
-        estadoCita: estadoCita || 'programada'
-      },
-      include: {
-        paciente: {
-          select: { 
-            idUsuario: true, 
-            nombre: true, 
-            apellido1: true, 
-            apellido2: true
-          }
-        },
-        medico: {
-          select: { 
-            idUsuario: true, 
-            nombre: true, 
-            apellido1: true, 
-            apellido2: true
-          }
-        },
-        servicio: true
-      }
-    });
+		const cita = await prisma.cita.create({
+			data: {
+				fechaCita: fechaCita ? new Date(fechaCita) : null,
+				idPaciente,
+				idMedico,
+				idServicio,
+				descripcion,
+				estadoCita: estadoCita || 'programada'
+			},
+			include: {
+				paciente: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true
+					}
+				},
+				medico: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true
+					}
+				},
+				servicio: true
+			}
+		});
 
-    res.status(201).json({
-      message: 'Cita creada exitosamente',
-      cita
-    });
+		res.status(201).json({
+			message: 'Cita creada exitosamente',
+			cita
+		});
 
-  } catch (error) {
-    console.error('Error al crear cita:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo crear la cita'
-    });
-  }
+	} catch (error) {
+		console.error('Error al crear cita:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo crear la cita'
+		});
+	}
 });
 
 /**
@@ -587,74 +587,74 @@ router.post('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RECE
  */
 // PUT /api/citas/:id - Actualizar cita
 router.put('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = { ...req.body };
+	try {
+		const { id } = req.params;
+		const updateData = { ...req.body };
 
-    // Verificar que la cita existe
-    const citaExistente = await prisma.cita.findUnique({
-      where: { idCita: parseInt(id) }
-    });
+		// Verificar que la cita existe
+		const citaExistente = await prisma.cita.findUnique({
+			where: { idCita: parseInt(id) }
+		});
 
-    if (!citaExistente) {
-      return res.status(404).json({
-        error: 'Cita no encontrada',
-        message: 'No existe una cita con el ID proporcionado'
-      });
-    }
+		if (!citaExistente) {
+			return res.status(404).json({
+				error: 'Cita no encontrada',
+				message: 'No existe una cita con el ID proporcionado'
+			});
+		}
 
-    // Verificar permisos: solo el médico o admin pueden actualizar la cita
-    const isMedico = citaExistente.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		// Verificar permisos: solo el médico o admin pueden actualizar la cita
+		const isMedico = citaExistente.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
 
-    if (!isMedico && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'Solo el médico asignado o un administrador pueden actualizar la cita'
-      });
-    }
+		if (!isMedico && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'Solo el médico asignado o un administrador pueden actualizar la cita'
+			});
+		}
 
-    // Convertir fecha si se proporciona
-    if (updateData.fechaCita) {
-      updateData.fechaCita = new Date(updateData.fechaCita);
-    }
+		// Convertir fecha si se proporciona
+		if (updateData.fechaCita) {
+			updateData.fechaCita = new Date(updateData.fechaCita);
+		}
 
-    const cita = await prisma.cita.update({
-      where: { idCita: parseInt(id) },
-      data: updateData,
-      include: {
-        paciente: {
-          select: { 
-            idUsuario: true, 
-            nombre: true, 
-            apellido1: true, 
-            apellido2: true
-          }
-        },
-        medico: {
-          select: { 
-            idUsuario: true, 
-            nombre: true, 
-            apellido1: true, 
-            apellido2: true
-          }
-        },
-        servicio: true
-      }
-    });
+		const cita = await prisma.cita.update({
+			where: { idCita: parseInt(id) },
+			data: updateData,
+			include: {
+				paciente: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true
+					}
+				},
+				medico: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true
+					}
+				},
+				servicio: true
+			}
+		});
 
-    res.json({
-      message: 'Cita actualizada exitosamente',
-      cita
-    });
+		res.json({
+			message: 'Cita actualizada exitosamente',
+			cita
+		});
 
-  } catch (error) {
-    console.error('Error al actualizar cita:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo actualizar la cita'
-    });
-  }
+	} catch (error) {
+		console.error('Error al actualizar cita:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo actualizar la cita'
+		});
+	}
 });
 
 /**
@@ -714,49 +714,49 @@ router.put('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RE
  */
 // DELETE /api/citas/:id - Cancelar cita
 router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA]), validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
+	try {
+		const { id } = req.params;
 
-    const citaExistente = await prisma.cita.findUnique({
-      where: { idCita: parseInt(id) }
-    });
+		const citaExistente = await prisma.cita.findUnique({
+			where: { idCita: parseInt(id) }
+		});
 
-    if (!citaExistente) {
-      return res.status(404).json({
-        error: 'Cita no encontrada',
-        message: 'No existe una cita con el ID proporcionado'
-      });
-    }
+		if (!citaExistente) {
+			return res.status(404).json({
+				error: 'Cita no encontrada',
+				message: 'No existe una cita con el ID proporcionado'
+			});
+		}
 
-    // Verificar permisos: paciente, médico o admin pueden cancelar
-    const isPaciente = citaExistente.idPaciente === req.user.idUsuario;
-    const isMedico = citaExistente.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		// Verificar permisos: paciente, médico o admin pueden cancelar
+		const isPaciente = citaExistente.idPaciente === req.user.idUsuario;
+		const isMedico = citaExistente.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
 
-    if (!isPaciente && !isMedico && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'No tiene permisos para cancelar esta cita'
-      });
-    }
+		if (!isPaciente && !isMedico && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'No tiene permisos para cancelar esta cita'
+			});
+		}
 
-    // Actualizar estado a cancelada en lugar de eliminar
-    const cita = await prisma.cita.update({
-      where: { idCita: parseInt(id) },
-      data: { estadoCita: 'cancelada' }
-    });
+		// Actualizar estado a cancelada en lugar de eliminar
+		const cita = await prisma.cita.update({
+			where: { idCita: parseInt(id) },
+			data: { estadoCita: 'cancelada' }
+		});
 
-    res.json({
-      message: 'Cita cancelada exitosamente'
-    });
+		res.json({
+			message: 'Cita cancelada exitosamente'
+		});
 
-  } catch (error) {
-    console.error('Error al cancelar cita:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo cancelar la cita'
-    });
-  }
+	} catch (error) {
+		console.error('Error al cancelar cita:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo cancelar la cita'
+		});
+	}
 });
 
 /**
@@ -836,59 +836,59 @@ router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES
  */
 // POST /api/citas/:id/notas - Agregar nota a cita
 router.post('/:id/notas', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { nota } = req.body;
+	try {
+		const { id } = req.params;
+		const { nota } = req.body;
 
-    if (!nota || nota.trim().length === 0) {
-      return res.status(400).json({
-        error: 'Datos inválidos',
-        message: 'La nota no puede estar vacía'
-      });
-    }
+		if (!nota || nota.trim().length === 0) {
+			return res.status(400).json({
+				error: 'Datos inválidos',
+				message: 'La nota no puede estar vacía'
+			});
+		}
 
-    // Verificar que la cita existe
-    const citaExistente = await prisma.cita.findUnique({
-      where: { idCita: parseInt(id) }
-    });
+		// Verificar que la cita existe
+		const citaExistente = await prisma.cita.findUnique({
+			where: { idCita: parseInt(id) }
+		});
 
-    if (!citaExistente) {
-      return res.status(404).json({
-        error: 'Cita no encontrada',
-        message: 'No existe una cita con el ID proporcionado'
-      });
-    }
+		if (!citaExistente) {
+			return res.status(404).json({
+				error: 'Cita no encontrada',
+				message: 'No existe una cita con el ID proporcionado'
+			});
+		}
 
-    // Verificar permisos: solo el médico o admin pueden agregar notas
-    const isMedico = citaExistente.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		// Verificar permisos: solo el médico o admin pueden agregar notas
+		const isMedico = citaExistente.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
 
-    if (!isMedico && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'Solo el médico asignado o un administrador pueden agregar notas'
-      });
-    }
+		if (!isMedico && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'Solo el médico asignado o un administrador pueden agregar notas'
+			});
+		}
 
-    const notaCita = await prisma.notaCita.create({
-      data: {
-        idCita: parseInt(id),
-        nota: nota.trim()
-      }
-    });
+		const notaCita = await prisma.notaCita.create({
+			data: {
+				idCita: parseInt(id),
+				nota: nota.trim()
+			}
+		});
 
-    res.status(201).json({
-      message: 'Nota agregada exitosamente',
-      nota: notaCita
-    });
+		res.status(201).json({
+			message: 'Nota agregada exitosamente',
+			nota: notaCita
+		});
 
-  } catch (error) {
-    console.error('Error al agregar nota:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo agregar la nota'
-    });
-  }
+	} catch (error) {
+		console.error('Error al agregar nota:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo agregar la nota'
+		});
+	}
 });
 
 /**
@@ -973,61 +973,61 @@ router.post('/:id/notas', authenticateToken, requireRole([ROLES.ADMINISTRADOR, R
  */
 // POST /api/citas/:id/resultados - Agregar resultado a cita
 router.post('/:id/resultados', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { resultado, resumenResultado } = req.body;
+	try {
+		const { id } = req.params;
+		const { resultado, resumenResultado } = req.body;
 
-    if (!resultado || resultado.trim().length === 0) {
-      return res.status(400).json({
-        error: 'Datos inválidos',
-        message: 'El resultado no puede estar vacío'
-      });
-    }
+		if (!resultado || resultado.trim().length === 0) {
+			return res.status(400).json({
+				error: 'Datos inválidos',
+				message: 'El resultado no puede estar vacío'
+			});
+		}
 
-    // Verificar que la cita existe
-    const citaExistente = await prisma.cita.findUnique({
-      where: { idCita: parseInt(id) }
-    });
+		// Verificar que la cita existe
+		const citaExistente = await prisma.cita.findUnique({
+			where: { idCita: parseInt(id) }
+		});
 
-    if (!citaExistente) {
-      return res.status(404).json({
-        error: 'Cita no encontrada',
-        message: 'No existe una cita con el ID proporcionado'
-      });
-    }
+		if (!citaExistente) {
+			return res.status(404).json({
+				error: 'Cita no encontrada',
+				message: 'No existe una cita con el ID proporcionado'
+			});
+		}
 
-    // Verificar permisos: solo el médico o admin pueden agregar resultados
-    const isMedico = citaExistente.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		// Verificar permisos: solo el médico o admin pueden agregar resultados
+		const isMedico = citaExistente.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
 
-    if (!isMedico && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'Solo el médico asignado o un administrador pueden agregar resultados'
-      });
-    }
+		if (!isMedico && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'Solo el médico asignado o un administrador pueden agregar resultados'
+			});
+		}
 
-    const resultadoCita = await prisma.resultadoCita.create({
-      data: {
-        idCita: parseInt(id),
-        resultado: resultado.trim(),
-        resumenResultado: resumenResultado?.trim() || null,
-        fechaRegistro: new Date()
-      }
-    });
+		const resultadoCita = await prisma.resultadoCita.create({
+			data: {
+				idCita: parseInt(id),
+				resultado: resultado.trim(),
+				resumenResultado: resumenResultado?.trim() || null,
+				fechaRegistro: new Date()
+			}
+		});
 
-    res.status(201).json({
-      message: 'Resultado agregado exitosamente',
-      resultado: resultadoCita
-    });
+		res.status(201).json({
+			message: 'Resultado agregado exitosamente',
+			resultado: resultadoCita
+		});
 
-  } catch (error) {
-    console.error('Error al agregar resultado:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo agregar el resultado'
-    });
-  }
+	} catch (error) {
+		console.error('Error al agregar resultado:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo agregar el resultado'
+		});
+	}
 });
 
-module.exports = router;
+export default router;
