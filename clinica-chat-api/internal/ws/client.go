@@ -17,20 +17,23 @@ var (
 type Client struct {
 	ID       string          `json:"user_id"`
 	Username string          `json:"username"`
+	Rol      string          `json:"-"`
 	Conn     *websocket.Conn `json:"-"`
 	Manager  *Manager        `json:"-"`
+	chatroom string          `json:"-"`
 	// channel to avoid blocking messages
 	egress chan Event `json:"-"`
 }
 
 type ClientList map[*Client]bool
 
-func NewClient(conn *websocket.Conn, manager *Manager, id string, username string) *Client {
+func NewClient(conn *websocket.Conn, manager *Manager, id string, username string, rol string) *Client {
 	return &Client{
 		ID:       id,
 		Username: username,
 		Conn:     conn,
 		Manager:  manager,
+		Rol:      rol,
 		egress:   make(chan Event),
 	}
 }

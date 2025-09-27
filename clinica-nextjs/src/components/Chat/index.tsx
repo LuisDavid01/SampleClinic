@@ -13,16 +13,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { chatEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
-import { useUser } from "@clerk/nextjs";
+
 
 
 export default function FloatingChat() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [connectionStatus, setConnectionStatus] = useState<'connected' | 'error' | null>(null);
 	const wsRef = useRef<WebSocket | null>(null);
-	const { user, isLoaded } = useUser();
+
 	const [messages, setMessages] = useState<Array<{
-		id: string; text: string; sender: 'user' | 'support'; timestamp: string
+		id: string; text: string; sender: string; role: 'Pacient' | 'Support'; timestamp: string
 	}>>([]);
 
 	useEffect(() => {
@@ -31,9 +31,7 @@ export default function FloatingChat() {
 		if (typeof window !== 'undefined' && window.WebSocket) {
 			console.log("WebSocket supported");
 
-			if (!wsRef.current) {
-				initializeWebSocket();
-			}
+
 		} else {
 			console.log("WebSocket not supported");
 		}
@@ -52,7 +50,7 @@ export default function FloatingChat() {
 			const otp = await fetch('/api/chat/otp', {
 				method: 'post',
 				body: JSON.stringify({
-					username: "test-user",
+					username: "test-Pacient",
 					phone_number: "+123455667",
 					clerk_token: "test"
 				}),
@@ -93,6 +91,7 @@ export default function FloatingChat() {
 			};
 
 		} catch (err) {
+			console.log(err);
 			setConnectionStatus('error');
 		}
 
@@ -106,12 +105,13 @@ export default function FloatingChat() {
 			case "new_message":
 				console.log("new message");
 				const payload = event.payload as NewMessageEvent;
-				const messageEvent = Object.assign(new NewMessageEvent(payload.message, payload.from, payload.sent))
+				const messageEvent = Object.assign(new NewMessageEvent(payload.message, payload.from, payload.role, payload.sent))
 				setMessages(prev => [
 					...prev,
 					{
 						id: crypto.randomUUID(),
 						sender: messageEvent.from,
+						role: messageEvent.role,
 						text: messageEvent.message,
 						timestamp: new Date().toLocaleTimeString()
 					}
@@ -140,13 +140,13 @@ export default function FloatingChat() {
 		const newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
 		console.log("message: ", newMessage?.value);
 		if (newMessage) {
-			sendEvent("send_message", new SendMessageEvent(newMessage.value, 'user'));
+			sendEvent("send_message", new SendMessageEvent(newMessage.value));
 			/*
 			setMessages(prev => [
 				...prev,
 				{
 					id: crypto.randomUUID(),
-					sender: 'user',
+					sender: 'Pacient',
 					text: newMessage.value,
 					timestamp: new Date().toLocaleTimeString()
 				}
@@ -237,8 +237,8 @@ export default function FloatingChat() {
 								<ScrollArea className="h-full pr-4">
 									<div className="space-y-3">
 										{messages.map(msg => (
-											<div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-												<div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.sender === 'user'
+											<div key={msg.id} className={`flex ${msg.role === 'Pacient' ? 'justify-end' : 'justify-start'}`}>
+												<div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'Pacient'
 													? 'bg-card text-text-primary'
 													: 'bg-blue-500 text-white'
 													}`}>

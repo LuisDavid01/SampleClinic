@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/auth"
+	"github.com/clerk/clerk-sdk-go/v2"
+	"github.com/clerk/clerk-sdk-go/v2/user"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -70,10 +72,14 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !m.opts.ValidateOTP(otp) {
+	authUsr, ok := m.opts.ValidateOTP(otp)
+	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
+
+	log.Println(authUsr)
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -84,9 +90,9 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error generating the id: %v", err)
 		return
 	}
-	username := "user-" + id.String()[:8]
-	client := NewClient(conn, m, id.String(), username)
-	fmt.Printf("New client connected: %s\n", client.Username)
+
+	client := NewClient(conn, m, id.String(), authUsr.Username, authUsr.Rol)
+	fmt.Printf("New client connected: %s , role: %s\n", client.Username, client.Rol)
 
 	m.AddClient(client)
 
@@ -115,6 +121,7 @@ func (m *Manager) RemoveClient(client *Client) {
 
 func (m *Manager) setupEventHandlers() {
 	m.handlers[EventSendMessage] = sendMessage
+	m.handlers[EventChangeRoom] = chatRoomHandler
 
 }
 
@@ -126,10 +133,17 @@ func sendMessage(event Event, c *Client) error {
 	}
 
 	var broadMessage NewMessageEvent
-
+	var role string
+	if c.Rol == "admin" {
+		role = "Support"
+	} else {
+		role = "Pacient"
+	}
+	log.Printf("Client role: %s, username: %s, message sent role: %s", c.Rol, c.Username, role)
 	broadMessage.Sent = time.Now()
 	broadMessage.Message = chatevent.Message
-	broadMessage.From = chatevent.From
+	broadMessage.From = c.Username
+	broadMessage.Role = role
 
 	data, err := json.Marshal(broadMessage)
 	if err != nil {
@@ -141,9 +155,21 @@ func sendMessage(event Event, c *Client) error {
 	}
 
 	for client := range c.Manager.Clients {
-
-		client.egress <- outgoingEvent
+		if client.chatroom == c.chatroom {
+			client.egress <- outgoingEvent
+		}
 	}
+	return nil
+}
+
+func chatRoomHandler(event Event, c *Client) error {
+	var changeChatRoomEvent ChangeChatRoomEvent
+	if err := json.Unmarshal(event.Payload, &changeChatRoomEvent); err != nil {
+		return fmt.Errorf("Bad payload in request: %v", err)
+	}
+	log.Println("changing to chatroom: ", changeChatRoomEvent.Name)
+	c.chatroom = changeChatRoomEvent.Name
+
 	return nil
 }
 
@@ -160,25 +186,53 @@ func (m *Manager) RouteEvent(event Event, c *Client) error {
 // OTP GEN
 
 func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Recibí OTP request")
+	authHeader := r.Header.Get("Authorization")
+
 	type userLoginRequest struct {
 		Username    string `json:"username"`
 		PhoneNumber string `json:"phone_number"`
-		ClerkToken  string `json:"clerk_token"`
 	}
 
+	var role = "Pacient"
 	var req userLoginRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if authHeader != "" {
+		claims, ok := clerk.SessionClaimsFromContext(r.Context())
+		log.Println("Getting claims...")
+		if ok {
+			userID := claims.Subject
+			log.Println("claims: ", claims)
+
+			usr, err := user.Get(r.Context(), userID)
+			if err != nil {
+				http.Error(w, "could not fetch user", http.StatusInternalServerError)
+				return
+			}
+			log.Printf("Usuario obtenido de Clerk: %+v", *usr.FirstName)
+			req.Username = *usr.FirstName + " " + *usr.LastName
+
+			metadata := make(map[string]interface{})
+			if err := json.Unmarshal(usr.PublicMetadata, &metadata); err != nil {
+				http.Error(w, "could not parse public_metadata", http.StatusInternalServerError)
+				return
+			}
+			role, ok = metadata["role"].(string)
+			if !ok {
+				role = "Pacient"
+			}
+		}
+	}
 
 	// eliminar en prod
-	log.Printf("Usuario loggeado: %+v", req)
+	log.Printf("Usuario loggeado: %+v , rol: %s", req, role)
 
 	//generamos la respuesta
-
-	otp := m.opts.NewOTP()
+	otp := m.opts.NewOTP(req.Username, role)
 
 	type response struct {
 		OTP string `json:"otp"`

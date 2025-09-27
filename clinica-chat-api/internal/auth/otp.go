@@ -13,8 +13,10 @@ Para manejar la autenticacion de usuario
 la autorizacion queda pendiente
 */
 type OTP struct {
-	Key     string
-	Created time.Time
+	Key      string
+	Created  time.Time
+	Rol      string
+	Username string
 }
 type RetentionMap map[string]OTP
 
@@ -25,23 +27,26 @@ func NewRetentionMap(ctx context.Context, retentionPeriod time.Duration) Retenti
 
 }
 
-func (rm RetentionMap) NewOTP() OTP {
+func (rm RetentionMap) NewOTP(username string, rol string) OTP {
+
 	o := OTP{
-		Key:     uuid.NewString(),
-		Created: time.Now(),
+		Key:      uuid.NewString(),
+		Created:  time.Now(),
+		Rol:      rol,
+		Username: username,
 	}
 
 	rm[o.Key] = o
 	return o
 }
 
-func (rm RetentionMap) ValidateOTP(otp string) bool {
+func (rm RetentionMap) ValidateOTP(otp string) (OTP, bool) {
 	if _, ok := rm[otp]; !ok {
-		return false
+		return OTP{}, false
 	}
-
+	currOtp := rm[otp]
 	delete(rm, otp)
-	return true
+	return currOtp, true
 }
 
 func (rm RetentionMap) Retention(ctx context.Context, retentionPeriod time.Duration) {

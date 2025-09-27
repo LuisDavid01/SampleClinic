@@ -5,7 +5,7 @@ export interface Message {
 	isFromSupport: boolean;
 	isRead: boolean;
 }
-
+/*
 export interface Chat {
 	id: string;
 	customerName: string;
@@ -17,11 +17,19 @@ export interface Chat {
 	unreadCount: number;
 	messages: Message[];
 }
+*/
+export class chatRoomEvent {
+	name: string;
+	constructor(name: string) {
+		this.name = name;
 
+
+	}
+}
 export class chatEvent {
 	type: string;
-	payload: SendMessageEvent | NewMessageEvent | string;
-	constructor(type: string, payload: SendMessageEvent | NewMessageEvent | string) {
+	payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | string;
+	constructor(type: string, payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | string) {
 		this.type = type;
 		this.payload = payload;
 	}
@@ -30,22 +38,24 @@ export class chatEvent {
 
 export class NewMessageEvent {
 	message: string;
-	from: "user" | "support";
+	from: string;
+	role: "Pacient" | "Support";
 	sent: Date
-	constructor(message: string, from: "user" | "support", sent: Date) {
+	constructor(message: string, from: string, role: "Pacient" | "Support", sent: Date) {
 		this.message = message;
 		this.from = from;
 		this.sent = sent;
+		this.role = role;
 	}
 }
 
 
 export class SendMessageEvent {
 	message: string;
-	from: "user" | "support";
-	constructor(message: string, from: "user" | "support") {
+
+
+	constructor(message: string,) {
 		this.message = message;
-		this.from = from;
 
 	}
 }

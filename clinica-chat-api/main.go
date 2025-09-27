@@ -3,23 +3,27 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/app"
-	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/routes"
 	"log"
 	"net/http"
+	"os"
 	"time"
-	//"github.com/joho/godotenv"
+
+	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/app"
+	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/routes"
+	"github.com/clerk/clerk-sdk-go/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	var port int
 	flag.IntVar(&port, "port", 8080, "live-chat")
 	flag.Parse()
-	/*err := godotenv.Load()
+	err := godotenv.Load()
 	if err != nil {
 		panic(err)
 	}
-	*/
+	clerk.SetKey(os.Getenv("CLERK_SECRET_KEY"))
+
 	app, err := app.NewApplication()
 	if err != nil {
 		panic(err)
