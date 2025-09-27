@@ -122,7 +122,9 @@ func (m *Manager) RemoveClient(client *Client) {
 	defer m.Unlock()
 
 	if _, ok := m.Clients[client]; ok {
-		m.removeRoom(client.chatroom)
+		if client.Rol == "Pacient" {
+			m.removeRoom(client.chatroom)
+		}
 		client.Conn.Close()
 		delete(m.Clients, client)
 	}
