@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -93,7 +94,16 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 
 	client := NewClient(conn, m, id.String(), authUsr.Username, authUsr.Rol)
 	fmt.Printf("New client connected: %s , role: %s\n", client.Username, client.Rol)
-
+	if client.Rol == "Pacient" {
+		clientRoom := &Room{
+			ID:      strings.Trim(authUsr.Username, " ") + "-" + id.String()[:8],
+			Name:    authUsr.Username,
+			History: []NewMessageEvent{},
+		}
+		m.addRoom(clientRoom)
+		client.chatroom = clientRoom.ID
+		log.Printf("New room created: %s", clientRoom.ID)
+	}
 	m.AddClient(client)
 
 	go client.Read()
@@ -112,6 +122,7 @@ func (m *Manager) RemoveClient(client *Client) {
 	defer m.Unlock()
 
 	if _, ok := m.Clients[client]; ok {
+		m.removeRoom(client.chatroom)
 		client.Conn.Close()
 		delete(m.Clients, client)
 	}
@@ -163,6 +174,10 @@ func sendMessage(event Event, c *Client) error {
 }
 
 func chatRoomHandler(event Event, c *Client) error {
+	if c.Rol != "admin" {
+		return fmt.Errorf("Authorized action")
+	}
+
 	var changeChatRoomEvent ChangeChatRoomEvent
 	if err := json.Unmarshal(event.Payload, &changeChatRoomEvent); err != nil {
 		return fmt.Errorf("Bad payload in request: %v", err)
@@ -206,14 +221,13 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("Getting claims...")
 		if ok {
 			userID := claims.Subject
-			log.Println("claims: ", claims)
 
 			usr, err := user.Get(r.Context(), userID)
 			if err != nil {
 				http.Error(w, "could not fetch user", http.StatusInternalServerError)
 				return
 			}
-			log.Printf("Usuario obtenido de Clerk: %+v", *usr.FirstName)
+			log.Printf("Usuario obtenido: %+v", *usr.FirstName)
 			req.Username = *usr.FirstName + " " + *usr.LastName
 
 			metadata := make(map[string]interface{})
@@ -250,4 +264,18 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 	return
 
+}
+
+// ROOMS
+
+func (m *Manager) addRoom(room *Room) {
+	m.Lock()
+	defer m.Unlock()
+	m.Rooms[room.ID] = room
+}
+
+func (m *Manager) removeRoom(roomID string) {
+	m.Lock()
+	defer m.Unlock()
+	delete(m.Rooms, roomID)
 }
