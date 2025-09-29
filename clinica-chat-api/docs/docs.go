@@ -97,7 +97,7 @@ const docTemplate = `{
             "get": {
                 "description": "Establece una conexión WebSocket autenticada mediante OTP.",
                 "tags": [
-                    "websocket"
+                    "WebSocket"
                 ],
                 "summary": "Inicia conexión WebSocket",
                 "parameters": [

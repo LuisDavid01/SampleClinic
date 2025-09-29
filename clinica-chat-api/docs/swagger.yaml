@@ -87,7 +87,7 @@ paths:
             type: string
       summary: Inicia conexión WebSocket
       tags:
-      - websocket
+      - WebSocket
 securityDefinitions:
   BearerAuth:
     in: header

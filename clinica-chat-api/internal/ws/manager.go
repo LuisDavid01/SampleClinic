@@ -71,7 +71,7 @@ func NewManager(ctx context.Context) *Manager {
 //
 //	Si el usuario es un paciente, se crea automáticamente una sala de chat asociada.
 //
-//	@Tags			websocket
+//	@Tags			WebSocket
 //	@Param			otp	query		string	true	"OTP de autenticación"
 //	@Success		101	{string}	string	"Switching Protocols"
 //	@Failure		401	{string}	string	"Unauthorized"

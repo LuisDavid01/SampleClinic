@@ -44,7 +44,7 @@ func main() {
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	app.Logger.Printf("the server started successfuly on port: %d !!", port)
+	app.Logger.Printf("the server started successfuly on port: %d !!\n Swagger docs: http://localhost:8080/swagger/index.html", port)
 
 	log.Fatal(server.ListenAndServe())
 }
