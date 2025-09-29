@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Users } from "lucide-react";
@@ -210,3 +211,4 @@ export const TeamSection = () => {
     </section>
   );
 };
+
