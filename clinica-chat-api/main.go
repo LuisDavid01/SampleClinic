@@ -14,6 +14,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// @title						Clinica Chat API
+// @version					1.0
+// @description				Microservicio de chat en tiempo real para Selena Fisiotarepia
+// @termsOfService				http://swagger.io/terms/
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
 func main() {
 	var port int
 	flag.IntVar(&port, "port", 8080, "live-chat")

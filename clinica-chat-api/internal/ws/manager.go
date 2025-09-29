@@ -64,6 +64,18 @@ func NewManager(ctx context.Context) *Manager {
 	return m
 }
 
+// ServeWs godoc
+//
+//	@Summary		Inicia conexión WebSocket
+//	@Description	Establece una conexión WebSocket autenticada mediante OTP.
+//
+//	Si el usuario es un paciente, se crea automáticamente una sala de chat asociada.
+//
+//	@Tags			websocket
+//	@Param			otp	query		string	true	"OTP de autenticación"
+//	@Success		101	{string}	string	"Switching Protocols"
+//	@Failure		401	{string}	string	"Unauthorized"
+//	@Router			/ws [get]
 func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 
 	otp := r.URL.Query().Get("otp")
@@ -122,7 +134,7 @@ func (m *Manager) RemoveClient(client *Client) {
 	defer m.Unlock()
 
 	if _, ok := m.Clients[client]; ok {
-		log.Printf("Client removes:  %s", client.Username)
+		log.Printf("Client removed:  %s", client.Username)
 		if client.Rol == "Pacient" {
 			m.removeRoom(client.chatroom)
 		}
@@ -201,19 +213,43 @@ func (m *Manager) RouteEvent(event Event, c *Client) error {
 	return errors.New("Event not found")
 }
 
-// OTP GEN
+// Types for OTP
+type Response struct {
+	OTP string `json:"otp"`
+}
 
+type UserLoginRequest struct {
+	Username    string `json:"username"`
+	PhoneNumber string `json:"phone_number"`
+}
+
+// OtpHandler godoc
+//
+//	@Summary		Genera OTP para conexión WebSocket
+//	@Description	Genera un OTP que será usado para autenticar conexiones WebSocket.
+//
+//	Si el usuario está autenticado mediante Clerk (Authorization header),
+//	se obtiene su información desde el backend de Clerk.
+//	Si no, se utilizan los parámetros enviados en el body.
+//
+//	@Tags			WebSocket
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		UserLoginRequest	true	"Información del usuario"
+//
+//	@Success		200		{object}	Response			"OK"
+//
+//	@Failure		400		{string}	string				"Bad Request"
+//	@Failure		401		{string}	string				"Unauthorized"
+//	@Failure		500		{string}	string				"Internal Server Error"
+//	@Security		BearerAuth
+//	@Router			/api/otp [post]
 func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Recibí OTP request")
 	authHeader := r.Header.Get("Authorization")
 
-	type userLoginRequest struct {
-		Username    string `json:"username"`
-		PhoneNumber string `json:"phone_number"`
-	}
-
 	var role = "Pacient"
-	var req userLoginRequest
+	var req UserLoginRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -252,11 +288,7 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 	//generamos la respuesta
 	otp := m.opts.NewOTP(req.Username, role)
 
-	type response struct {
-		OTP string `json:"otp"`
-	}
-
-	resp := response{
+	resp := Response{
 		OTP: otp.Key,
 	}
 

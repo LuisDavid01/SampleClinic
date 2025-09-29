@@ -29,6 +29,14 @@ func NewApplication() (*Application, error) {
 	return app, nil
 }
 
+// HealthCheck godoc
+//
+//	@Summary		Verifica si el servidor está vivo
+//	@Description	Endpoint de health check
+//	@Tags			health
+//	@Produce		json
+//	@Success		200	{string}	string	"OK"
+//	@Router			/api/health [get]
 func (a *Application) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	log.Println("someone hit this")
 	fmt.Fprintf(w, "Status is avaliable\n")

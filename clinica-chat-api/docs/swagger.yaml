@@ -1,0 +1,96 @@
+definitions:
+  ws.Response:
+    properties:
+      otp:
+        type: string
+    type: object
+  ws.UserLoginRequest:
+    properties:
+      phone_number:
+        type: string
+      username:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Microservicio de chat en tiempo real para Selena Fisiotarepia
+  termsOfService: http://swagger.io/terms/
+  title: Clinica Chat API
+  version: "1.0"
+paths:
+  /api/health:
+    get:
+      description: Endpoint de health check
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Verifica si el servidor está vivo
+      tags:
+      - health
+  /api/otp:
+    post:
+      consumes:
+      - application/json
+      description: Genera un OTP que será usado para autenticar conexiones WebSocket.
+      parameters:
+      - description: Información del usuario
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ws.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ws.Response'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Genera OTP para conexión WebSocket
+      tags:
+      - WebSocket
+  /ws:
+    get:
+      description: Establece una conexión WebSocket autenticada mediante OTP.
+      parameters:
+      - description: OTP de autenticación
+        in: query
+        name: otp
+        required: true
+        type: string
+      responses:
+        "101":
+          description: Switching Protocols
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: Inicia conexión WebSocket
+      tags:
+      - websocket
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
