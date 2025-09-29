@@ -60,7 +60,6 @@ export default function SupportChat() {
 
 			const token = await getToken();
 
-
 			const otp = await fetch('/api/chat/otp', {
 				headers: {
 					"Authorization": `Bearer ${token}`,
@@ -280,10 +279,10 @@ export default function SupportChat() {
 									<ScrollArea className="h-full pr-4">
 										<div className="space-y-3">
 											{messages.map(msg => (
-												<div key={msg.id} className={`flex ${msg.role === 'Pacient' ? 'justify-end' : 'justify-start'}`}>
+												<div key={msg.id} className={`flex ${msg.role === 'Pacient' ? 'justify-start' : 'justify-end'}`}>
 													<div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'Pacient'
-														? 'bg-card text-text-primary'
-														: 'bg-blue-500 text-white'
+														? 'bg-blue-500 text-white'
+														: 'bg-card'
 														}`}>
 														<p>{msg.text}</p>
 														<div className="flex items-center gap-1 mt-1">

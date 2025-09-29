@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { chatEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
+import { useAuth } from "@clerk/nextjs";
 
 
 
@@ -20,7 +21,7 @@ export default function FloatingChat() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [connectionStatus, setConnectionStatus] = useState<'connected' | 'error' | null>(null);
 	const wsRef = useRef<WebSocket | null>(null);
-
+	const { getToken } = useAuth();
 	const [messages, setMessages] = useState<Array<{
 		id: string; text: string; sender: string; role: 'Pacient' | 'Support'; timestamp: string
 	}>>([]);
@@ -47,12 +48,16 @@ export default function FloatingChat() {
 	const initializeWebSocket = async () => {
 		try {
 
+			const token = await getToken();
 			const otp = await fetch('/api/chat/otp', {
+				headers: {
+					"Authorization": `Bearer ${token}`,
+					"Content-Type": "application/json",
+				},
 				method: 'post',
 				body: JSON.stringify({
 					username: "test-Pacient",
 					phone_number: "+123455667",
-					clerk_token: "test"
 				}),
 				mode: 'cors'
 			}).then((resp) => {

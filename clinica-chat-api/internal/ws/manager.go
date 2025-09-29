@@ -93,7 +93,6 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := NewClient(conn, m, id.String(), authUsr.Username, authUsr.Rol)
-	fmt.Printf("New client connected: %s , role: %s\n", client.Username, client.Rol)
 	if client.Rol == "Pacient" {
 		clientRoom := &Room{
 			ID:      strings.Trim(authUsr.Username, " ") + "-" + id.String()[:8],
@@ -104,6 +103,7 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 		client.chatroom = clientRoom.ID
 		log.Printf("New room created: %s", clientRoom.ID)
 	}
+	fmt.Printf("New client connected: %s , role: %s, chatroom:  %s\n", client.Username, client.Rol, client.chatroom)
 	m.AddClient(client)
 
 	go client.Read()
@@ -122,6 +122,7 @@ func (m *Manager) RemoveClient(client *Client) {
 	defer m.Unlock()
 
 	if _, ok := m.Clients[client]; ok {
+		log.Printf("Client removes:  %s", client.Username)
 		if client.Rol == "Pacient" {
 			m.removeRoom(client.chatroom)
 		}
@@ -219,6 +220,7 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if authHeader != "" {
+
 		claims, ok := clerk.SessionClaimsFromContext(r.Context())
 		log.Println("Getting claims...")
 		if ok {
@@ -277,7 +279,6 @@ func (m *Manager) addRoom(room *Room) {
 }
 
 func (m *Manager) removeRoom(roomID string) {
-	m.Lock()
-	defer m.Unlock()
+
 	delete(m.Rooms, roomID)
 }
