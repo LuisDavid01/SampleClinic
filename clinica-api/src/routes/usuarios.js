@@ -1,11 +1,11 @@
-const express = require('express');
-const prisma = require('../config/database');
-const { authenticateToken, requireRole, requireOwnershipOrAdmin } = require('../middleware/auth');
-const { ROLES } = require('../constants/roles');
-const { validateUsuario, validateId } = require('../middleware/validation');
-const { hashPassword } = require('../utils/password');
+import { Router } from 'express';
+import prisma from '../config/database.js';
+import { authenticateToken, requireRole, requireOwnershipOrAdmin } from '../middleware/auth.js';
+import { ROLES } from '../constants/roles.js';
+import { validateUsuario, validateId } from '../middleware/validation.js';
+import { hashPassword } from '../utils/password.js';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger
@@ -80,61 +80,61 @@ const router = express.Router();
 
 // GET /api/usuarios - Obtener todos los usuarios (solo admin)
 router.get('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), async (req, res) => {
-  try {
-    const { page = 1, limit = 10, search, rol, activo } = req.query;
-    const skip = (page - 1) * limit;
+	try {
+		const { page = 1, limit = 10, search, rol, activo } = req.query;
+		const skip = (page - 1) * limit;
 
-    // Construir filtros
-    const where = {};
-    
-    if (search) {
-      where.OR = [
-        { nombre: { contains: search, mode: 'insensitive' } },
-        { apellido1: { contains: search, mode: 'insensitive' } },
-        { apellido2: { contains: search, mode: 'insensitive' } },
-        { correoElectronico: { contains: search, mode: 'insensitive' } }
-      ];
-    }
+		// Construir filtros
+		const where = {};
 
-    if (rol) {
-      where.rol = { nombreRol: rol };
-    }
+		if (search) {
+			where.OR = [
+				{ nombre: { contains: search, mode: 'insensitive' } },
+				{ apellido1: { contains: search, mode: 'insensitive' } },
+				{ apellido2: { contains: search, mode: 'insensitive' } },
+				{ correoElectronico: { contains: search, mode: 'insensitive' } }
+			];
+		}
 
-    if (activo !== undefined) {
-      where.activo = activo === 'true';
-    }
+		if (rol) {
+			where.rol = { nombreRol: rol };
+		}
 
-    const [usuarios, total] = await Promise.all([
-      prisma.usuario.findMany({
-        where,
-        include: { rol: true },
-        skip: parseInt(skip),
-        take: parseInt(limit),
-        orderBy: { fechaRegistro: 'desc' }
-      }),
-      prisma.usuario.count({ where })
-    ]);
+		if (activo !== undefined) {
+			where.activo = activo === 'true';
+		}
 
-    // Remover contraseñas de la respuesta
-    const usuariosSinContrasena = usuarios.map(({ contrasena, ...usuario }) => usuario);
+		const [usuarios, total] = await Promise.all([
+			prisma.usuario.findMany({
+				where,
+				include: { rol: true },
+				skip: parseInt(skip),
+				take: parseInt(limit),
+				orderBy: { fechaRegistro: 'desc' }
+			}),
+			prisma.usuario.count({ where })
+		]);
 
-    res.json({
-      usuarios: usuariosSinContrasena,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
+		// Remover contraseñas de la respuesta
+		const usuariosSinContrasena = usuarios.map(({ contrasena, ...usuario }) => usuario);
 
-  } catch (error) {
-    console.error('Error al obtener usuarios:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudieron obtener los usuarios'
-    });
-  }
+		res.json({
+			usuarios: usuariosSinContrasena,
+			pagination: {
+				page: parseInt(page),
+				limit: parseInt(limit),
+				total,
+				pages: Math.ceil(total / limit)
+			}
+		});
+
+	} catch (error) {
+		console.error('Error al obtener usuarios:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudieron obtener los usuarios'
+		});
+	}
 });
 
 /**
@@ -187,45 +187,45 @@ router.get('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), async (re
 
 // GET /api/usuarios/:id - Obtener usuario por ID
 router.get('/:id', authenticateToken, requireOwnershipOrAdmin, validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
+	try {
+		const { id } = req.params;
 
-    const usuario = await prisma.usuario.findUnique({
-      where: { idUsuario: parseInt(id) },
-      include: { 
-        rol: true,
-        perfil: {
-          include: {
-            certificaciones: {
-              include: { certificacion: true }
-            },
-            servicios: {
-              include: { servicio: true }
-            }
-          }
-        }
-      }
-    });
+		const usuario = await prisma.usuario.findUnique({
+			where: { idUsuario: parseInt(id) },
+			include: {
+				rol: true,
+				perfil: {
+					include: {
+						certificaciones: {
+							include: { certificacion: true }
+						},
+						servicios: {
+							include: { servicio: true }
+						}
+					}
+				}
+			}
+		});
 
-    if (!usuario) {
-      return res.status(404).json({
-        error: 'Usuario no encontrado',
-        message: 'No existe un usuario con el ID proporcionado'
-      });
-    }
+		if (!usuario) {
+			return res.status(404).json({
+				error: 'Usuario no encontrado',
+				message: 'No existe un usuario con el ID proporcionado'
+			});
+		}
 
-    // Remover contraseña de la respuesta
-    const { contrasena, ...usuarioSinContrasena } = usuario;
+		// Remover contraseña de la respuesta
+		const { contrasena, ...usuarioSinContrasena } = usuario;
 
-    res.json(usuarioSinContrasena);
+		res.json(usuarioSinContrasena);
 
-  } catch (error) {
-    console.error('Error al obtener usuario:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo obtener el usuario'
-    });
-  }
+	} catch (error) {
+		console.error('Error al obtener usuario:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo obtener el usuario'
+		});
+	}
 });
 
 /**
@@ -327,43 +327,43 @@ router.get('/:id', authenticateToken, requireOwnershipOrAdmin, validateId, async
  */
 // PUT /api/usuarios/:id - Actualizar usuario
 router.put('/:id', authenticateToken, requireOwnershipOrAdmin, validateId, validateUsuario, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = { ...req.body };
+	try {
+		const { id } = req.params;
+		const updateData = { ...req.body };
 
-    // Si se está actualizando la contraseña, hashearla
-    if (updateData.contrasena) {
-      updateData.contrasena = await hashPassword(updateData.contrasena);
-    }
+		// Si se está actualizando la contraseña, hashearla
+		if (updateData.contrasena) {
+			updateData.contrasena = await hashPassword(updateData.contrasena);
+		}
 
-    const usuario = await prisma.usuario.update({
-      where: { idUsuario: parseInt(id) },
-      data: updateData,
-      include: { rol: true }
-    });
+		const usuario = await prisma.usuario.update({
+			where: { idUsuario: parseInt(id) },
+			data: updateData,
+			include: { rol: true }
+		});
 
-    // Remover contraseña de la respuesta
-    const { contrasena, ...usuarioSinContrasena } = usuario;
+		// Remover contraseña de la respuesta
+		const { contrasena, ...usuarioSinContrasena } = usuario;
 
-    res.json({
-      message: 'Usuario actualizado exitosamente',
-      usuario: usuarioSinContrasena
-    });
+		res.json({
+			message: 'Usuario actualizado exitosamente',
+			usuario: usuarioSinContrasena
+		});
 
-  } catch (error) {
-    if (error.code === 'P2002') {
-      return res.status(409).json({
-        error: 'Conflicto de datos',
-        message: 'Ya existe un usuario con este correo electrónico'
-      });
-    }
+	} catch (error) {
+		if (error.code === 'P2002') {
+			return res.status(409).json({
+				error: 'Conflicto de datos',
+				message: 'Ya existe un usuario con este correo electrónico'
+			});
+		}
 
-    console.error('Error al actualizar usuario:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo actualizar el usuario'
-    });
-  }
+		console.error('Error al actualizar usuario:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo actualizar el usuario'
+		});
+	}
 });
 
 /**
@@ -423,25 +423,25 @@ router.put('/:id', authenticateToken, requireOwnershipOrAdmin, validateId, valid
  */
 // DELETE /api/usuarios/:id - Desactivar usuario (soft delete)
 router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
+	try {
+		const { id } = req.params;
 
-    const usuario = await prisma.usuario.update({
-      where: { idUsuario: parseInt(id) },
-      data: { activo: false }
-    });
+		const usuario = await prisma.usuario.update({
+			where: { idUsuario: parseInt(id) },
+			data: { activo: false }
+		});
 
-    res.json({
-      message: 'Usuario desactivado exitosamente'
-    });
+		res.json({
+			message: 'Usuario desactivado exitosamente'
+		});
 
-  } catch (error) {
-    console.error('Error al desactivar usuario:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo desactivar el usuario'
-    });
-  }
+	} catch (error) {
+		console.error('Error al desactivar usuario:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo desactivar el usuario'
+		});
+	}
 });
 
 /**
@@ -478,7 +478,7 @@ router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), val
  *         schema:
  *           type: string
  *           enum: [programada, confirmada, en_progreso, completada, cancelada]
- *         description: Filtrar por estado de cita
+ *         description: Filtrar por estado de prisma.cita
  *     responses:
  *       200:
  *         description: Citas del usuario obtenidas exitosamente
@@ -529,58 +529,58 @@ router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), val
  */
 // GET /api/usuarios/:id/citas - Obtener citas del usuario
 router.get('/:id/citas', authenticateToken, requireOwnershipOrAdmin, validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { page = 1, limit = 10, estado } = req.query;
-    const skip = (page - 1) * limit;
+	try {
+		const { id } = req.params;
+		const { page = 1, limit = 10, estado } = req.query;
+		const skip = (page - 1) * limit;
 
-    const where = {
-      OR: [
-        { idPaciente: parseInt(id) },
-        { idMedico: parseInt(id) }
-      ]
-    };
+		const where = {
+			OR: [
+				{ idPaciente: parseInt(id) },
+				{ idMedico: parseInt(id) }
+			]
+		};
 
-    if (estado) {
-      where.estadoCita = estado;
-    }
+		if (estado) {
+			where.estadoCita = estado;
+		}
 
-    const [citas, total] = await Promise.all([
-      prisma.cita.findMany({
-        where,
-        include: {
-          paciente: {
-            select: { idUsuario: true, nombre: true, apellido1: true, apellido2: true }
-          },
-          medico: {
-            select: { idUsuario: true, nombre: true, apellido1: true, apellido2: true }
-          },
-          servicio: true
-        },
-        skip: parseInt(skip),
-        take: parseInt(limit),
-        orderBy: { fechaCita: 'desc' }
-      }),
-      prisma.cita.count({ where })
-    ]);
+		const [citas, total] = await Promise.all([
+			prisma.cita.findMany({
+				where,
+				include: {
+					paciente: {
+						select: { idUsuario: true, nombre: true, apellido1: true, apellido2: true }
+					},
+					medico: {
+						select: { idUsuario: true, nombre: true, apellido1: true, apellido2: true }
+					},
+					servicio: true
+				},
+				skip: parseInt(skip),
+				take: parseInt(limit),
+				orderBy: { fechaCita: 'desc' }
+			}),
+			prisma.cita.count({ where })
+		]);
 
-    res.json({
-      citas,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
+		res.json({
+			citas,
+			pagination: {
+				page: parseInt(page),
+				limit: parseInt(limit),
+				total,
+				pages: Math.ceil(total / limit)
+			}
+		});
 
-  } catch (error) {
-    console.error('Error al obtener citas del usuario:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudieron obtener las citas del usuario'
-    });
-  }
+	} catch (error) {
+		console.error('Error al obtener citas del usuario:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudieron obtener las citas del usuario'
+		});
+	}
 });
 
-module.exports = router;
+export default router;

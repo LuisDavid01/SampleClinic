@@ -1,10 +1,10 @@
-const express = require('express');
-const prisma = require('../config/database');
-const { authenticateToken, requireRole } = require('../middleware/auth');
-const { ROLES } = require('../constants/roles');
-const { validateServicio, validateId } = require('../middleware/validation');
+import { Router } from 'express';
+import prisma from '../config/database.js';
+import { authenticateToken, requireRole } from '../middleware/auth.js';
+import { ROLES } from '../constants/roles.js';
+import { validateServicio, validateId } from '../middleware/validation.js';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger
@@ -76,51 +76,51 @@ const router = express.Router();
  */
 // GET /api/servicios - Obtener todos los servicios
 router.get('/', authenticateToken, async (req, res) => {
-  try {
-    const { page = 1, limit = 10, search, activo } = req.query;
-    const skip = (page - 1) * limit;
+	try {
+		const { page = 1, limit = 10, search, activo } = req.query;
+		const skip = (page - 1) * limit;
 
-    // Construir filtros
-    const where = {};
+		// Construir filtros
+		const where = {};
 
-    if (search) {
-      where.OR = [
-        { nombreServicio: { contains: search, mode: 'insensitive' } },
-        { descripcion: { contains: search, mode: 'insensitive' } }
-      ];
-    }
+		if (search) {
+			where.OR = [
+				{ nombreServicio: { contains: search, mode: 'insensitive' } },
+				{ descripcion: { contains: search, mode: 'insensitive' } }
+			];
+		}
 
-    if (activo !== undefined) {
-      where.activo = activo === 'true';
-    }
+		if (activo !== undefined) {
+			where.activo = activo === 'true';
+		}
 
-    const [servicios, total] = await Promise.all([
-      prisma.servicio.findMany({
-        where,
-        skip: parseInt(skip),
-        take: parseInt(limit),
-        orderBy: { nombreServicio: 'asc' }
-      }),
-      prisma.servicio.count({ where })
-    ]);
+		const [servicios, total] = await Promise.all([
+			prisma.servicio.findMany({
+				where,
+				skip: parseInt(skip),
+				take: parseInt(limit),
+				orderBy: { nombreServicio: 'asc' }
+			}),
+			prisma.servicio.count({ where })
+		]);
 
-    res.json({
-      servicios,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
+		res.json({
+			servicios,
+			pagination: {
+				page: parseInt(page),
+				limit: parseInt(limit),
+				total,
+				pages: Math.ceil(total / limit)
+			}
+		});
 
-  } catch (error) {
-    console.error('Error al obtener servicios:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudieron obtener los servicios'
-    });
-  }
+	} catch (error) {
+		console.error('Error al obtener servicios:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudieron obtener los servicios'
+		});
+	}
 });
 
 /**
@@ -177,77 +177,77 @@ router.get('/', authenticateToken, async (req, res) => {
  */
 // GET /api/servicios/:id - Obtener servicio por ID
 router.get('/:id', authenticateToken, validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
+	try {
+		const { id } = req.params;
 
-    const servicio = await prisma.servicio.findUnique({
-      where: { idServicio: parseInt(id) },
-      include: {
-        perfiles: {
-          include: {
-            perfil: {
-              include: {
-                medico: {
-                  select: { 
-                    idUsuario: true, 
-                    nombre: true, 
-                    apellido1: true, 
-                    apellido2: true
-                  }
-                }
-              }
-            }
-          }
-        },
-        citas: {
-          where: { estadoCita: { not: 'cancelada' } },
-          include: {
-            paciente: {
-              select: { 
-                idUsuario: true, 
-                nombre: true, 
-                apellido1: true, 
-                apellido2: true
-              }
-            }
-          },
-          orderBy: { fechaCita: 'desc' },
-          take: 5
-        },
-        historiasExito: {
-          where: { publicado: true },
-          include: {
-            paciente: {
-              select: { 
-                idUsuario: true, 
-                nombre: true, 
-                apellido1: true, 
-                apellido2: true
-              }
-            }
-          },
-          orderBy: { fechaPublicacion: 'desc' },
-          take: 3
-        }
-      }
-    });
+		const servicio = await prisma.servicio.findUnique({
+			where: { idServicio: parseInt(id) },
+			include: {
+				perfiles: {
+					include: {
+						perfil: {
+							include: {
+								medico: {
+									select: {
+										idUsuario: true,
+										nombre: true,
+										apellido1: true,
+										apellido2: true
+									}
+								}
+							}
+						}
+					}
+				},
+				citas: {
+					where: { estadoCita: { not: 'cancelada' } },
+					include: {
+						paciente: {
+							select: {
+								idUsuario: true,
+								nombre: true,
+								apellido1: true,
+								apellido2: true
+							}
+						}
+					},
+					orderBy: { fechaCita: 'desc' },
+					take: 5
+				},
+				historiasExito: {
+					where: { publicado: true },
+					include: {
+						paciente: {
+							select: {
+								idUsuario: true,
+								nombre: true,
+								apellido1: true,
+								apellido2: true
+							}
+						}
+					},
+					orderBy: { fechaPublicacion: 'desc' },
+					take: 3
+				}
+			}
+		});
 
-    if (!servicio) {
-      return res.status(404).json({
-        error: 'Servicio no encontrado',
-        message: 'No existe un servicio con el ID proporcionado'
-      });
-    }
+		if (!servicio) {
+			return res.status(404).json({
+				error: 'Servicio no encontrado',
+				message: 'No existe un servicio con el ID proporcionado'
+			});
+		}
 
-    res.json(servicio);
+		res.json(servicio);
 
-  } catch (error) {
-    console.error('Error al obtener servicio:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo obtener el servicio'
-    });
-  }
+	} catch (error) {
+		console.error('Error al obtener servicio:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo obtener el servicio'
+		});
+	}
 });
 
 /**
@@ -327,30 +327,30 @@ router.get('/:id', authenticateToken, validateId, async (req, res) => {
  */
 // POST /api/servicios - Crear nuevo servicio (solo admin)
 router.post('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateServicio, async (req, res) => {
-  try {
-    const { nombreServicio, descripcion, precio, activo = true } = req.body;
+	try {
+		const { nombreServicio, descripcion, precio, activo = true } = req.body;
 
-    const servicio = await prisma.servicio.create({
-      data: {
-        nombreServicio,
-        descripcion,
-        precio: precio ? parseFloat(precio) : null,
-        activo
-      }
-    });
+		const servicio = await prisma.servicio.create({
+			data: {
+				nombreServicio,
+				descripcion,
+				precio: precio ? parseFloat(precio) : null,
+				activo
+			}
+		});
 
-    res.status(201).json({
-      message: 'Servicio creado exitosamente',
-      servicio
-    });
+		res.status(201).json({
+			message: 'Servicio creado exitosamente',
+			servicio
+		});
 
-  } catch (error) {
-    console.error('Error al crear servicio:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo crear el servicio'
-    });
-  }
+	} catch (error) {
+		console.error('Error al crear servicio:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo crear el servicio'
+		});
+	}
 });
 
 /**
@@ -442,39 +442,39 @@ router.post('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validate
  */
 // PUT /api/servicios/:id - Actualizar servicio (solo admin)
 router.put('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, validateServicio, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = { ...req.body };
+	try {
+		const { id } = req.params;
+		const updateData = { ...req.body };
 
-    // Convertir precio a decimal si se proporciona
-    if (updateData.precio !== undefined) {
-      updateData.precio = updateData.precio ? parseFloat(updateData.precio) : null;
-    }
+		// Convertir precio a decimal si se proporciona
+		if (updateData.precio !== undefined) {
+			updateData.precio = updateData.precio ? parseFloat(updateData.precio) : null;
+		}
 
-    const servicio = await prisma.servicio.update({
-      where: { idServicio: parseInt(id) },
-      data: updateData
-    });
+		const servicio = await prisma.servicio.update({
+			where: { idServicio: parseInt(id) },
+			data: updateData
+		});
 
-    res.json({
-      message: 'Servicio actualizado exitosamente',
-      servicio
-    });
+		res.json({
+			message: 'Servicio actualizado exitosamente',
+			servicio
+		});
 
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({
-        error: 'Servicio no encontrado',
-        message: 'No existe un servicio con el ID proporcionado'
-      });
-    }
+	} catch (error) {
+		if (error.code === 'P2025') {
+			return res.status(404).json({
+				error: 'Servicio no encontrado',
+				message: 'No existe un servicio con el ID proporcionado'
+			});
+		}
 
-    console.error('Error al actualizar servicio:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo actualizar el servicio'
-    });
-  }
+		console.error('Error al actualizar servicio:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo actualizar el servicio'
+		});
+	}
 });
 
 /**
@@ -534,47 +534,47 @@ router.put('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), valida
  */
 // DELETE /api/servicios/:id - Desactivar servicio (solo admin)
 router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
+	try {
+		const { id } = req.params;
 
-    // Verificar si el servicio tiene citas activas
-    const citasActivas = await prisma.cita.count({
-      where: {
-        idServicio: parseInt(id),
-        estadoCita: { not: 'cancelada' }
-      }
-    });
+		// Verificar si el servicio tiene citas activas
+		const citasActivas = await prisma.cita.count({
+			where: {
+				idServicio: parseInt(id),
+				estadoCita: { not: 'cancelada' }
+			}
+		});
 
-    if (citasActivas > 0) {
-      return res.status(400).json({
-        error: 'No se puede desactivar',
-        message: 'El servicio tiene citas activas. Primero cancele o complete las citas.'
-      });
-    }
+		if (citasActivas > 0) {
+			return res.status(400).json({
+				error: 'No se puede desactivar',
+				message: 'El servicio tiene citas activas. Primero cancele o complete las citas.'
+			});
+		}
 
-    const servicio = await prisma.servicio.update({
-      where: { idServicio: parseInt(id) },
-      data: { activo: false }
-    });
+		const servicio = await prisma.servicio.update({
+			where: { idServicio: parseInt(id) },
+			data: { activo: false }
+		});
 
-    res.json({
-      message: 'Servicio desactivado exitosamente'
-    });
+		res.json({
+			message: 'Servicio desactivado exitosamente'
+		});
 
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return res.status(404).json({
-        error: 'Servicio no encontrado',
-        message: 'No existe un servicio con el ID proporcionado'
-      });
-    }
+	} catch (error) {
+		if (error.code === 'P2025') {
+			return res.status(404).json({
+				error: 'Servicio no encontrado',
+				message: 'No existe un servicio con el ID proporcionado'
+			});
+		}
 
-    console.error('Error al desactivar servicio:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo desactivar el servicio'
-    });
-  }
+		console.error('Error al desactivar servicio:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo desactivar el servicio'
+		});
+	}
 });
 
 /**
@@ -656,56 +656,56 @@ router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), val
  */
 // GET /api/servicios/:id/perfiles - Obtener perfiles que ofrecen el servicio
 router.get('/:id/perfiles', authenticateToken, validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-    const skip = (page - 1) * limit;
+	try {
+		const { id } = req.params;
+		const { page = 1, limit = 10 } = req.query;
+		const skip = (page - 1) * limit;
 
-    const [perfiles, total] = await Promise.all([
-      prisma.perfilServicio.findMany({
-        where: { idServicio: parseInt(id) },
-        include: {
-          perfil: {
-            include: {
-              medico: {
-                select: { 
-                  idUsuario: true, 
-                  nombre: true, 
-                  apellido1: true, 
-                  apellido2: true,
-                  telefonoPrincipal: true,
-                  correoElectronico: true
-                }
-              },
-              certificaciones: {
-                include: { certificacion: true }
-              }
-            }
-          }
-        },
-        skip: parseInt(skip),
-        take: parseInt(limit)
-      }),
-      prisma.perfilServicio.count({ where: { idServicio: parseInt(id) } })
-    ]);
+		const [perfiles, total] = await Promise.all([
+			prisma.perfilServicio.findMany({
+				where: { idServicio: parseInt(id) },
+				include: {
+					perfil: {
+						include: {
+							medico: {
+								select: {
+									idUsuario: true,
+									nombre: true,
+									apellido1: true,
+									apellido2: true,
+									telefonoPrincipal: true,
+									correoElectronico: true
+								}
+							},
+							certificaciones: {
+								include: { certificacion: true }
+							}
+						}
+					}
+				},
+				skip: parseInt(skip),
+				take: parseInt(limit)
+			}),
+			prisma.perfilServicio.count({ where: { idServicio: parseInt(id) } })
+		]);
 
-    res.json({
-      perfiles: perfiles.map(p => p.perfil),
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
+		res.json({
+			perfiles: perfiles.map(p => p.perfil),
+			pagination: {
+				page: parseInt(page),
+				limit: parseInt(limit),
+				total,
+				pages: Math.ceil(total / limit)
+			}
+		});
 
-  } catch (error) {
-    console.error('Error al obtener perfiles del servicio:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudieron obtener los perfiles del servicio'
-    });
-  }
+	} catch (error) {
+		console.error('Error al obtener perfiles del servicio:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudieron obtener los perfiles del servicio'
+		});
+	}
 });
 
 /**
@@ -795,73 +795,73 @@ router.get('/:id/perfiles', authenticateToken, validateId, async (req, res) => {
  */
 // POST /api/servicios/:id/perfiles - Asociar perfil con servicio (solo admin)
 router.post('/:id/perfiles', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { idPerfil } = req.body;
+	try {
+		const { id } = req.params;
+		const { idPerfil } = req.body;
 
-    if (!idPerfil) {
-      return res.status(400).json({
-        error: 'Datos inválidos',
-        message: 'El ID del perfil es requerido'
-      });
-    }
+		if (!idPerfil) {
+			return res.status(400).json({
+				error: 'Datos inválidos',
+				message: 'El ID del perfil es requerido'
+			});
+		}
 
-    // Verificar que el servicio y perfil existen
-    const [servicio, perfil] = await Promise.all([
-      prisma.servicio.findUnique({ where: { idServicio: parseInt(id) } }),
-      prisma.perfil.findUnique({ where: { idPerfil: parseInt(idPerfil) } })
-    ]);
+		// Verificar que el servicio y perfil existen
+		const [servicio, perfil] = await Promise.all([
+			prisma.servicio.findUnique({ where: { idServicio: parseInt(id) } }),
+			prisma.perfil.findUnique({ where: { idPerfil: parseInt(idPerfil) } })
+		]);
 
-    if (!servicio) {
-      return res.status(404).json({
-        error: 'Servicio no encontrado',
-        message: 'No existe un servicio con el ID proporcionado'
-      });
-    }
+		if (!servicio) {
+			return res.status(404).json({
+				error: 'Servicio no encontrado',
+				message: 'No existe un servicio con el ID proporcionado'
+			});
+		}
 
-    if (!perfil) {
-      return res.status(404).json({
-        error: 'Perfil no encontrado',
-        message: 'No existe un perfil con el ID proporcionado'
-      });
-    }
+		if (!perfil) {
+			return res.status(404).json({
+				error: 'Perfil no encontrado',
+				message: 'No existe un perfil con el ID proporcionado'
+			});
+		}
 
-    // Verificar si ya existe la asociación
-    const asociacionExistente = await prisma.perfilServicio.findUnique({
-      where: {
-        idPerfil_idServicio: {
-          idPerfil: parseInt(idPerfil),
-          idServicio: parseInt(id)
-        }
-      }
-    });
+		// Verificar si ya existe la asociación
+		const asociacionExistente = await prisma.perfilServicio.findUnique({
+			where: {
+				idPerfil_idServicio: {
+					idPerfil: parseInt(idPerfil),
+					idServicio: parseInt(id)
+				}
+			}
+		});
 
-    if (asociacionExistente) {
-      return res.status(409).json({
-        error: 'Asociación ya existe',
-        message: 'El perfil ya está asociado con este servicio'
-      });
-    }
+		if (asociacionExistente) {
+			return res.status(409).json({
+				error: 'Asociación ya existe',
+				message: 'El perfil ya está asociado con este servicio'
+			});
+		}
 
-    const perfilServicio = await prisma.perfilServicio.create({
-      data: {
-        idPerfil: parseInt(idPerfil),
-        idServicio: parseInt(id)
-      }
-    });
+		const perfilServicio = await prisma.perfilServicio.create({
+			data: {
+				idPerfil: parseInt(idPerfil),
+				idServicio: parseInt(id)
+			}
+		});
 
-    res.status(201).json({
-      message: 'Perfil asociado con el servicio exitosamente',
-      perfilServicio
-    });
+		res.status(201).json({
+			message: 'Perfil asociado con el servicio exitosamente',
+			perfilServicio
+		});
 
-  } catch (error) {
-    console.error('Error al asociar perfil con servicio:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo asociar el perfil con el servicio'
-    });
-  }
+	} catch (error) {
+		console.error('Error al asociar perfil con servicio:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo asociar el perfil con el servicio'
+		});
+	}
 });
 
 /**
@@ -932,47 +932,47 @@ router.post('/:id/perfiles', authenticateToken, requireRole([ROLES.ADMINISTRADOR
  */
 // DELETE /api/servicios/:id/perfiles/:idPerfil - Desasociar perfil del servicio (solo admin)
 router.delete('/:id/perfiles/:idPerfil', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
-  try {
-    const { id, idPerfil } = req.params;
+	try {
+		const { id, idPerfil } = req.params;
 
-    // Verificar si existe la asociación
-    const asociacion = await prisma.perfilServicio.findUnique({
-      where: {
-        idPerfil_idServicio: {
-          idPerfil: parseInt(idPerfil),
-          idServicio: parseInt(id)
-        }
-      }
-    });
+		// Verificar si existe la asociación
+		const asociacion = await prisma.perfilServicio.findUnique({
+			where: {
+				idPerfil_idServicio: {
+					idPerfil: parseInt(idPerfil),
+					idServicio: parseInt(id)
+				}
+			}
+		});
 
-    if (!asociacion) {
-      return res.status(404).json({
-        error: 'Asociación no encontrada',
-        message: 'El perfil no está asociado con este servicio'
-      });
-    }
+		if (!asociacion) {
+			return res.status(404).json({
+				error: 'Asociación no encontrada',
+				message: 'El perfil no está asociado con este servicio'
+			});
+		}
 
-    await prisma.perfilServicio.delete({
-      where: {
-        idPerfil_idServicio: {
-          idPerfil: parseInt(idPerfil),
-          idServicio: parseInt(id)
-        }
-      }
-    });
+		await prisma.perfilServicio.delete({
+			where: {
+				idPerfil_idServicio: {
+					idPerfil: parseInt(idPerfil),
+					idServicio: parseInt(id)
+				}
+			}
+		});
 
-    res.json({
-      message: 'Perfil desasociado del servicio exitosamente'
-    });
+		res.json({
+			message: 'Perfil desasociado del servicio exitosamente'
+		});
 
-  } catch (error) {
-    console.error('Error al desasociar perfil del servicio:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo desasociar el perfil del servicio'
-    });
-  }
+	} catch (error) {
+		console.error('Error al desasociar perfil del servicio:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo desasociar el perfil del servicio'
+		});
+	}
 });
 
-module.exports = router;
+export default router;
 
