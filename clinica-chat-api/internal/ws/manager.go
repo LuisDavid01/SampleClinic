@@ -268,8 +268,11 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			log.Printf("Usuario obtenido: %+v", *usr.FirstName)
-			req.Username = *usr.FirstName + " " + *usr.LastName
-
+			if usr.LastName == nil {
+				req.Username = *usr.FirstName
+			} else {
+				req.Username = *usr.FirstName + " " + *usr.LastName
+			}
 			metadata := make(map[string]interface{})
 			if err := json.Unmarshal(usr.PublicMetadata, &metadata); err != nil {
 				http.Error(w, "could not parse public_metadata", http.StatusInternalServerError)
