@@ -17,6 +17,11 @@ module.exports = {
 				source: '/api/chat/:path*',
 				destination: 'http://localhost:8080/api/:path*',
 			},
+			{
+				source: '/api/:path*',
+				destination: 'http://localhost:3001/:path*',
+			},
+
 		];
 	},
 
