@@ -118,6 +118,12 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("New client connected: %s , role: %s, chatroom:  %s\n", client.Username, client.Rol, client.chatroom)
 	m.AddClient(client)
 
+	// if the user is admin he gets all the rooms
+	if client.Rol == "admin" {
+		if err := m.getRooms(client); err != nil {
+			log.Printf("Error sending the rooms: %v", err)
+		}
+	}
 	go client.Read()
 	go client.Write()
 }
@@ -148,6 +154,7 @@ func (m *Manager) RemoveClient(client *Client) {
 func (m *Manager) setupEventHandlers() {
 	m.handlers[EventSendMessage] = sendMessage
 	m.handlers[EventChangeRoom] = chatRoomHandler
+	m.handlers[EventGetRooms] = getRoomsHandler
 
 }
 
@@ -201,6 +208,32 @@ func chatRoomHandler(event Event, c *Client) error {
 	c.chatroom = changeChatRoomEvent.Name
 
 	return nil
+}
+
+func (m *Manager) getRooms(c *Client) error {
+	m.RLock()
+	defer m.RUnlock()
+	data, err := json.Marshal(m.Rooms)
+	if err != nil {
+		return fmt.Errorf("Couldnt parse the rooms: %v", err)
+	}
+
+	outgoingEvent := Event{
+		Type:    EventGetRooms,
+		Payload: data,
+	}
+
+	c.egress <- outgoingEvent
+
+	return nil
+}
+
+func getRoomsHandler(event Event, c *Client) error {
+	if c.Rol != "admin" {
+		return fmt.Errorf("Unauthorized action")
+	}
+
+	return c.Manager.getRooms(c)
 }
 
 func (m *Manager) RouteEvent(event Event, c *Client) error {

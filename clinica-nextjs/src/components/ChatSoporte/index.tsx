@@ -133,7 +133,12 @@ export default function SupportChat() {
 				]);
 				break;
 			case "change_chatroom":
+				setMessages([]);
 				console.log("change chatroom");
+				break;
+			case "get_chatrooms":
+				console.log("obtuve los chats");
+				break;
 			default:
 				alert("unsupported event type");
 				break;
