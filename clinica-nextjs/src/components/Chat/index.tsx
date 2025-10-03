@@ -108,7 +108,12 @@ export default function FloatingChat() {
 			};
 
 		} catch (err) {
-			console.log(err);
+			showNotification({
+				type: "error",
+				title: "Error de conexión",
+				message: "Intente conectarse más tarde",
+				timestamp: new Date(),
+			})
 			setConnectionStatus('error');
 		}
 
@@ -183,7 +188,7 @@ export default function FloatingChat() {
 
 	}
 	const toggleChat = () => {
-		if (!wsRef.current) {
+		if (!wsRef.current && !isOpen) {
 			console.log("Intentando reconectar...");
 			initializeWebSocket();
 		}

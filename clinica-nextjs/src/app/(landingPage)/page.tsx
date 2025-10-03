@@ -185,7 +185,7 @@ export default function Home() {
 			<section id="equipo" className="relative bg-gradient-to-br from-card/50 to-background py-24 overflow-hidden">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
 					{/* Header */}
-					<div className="text-center mb-20">
+					<div className="text-center mb-16">
 						<h2 className="text-5xl md:text-6xl font-bold  mb-6 leading-tight">
 							Nuestro
 							<span className="bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">

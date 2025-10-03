@@ -54,19 +54,16 @@ export default async function RootLayout({
 		<ClerkProvider
 			appearance={{
 				variables: {
-					colorPrimary: "var(--complementario)",
-					colorBackground: "var(--card)",
-					colorInputBackground: "var(--card-secondary)",
+					colorPrimary: "var(--primary)",
+					colorBackground: "var(--background)",
+					colorInputBackground: "var(--input)",
 					colorNeutral: "var(--foreground)",
-					colorText: "var(--text-primary)",
-					colorInputText: "var(--foreground)",
-					colorTextOnPrimaryBackground: "var(--primary-foreground)",
-					colorShimmer: "var(--text-primary-foreground)",
+					colorShimmer: "var(--accent)",
 				},
 			}}
 			localization={esES}
 		>
-			<html lang="en" suppressHydrationWarning>
+			<html lang="en" className="hide-scroll" suppressHydrationWarning>
 				<head>
 					<script
 						dangerouslySetInnerHTML={{
@@ -84,7 +81,7 @@ export default async function RootLayout({
 						}}
 					/>
 				</head>
-				<body className={`${inter.className} ${garamod.className} ${kiona.className} font-sans antialiased`}>
+				<body className={`${inter.className} ${garamod.className} ${kiona.className} font-sans antialiased hide-scroll`}>
 					<ClerkErrorBoundary>
 						<NotificationProvider>
 							{children}
