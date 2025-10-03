@@ -29,3 +29,5 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Build chat
+        run: make build-chat
