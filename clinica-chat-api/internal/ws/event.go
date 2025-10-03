@@ -16,6 +16,7 @@ const (
 	EventSendMessage = "send_message"
 	EventNewMessage  = "new_message"
 	EventChangeRoom  = "change_chatroom"
+	EventGetRooms    = "get_chatrooms"
 )
 
 type SendMessageEvent struct {
@@ -31,4 +32,8 @@ type NewMessageEvent struct {
 
 type ChangeChatRoomEvent struct {
 	Name string `json:"name"`
+}
+
+type GetChatRoomsEvent struct {
+	Rooms RoomList `json:"rooms"`
 }

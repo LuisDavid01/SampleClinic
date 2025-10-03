@@ -23,6 +23,8 @@ import { chatEvent, chatRoomEvent, NewMessageEvent, SendMessageEvent } from "@/t
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { useAuth } from "@clerk/nextjs";
+import { useNotification } from "../UseNotification";
+
 
 export default function SupportChat() {
 	const [isOpen, setIsOpen] = useState(false);
@@ -33,6 +35,13 @@ export default function SupportChat() {
 	const [messages, setMessages] = useState<Array<{
 		id: string; text: string; sender: string; role: 'Pacient' | 'Support'; timestamp: string
 	}>>([]);
+	const { showNotification } = useNotification()
+
+
+	const isOpenRef = useRef(isOpen);
+	useEffect(() => {
+		isOpenRef.current = isOpen;
+	}, [isOpen]);
 
 	useEffect(() => {
 
@@ -90,6 +99,14 @@ export default function SupportChat() {
 
 			wsRef.current.onopen = () => {
 				console.log("WebSocket connected");
+				showNotification({
+					type: "connected",
+					title: "Conectado al chat",
+					message: "Logro ingresar correctamente",
+					timestamp: new Date(),
+				})
+				setConnectionStatus('connected');
+
 				setConnectionStatus('connected');
 			};
 
@@ -131,6 +148,16 @@ export default function SupportChat() {
 						timestamp: new Date().toLocaleTimeString(),
 					}
 				]);
+
+				if (!isOpenRef.current && messageEvent.role === 'Pacient') {
+					showNotification({
+						type: "connected",
+						title: `Nuevo mensaje de ${messageEvent.from}`,
+						message: messageEvent.message,
+						timestamp: new Date(),
+					});
+				}
+
 				break;
 			case "change_chatroom":
 				console.log("change chatroom");
@@ -146,6 +173,7 @@ export default function SupportChat() {
 			const selectedChatroom = new chatRoomEvent(newChatroom.value);
 			setChatroom(selectedChatroom);
 			sendEvent("change_chatroom", selectedChatroom);
+			setMessages([]);
 			console.log("chatroom changed to: ", newChatroom.value);
 		}
 	}

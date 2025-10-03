@@ -101,10 +101,8 @@ export const TeamSection = () => {
 	};
 
 	return (
-		<section className="p-6">
-			<h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-				Nuestro Equipo <span className="text-accent">Profesional</span>
-			</h2>
+		<section className="p-4">
+
 
 			{/* 🔎 Buscador */}
 			<div className="flex justify-center mb-6">

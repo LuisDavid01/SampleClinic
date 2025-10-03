@@ -1,12 +1,15 @@
 ## Chat en tiempo real con Gorilla WebSockets
-Microservicio  encargado de manejar alta carga de conexiones de forma eficiente y escalable
-
+Microservicio  encargado de manejar alta carga de conexiones de forma eficiente y escalable 
+</br>
+![golang](https://img.icons8.com/?size=64&id=44442&format=png)
+![swagger](https://img.icons8.com/?size=64&id=rdKV2dee9wxd&format=png&color=000000)
 ## Caractetisticas:
 - Autorizacion por medio de clerk
 - Autorizacion por roles
 - Manejo de salas de chat
 - Persistencia de mensajes en memoria
 - Escalabilidad
+- documentacion con swagger
 
 ## Requisitos:
 - GO 1.20+

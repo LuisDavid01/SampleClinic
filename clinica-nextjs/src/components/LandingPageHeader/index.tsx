@@ -1,12 +1,12 @@
 "use client";
 import {
-  SignedIn,
-  SignedOut,
-  UserButton,
-  SignInButton,
-  SignUpButton,
-  useUser,
-  SignOutButton,
+	SignedIn,
+	SignedOut,
+	UserButton,
+	SignInButton,
+	SignUpButton,
+	useUser,
+	SignOutButton,
 } from "@clerk/nextjs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -15,283 +15,283 @@ import ThemeToggle from "../ThemeToggle";
 import { LogOut, LogIn } from "lucide-react";
 
 const smoothScrollTo = (elementId: string) => {
-  const element = document.getElementById(elementId);
-  if (element) {
-    const headerHeight = 0; // altura del header + padding adicional
-    const elementPosition = element.offsetTop - headerHeight;
-    
-    window.scrollTo({
-      top: elementPosition,
-      behavior: 'smooth'
-    });
-  }
+	const element = document.getElementById(elementId);
+	if (element) {
+		const headerHeight = 0; // altura del header + padding adicional
+		const elementPosition = element.offsetTop - headerHeight;
+
+		window.scrollTo({
+			top: elementPosition,
+			behavior: 'smooth'
+		});
+	}
 };
 
 export const LandingPageHeader: React.FC = () => {
-  const { user } = useUser();
-  const isAdmin = user?.publicMetadata?.role === "admin";
+	const { user } = useUser();
+	const isAdmin = user?.publicMetadata?.role === "admin";
 
-  return (
-    <header className="bg-background shadow-sm sticky z-60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center sm:px-6 lg:px-8 h-20">
-          <div className="flex items-center  ">
-            <Link
-              href={"/"}
-              className="text-lg md:text-2xl text-text-primary font-semibold"
-            >
-              Clinica Esteban Porras
-            </Link>
-          </div>
+	return (
+		<header className="bg-background shadow-sm sticky z-60">
+			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div className="flex justify-between items-center sm:px-6 lg:px-8 h-20">
+					<div className="flex items-center  ">
+						<Link
+							href={"/"}
+							className="text-lg md:text-2xl text-text-primary font-semibold"
+						>
+							Clinica Esteban Porras
+						</Link>
+					</div>
 
-          <div className="hidden md:flex md:justify-center space-x-2 md:space-x-4">
-            <ul className="flex justify-between items-center space-x-2 md:space-x-4 text-text-primary">
-              {/* Navegación de secciones */}
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary px-2"
-                  onClick={() => smoothScrollTo('inicio')}
-                >
-                  Inicio
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary px-2"
-                  onClick={() => smoothScrollTo('servicios')}
-                >
-                  Servicios
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary px-2"
-                  onClick={() => smoothScrollTo('acerca-de')}
-                >
-                  Acerca de
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary px-2"
-                  onClick={() => smoothScrollTo('testimonios')}
-                >
-                  Testimonios
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary px-2"
-                  onClick={() => smoothScrollTo('equipo')}
-                >
-                  Equipo
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary px-2"
-                  onClick={() => smoothScrollTo('citas')}
-                >
-                  Citas
-                </Button>
-              </li>
+					<div className="hidden md:flex md:justify-center space-x-2 md:space-x-4">
+						<ul className="flex justify-between items-center space-x-2 md:space-x-4 text-text-primary">
+							{/* Navegación de secciones */}
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary px-2"
+									onClick={() => smoothScrollTo('inicio')}
+								>
+									Inicio
+								</Button>
+							</li>
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary px-2"
+									onClick={() => smoothScrollTo('servicios')}
+								>
+									Servicios
+								</Button>
+							</li>
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary px-2"
+									onClick={() => smoothScrollTo('acerca-de')}
+								>
+									Acerca de
+								</Button>
+							</li>
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary px-2"
+									onClick={() => smoothScrollTo('testimonios')}
+								>
+									Testimonios
+								</Button>
+							</li>
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary px-2"
+									onClick={() => smoothScrollTo('equipo')}
+								>
+									Equipo
+								</Button>
+							</li>
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary px-2"
+									onClick={() => smoothScrollTo('citas')}
+								>
+									Citas
+								</Button>
+							</li>
 
-              <SignedOut>
-                <li>
-                  <SignInButton>
-                    <Button
-                      variant="link"
-                      className="w-full justify-start text-text-primary px-2"
-                    >
-                      Acceder
-                    </Button>
-                  </SignInButton>
-                </li>
+							<SignedOut>
+								<li>
+									<SignInButton>
+										<Button
+											variant="link"
+											className="w-full justify-start text-text-primary px-2"
+										>
+											Acceder
+										</Button>
+									</SignInButton>
+								</li>
 
-               
-              </SignedOut>
 
-              <SignedIn>
-                {isAdmin ? (
-                  <li>
-                    <Button
-                      variant="link"
-                      className="w-full justify-start text-text-primary px-2"
-                      asChild
-                    >
-                      <Link
-                        href="/admin"
-                        className="text-text-primary font-medium"
-                      >
-                        Admin Panel
-                      </Link>
-                    </Button>
-                  </li>
-                ) : (
-                  <li>
-                    <Button
-                      variant="link"
-                      className="w-full justify-start text-text-primary px-2"
-                      asChild
-                    >
-                      <Link
-                        href="/pacientes"
-                        className="text-text-primary font-medium"
-                      >
-                        Area pacientes
-                      </Link>
-                    </Button>
-                  </li>
-                )}
-                <li>
-                  <UserButton userProfileUrl="/user" />
-                </li>
-              </SignedIn>
+							</SignedOut>
 
-              <li>
-                <ThemeToggle />
-              </li>
-            </ul>
-          </div>
-          <div className="md:hidden">
-            <MobileMenu>
-              {/* Navegación de secciones para móvil */}
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary"
-                  onClick={() => smoothScrollTo('inicio')}
-                >
-                  Inicio
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary"
-                  onClick={() => smoothScrollTo('servicios')}
-                >
-                  Servicios
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary"
-                  onClick={() => smoothScrollTo('acerca-de')}
-                >
-                  Acerca de
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary"
-                  onClick={() => smoothScrollTo('testimonios')}
-                >
-                  Testimonios
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary"
-                  onClick={() => smoothScrollTo('equipo')}
-                >
-                  Equipo
-                </Button>
-              </li>
-              <li>
-                <Button
-                  variant="link"
-                  className="w-full justify-start text-text-primary"
-                  onClick={() => smoothScrollTo('citas')}
-                >
-                  Citas
-                </Button>
-              </li>
+							<SignedIn>
+								{isAdmin ? (
+									<li>
+										<Button
+											variant="link"
+											className="w-full justify-start text-text-primary px-2"
+											asChild
+										>
+											<Link
+												href="/admin"
+												className="text-text-primary font-medium"
+											>
+												Admin Panel
+											</Link>
+										</Button>
+									</li>
+								) : (
+									<li>
+										<Button
+											variant="link"
+											className="w-full justify-start text-text-primary px-2"
+											asChild
+										>
+											<Link
+												href="/pacientes"
+												className="text-text-primary font-medium"
+											>
+												Area pacientes
+											</Link>
+										</Button>
+									</li>
+								)}
+								<li>
+									<UserButton userProfileUrl="/user" />
+								</li>
+							</SignedIn>
 
-              <SignedOut>
-                <li>
-                  <SignInButton>
-                  <Button
-                    variant="link"
-                    className="w-full justify-start text-text-primary "
-                  >
-                    Acceder
-                  </Button>
-                </SignInButton>
-                </li>
-                
+							<li>
+								<ThemeToggle />
+							</li>
+						</ul>
+					</div>
+					<div className="md:hidden">
+						<MobileMenu>
+							{/* Navegación de secciones para móvil */}
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary"
+									onClick={() => smoothScrollTo('inicio')}
+								>
+									Inicio
+								</Button>
+							</li>
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary"
+									onClick={() => smoothScrollTo('servicios')}
+								>
+									Servicios
+								</Button>
+							</li>
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary"
+									onClick={() => smoothScrollTo('acerca-de')}
+								>
+									Acerca de
+								</Button>
+							</li>
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary"
+									onClick={() => smoothScrollTo('testimonios')}
+								>
+									Testimonios
+								</Button>
+							</li>
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary"
+									onClick={() => smoothScrollTo('equipo')}
+								>
+									Equipo
+								</Button>
+							</li>
+							<li>
+								<Button
+									variant="link"
+									className="w-full justify-start text-text-primary"
+									onClick={() => smoothScrollTo('citas')}
+								>
+									Citas
+								</Button>
+							</li>
 
-                
-              </SignedOut>
+							<SignedOut>
+								<li>
+									<SignInButton>
+										<Button
+											variant="link"
+											className="w-full justify-start text-text-primary "
+										>
+											Acceder
+										</Button>
+									</SignInButton>
+								</li>
 
-              <SignedIn>
-                {isAdmin ? (
-                  <li>
-                    <Button
-                      variant="link"
-                      className="w-full justify-start text-text-primary "
-                      asChild
-                    >
-                      <Link
-                        href="/admin"
-                        className="text-text-primary font-medium"
-                      >
-                        Admin Panel
-                      </Link>
-                    </Button>
-                  </li>
-                ) : (
-                  <li>
-                    <Button
-                      variant="link"
-                      className="w-full justify-start text-text-primary "
-                      asChild
-                    >
-                      <Link
-                        href="/pacientes"
-                        className="text-text-primary font-medium"
-                      >
-                        Area pacientes
-                      </Link>
-                    </Button>
-                  </li>
-                )}
-                <li>
-                  <Button
-                    variant="link"
-                    className="w-full justify-start text-text-primary "
-                    asChild
-                  >
-                    <Link href={"/user"}>Cuenta</Link>
-                  </Button>
-                </li>
 
-                <li>
-                  <Button
-                    variant="link"
-                    className="w-full justify-start text-text-primary "
-                    asChild
-                  >
-                    <SignOutButton/>
-                  </Button>
-                </li>
-              </SignedIn>
-              <li>
-                <ThemeToggle />
-              </li>
-            </MobileMenu>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
+
+							</SignedOut>
+
+							<SignedIn>
+								{isAdmin ? (
+									<li>
+										<Button
+											variant="link"
+											className="w-full justify-start text-text-primary "
+											asChild
+										>
+											<Link
+												href="/admin"
+												className="text-text-primary font-medium"
+											>
+												Admin Panel
+											</Link>
+										</Button>
+									</li>
+								) : (
+									<li>
+										<Button
+											variant="link"
+											className="w-full justify-start text-text-primary "
+											asChild
+										>
+											<Link
+												href="/pacientes"
+												className="text-text-primary font-medium"
+											>
+												Area pacientes
+											</Link>
+										</Button>
+									</li>
+								)}
+								<li>
+									<Button
+										variant="link"
+										className="w-full justify-start text-text-primary "
+										asChild
+									>
+										<Link href={"/user"}>Cuenta</Link>
+									</Button>
+								</li>
+
+								<li>
+									<Button
+										variant="link"
+										className="w-full justify-start text-text-primary "
+										asChild
+									>
+										<SignOutButton />
+									</Button>
+								</li>
+							</SignedIn>
+							<li>
+								<ThemeToggle />
+							</li>
+						</MobileMenu>
+					</div>
+				</div>
+			</div>
+		</header>
+	);
 };
