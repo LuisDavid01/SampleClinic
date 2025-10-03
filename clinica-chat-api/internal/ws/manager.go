@@ -105,6 +105,8 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := NewClient(conn, m, id.String(), authUsr.Username, authUsr.Rol)
+	m.AddClient(client)
+
 	if client.Rol == "Pacient" {
 		clientRoom := &Room{
 			ID:      strings.Trim(authUsr.Username, " ") + "-" + id.String()[:8],
@@ -116,14 +118,15 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 		log.Printf("New room created: %s", clientRoom.ID)
 	}
 	fmt.Printf("New client connected: %s , role: %s, chatroom:  %s\n", client.Username, client.Rol, client.chatroom)
-	m.AddClient(client)
 
-	// if the user is admin he gets all the rooms
+	/* if the user is admin he gets all the rooms
 	if client.Rol == "admin" {
+		log.Println("intentando enviar los rooms...")
 		if err := m.getRooms(client); err != nil {
 			log.Printf("Error sending the rooms: %v", err)
 		}
 	}
+	*/
 	go client.Read()
 	go client.Write()
 }

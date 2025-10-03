@@ -6,6 +6,7 @@ import { esES } from "@clerk/localizations";
 import "./globals.css";
 import ChatSelect from "@/components/ChatSelect";
 import { ClerkErrorBoundary } from "@/components/ClerkErrorBoundary";
+import { NotificationProvider } from "@/components/NotificationProvider";
 
 const inter = Inter({
 	subsets: ["latin"],
@@ -85,8 +86,10 @@ export default async function RootLayout({
 				</head>
 				<body className={`${inter.className} ${garamod.className} ${kiona.className} font-sans antialiased`}>
 					<ClerkErrorBoundary>
-						{children}
-						<ChatSelect />
+						<NotificationProvider>
+							{children}
+							<ChatSelect />
+						</NotificationProvider>
 					</ClerkErrorBoundary>
 				</body>
 			</html>

@@ -14,10 +14,11 @@ import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { chatEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
 import { useAuth } from "@clerk/nextjs";
-
+import { useNotification } from "../UseNotification";
 
 
 export default function FloatingChat() {
+	const { showNotification } = useNotification()
 	const [isOpen, setIsOpen] = useState(false);
 	const [connectionStatus, setConnectionStatus] = useState<'connected' | 'error' | null>(null);
 	const wsRef = useRef<WebSocket | null>(null);
@@ -25,6 +26,11 @@ export default function FloatingChat() {
 	const [messages, setMessages] = useState<Array<{
 		id: string; text: string; sender: string; role: 'Pacient' | 'Support'; timestamp: string
 	}>>([]);
+
+	const isOpenRef = useRef(isOpen);
+	useEffect(() => {
+		isOpenRef.current = isOpen;
+	}, [isOpen]);
 
 	useEffect(() => {
 
@@ -79,6 +85,12 @@ export default function FloatingChat() {
 
 			wsRef.current.onopen = () => {
 				console.log("WebSocket connected");
+				showNotification({
+					type: "connected",
+					title: "Ha ingresado a una sala",
+					message: "Espere un momento por favor...",
+					timestamp: new Date(),
+				})
 				setConnectionStatus('connected');
 			};
 
@@ -121,6 +133,14 @@ export default function FloatingChat() {
 						timestamp: new Date().toLocaleTimeString()
 					}
 				]);
+				if (!isOpenRef.current && messageEvent.role === 'Support') {
+					showNotification({
+						type: "connected",
+						title: `Nuevo mensaje de ${messageEvent.from}`,
+						message: messageEvent.message,
+						timestamp: new Date(),
+					})
+				}
 				break;
 			case "change_chatroom":
 				console.log("change chatroom");
