@@ -14,7 +14,7 @@ jobs:
         working-directory: ./clinica-nextjs
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Dependencies
         run: npm install
@@ -29,5 +29,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Build chat
+  build-chat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Building chat
         run: make build-chat
