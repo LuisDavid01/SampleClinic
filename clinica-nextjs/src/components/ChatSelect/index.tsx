@@ -1,10 +1,7 @@
-import FloatingChat from "@/components/Chat";
-import SupportChat from "@/components/ChatSoporte";
-import { checkRole } from "@/utils/roles";
+import ChatSelectClient from "./ChatSelectClient";
 
-const ChatSelect = async () => {
-  const isAdmin = await checkRole("admin");
-  return <>{isAdmin ? <SupportChat /> : <FloatingChat />}</>;
+const ChatSelect = () => {
+  return <ChatSelectClient />;
 };
 
 export default ChatSelect;

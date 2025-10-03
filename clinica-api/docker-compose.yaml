@@ -32,6 +32,8 @@ services:
       DATABASE_URL: "postgresql://postgres:CHANGE_ME_DB_PASSWORD@postgres:5432/salena_fisio?schema=public"
       JWT_SECRET: "CHANGE_ME"
       JWT_EXPIRES_IN: "7d"
+      CLERK_SECRET_KEY: "sk_test_REVOKED"
+      CLERK_PUBLISHABLE_KEY: "pk_test_dG91Y2hpbmctbWFsbGFyZC04NC5jbGVyay5hY2NvdW50cy5kZXYk"
       PORT: 3001
       NODE_ENV: "production"
       CORS_ORIGIN: "http://localhost:3000"

@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     correo_electronico VARCHAR(150) UNIQUE NOT NULL,
     contrasena VARCHAR(255) NOT NULL,
     direccion_residencia VARCHAR(255),
+    clerk_id VARCHAR(100) UNIQUE,
     id_rol INTEGER REFERENCES roles(id_rol),
     activo BOOLEAN DEFAULT TRUE
 );
@@ -133,6 +134,7 @@ CREATE TABLE IF NOT EXISTS sesiones (
 -- Crear índices para mejorar el rendimiento
 CREATE INDEX IF NOT EXISTS idx_usuarios_correo ON usuarios(correo_electronico);
 CREATE INDEX IF NOT EXISTS idx_usuarios_rol ON usuarios(id_rol);
+CREATE INDEX IF NOT EXISTS idx_usuarios_clerk_id ON usuarios(clerk_id);
 CREATE INDEX IF NOT EXISTS idx_citas_paciente ON citas(id_paciente);
 CREATE INDEX IF NOT EXISTS idx_citas_medico ON citas(id_medico);
 CREATE INDEX IF NOT EXISTS idx_citas_fecha ON citas(fecha_cita);

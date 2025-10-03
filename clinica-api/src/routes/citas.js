@@ -14,7 +14,7 @@ const router = Router();
  *     description: Obtiene una lista paginada de citas con filtros opcionales. Los pacientes solo ven sus propias citas, los fisioterapeutas pueden ver todas o solo las suyas.
  *     tags: [Citas]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -103,19 +103,19 @@ const router = Router();
  *               $ref: '#/components/schemas/Error'
  */
 // GET /api/citas - Obtener todas las citas
-router.get('/', authenticateToken, async (req, res) => {
-	try {
-		const {
-			page = 1,
-			limit = 10,
-			fechaInicio,
-			fechaFin,
-			estado,
-			idPaciente,
-			idMedico,
-			idServicio
-		} = req.query;
-		const skip = (page - 1) * limit;
+router.get('/', clerkAuth, async (req, res) => {
+  try {
+    const { 
+      page = 1, 
+      limit = 10, 
+      fechaInicio, 
+      fechaFin, 
+      estado, 
+      idPaciente, 
+      idMedico,
+      idServicio 
+    } = req.query;
+    const skip = (page - 1) * limit;
 
 		// Construir filtros
 		const where = {};
@@ -220,7 +220,7 @@ router.get('/', authenticateToken, async (req, res) => {
  *     description: Obtiene los detalles de una cita específica por su ID. Los pacientes solo pueden ver sus propias citas.
  *     tags: [Citas]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -265,9 +265,9 @@ router.get('/', authenticateToken, async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // GET /api/citas/:id - Obtener cita por ID
-router.get('/:id', authenticateToken, validateId, async (req, res) => {
-	try {
-		const { id } = req.params;
+router.get('/:id', clerkAuth, validateId, async (req, res) => {
+  try {
+    const { id } = req.params;
 
 		const cita = await prisma.cita.findUnique({
 			where: { idCita: parseInt(id) },
@@ -340,7 +340,7 @@ router.get('/:id', authenticateToken, validateId, async (req, res) => {
  *     description: Crea una nueva cita. Solo administradores, recepcionistas y fisioterapeutas pueden crear citas.
  *     tags: [Citas]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -418,9 +418,9 @@ router.get('/:id', authenticateToken, validateId, async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/citas - Crear nueva cita
-router.post('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateCita, async (req, res) => {
-	try {
-		const { fechaCita, idPaciente, idMedico, idServicio, descripcion, estadoCita } = req.body;
+router.post('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateCita, async (req, res) => {
+  try {
+    const { fechaCita, idPaciente, idMedico, idServicio, descripcion, estadoCita } = req.body;
 
 		// Verificar que el paciente y médico existen
 		const [paciente, medico] = await Promise.all([
@@ -498,7 +498,7 @@ router.post('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RECE
  *     description: Actualiza una cita existente. Solo administradores, recepcionistas y fisioterapeutas pueden actualizar citas.
  *     tags: [Citas]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -586,10 +586,10 @@ router.post('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RECE
  *               $ref: '#/components/schemas/Error'
  */
 // PUT /api/citas/:id - Actualizar cita
-router.put('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
-	try {
-		const { id } = req.params;
-		const updateData = { ...req.body };
+router.put('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = { ...req.body };
 
 		// Verificar que la cita existe
 		const citaExistente = await prisma.cita.findUnique({
@@ -665,7 +665,7 @@ router.put('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RE
  *     description: Cancela una cita existente. Solo administradores y recepcionistas pueden cancelar citas.
  *     tags: [Citas]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -713,9 +713,9 @@ router.put('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RE
  *               $ref: '#/components/schemas/Error'
  */
 // DELETE /api/citas/:id - Cancelar cita
-router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA]), validateId, async (req, res) => {
-	try {
-		const { id } = req.params;
+router.delete('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA]), validateId, async (req, res) => {
+  try {
+    const { id } = req.params;
 
 		const citaExistente = await prisma.cita.findUnique({
 			where: { idCita: parseInt(id) }
@@ -767,7 +767,7 @@ router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES
  *     description: Agrega una nota médica a una cita existente. Solo administradores y fisioterapeutas pueden agregar notas.
  *     tags: [Citas]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -835,10 +835,10 @@ router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/citas/:id/notas - Agregar nota a cita
-router.post('/:id/notas', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
-	try {
-		const { id } = req.params;
-		const { nota } = req.body;
+router.post('/:id/notas', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nota } = req.body;
 
 		if (!nota || nota.trim().length === 0) {
 			return res.status(400).json({
@@ -899,7 +899,7 @@ router.post('/:id/notas', authenticateToken, requireRole([ROLES.ADMINISTRADOR, R
  *     description: Agrega un resultado médico a una cita existente. Solo administradores y fisioterapeutas pueden agregar resultados.
  *     tags: [Citas]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -972,10 +972,10 @@ router.post('/:id/notas', authenticateToken, requireRole([ROLES.ADMINISTRADOR, R
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/citas/:id/resultados - Agregar resultado a cita
-router.post('/:id/resultados', authenticateToken, requireRole([ROLES.ADMINISTRADOR, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
-	try {
-		const { id } = req.params;
-		const { resultado, resumenResultado } = req.body;
+router.post('/:id/resultados', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { resultado, resumenResultado } = req.body;
 
 		if (!resultado || resultado.trim().length === 0) {
 			return res.status(400).json({

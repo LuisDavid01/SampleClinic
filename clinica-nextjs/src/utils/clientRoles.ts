@@ -14,11 +14,11 @@ export const useCheckRole = (role: Roles) => {
   return userRole === role;
 };
 
-// Función del lado del cliente para verificar si un usuario es paciente
+// Función específica para verificar si un usuario es paciente (cliente)
 export const useCheckIsPaciente = () => {
   const { user } = useUser();
   const userRole = user?.publicMetadata?.role;
   
   // Si el usuario no tiene rol específico, se considera paciente por defecto
   return !userRole || userRole === "paciente";
-}; 
+};
