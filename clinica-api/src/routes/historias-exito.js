@@ -4,7 +4,7 @@ const { clerkAuth, requireClerkRole } = require('../middleware/clerkAuth');
 const { ROLES, isPaciente, isAdministrador } = require('../constants/roles');
 const { validateHistoriaExito, validateId } = require('../middleware/validation');
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger
@@ -829,4 +829,4 @@ router.post('/:id/despublicar', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR
   }
 });
 
-module.exports = router;
+export default router;

@@ -5,7 +5,7 @@ const { clerkAuth, requireClerkRole } = require('../middleware/clerkAuth');
 const { ROLES, isAdministrador } = require('../constants/roles');
 const { validatePerfil, validateId } = require('../middleware/validation');
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger
@@ -845,5 +845,5 @@ router.delete('/:id/servicios/:idServicio', clerkAuth, validateId, async (req, r
   }
 });
 
-module.exports = router;
+export default router;
 

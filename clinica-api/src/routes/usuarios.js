@@ -6,7 +6,7 @@ const { ROLES } = require('../constants/roles');
 const { validateUsuario, validateId } = require('../middleware/validation');
 const { hashPassword } = require('../utils/password');
 
-const router = express.Router();
+const router = Router();
 
 /**
  * @swagger
@@ -479,7 +479,7 @@ router.delete('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), valida
  *         schema:
  *           type: string
  *           enum: [programada, confirmada, en_progreso, completada, cancelada]
- *         description: Filtrar por estado de cita
+ *         description: Filtrar por estado de prisma.cita
  *     responses:
  *       200:
  *         description: Citas del usuario obtenidas exitosamente
@@ -584,4 +584,4 @@ router.get('/:id/citas', clerkAuth, requireOwnershipOrAdmin, validateId, async (
   }
 });
 
-module.exports = router;
+export default router;
