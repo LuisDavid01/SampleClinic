@@ -35,6 +35,12 @@ const options = {
           scheme: 'bearer',
           bearerFormat: 'JWT',
           description: 'Token JWT para autenticación'
+        },
+        clerkAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Token JWT de Clerk para autenticación. Obtén tu token desde el frontend con: const { getToken } = useAuth(); const token = await getToken();'
         }
       },
       schemas: {
@@ -471,6 +477,10 @@ const options = {
       {
         name: 'Sistema',
         description: 'Endpoints del sistema'
+      },
+      {
+        name: 'Clerk',
+        description: 'Endpoints de autenticación con Clerk'
       }
     ]
   },

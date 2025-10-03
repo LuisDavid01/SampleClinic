@@ -31,6 +31,7 @@ model Usuario {
   correoElectronico   String   @unique @map("correo_electronico") @db.VarChar(150)
   contrasena          String   @map("contrasena") @db.VarChar(255)
   direccionResidencia String?  @map("direccion_residencia") @db.VarChar(255)
+  clerkId             String?  @unique @map("clerk_id") @db.VarChar(100)
   idRol               Int?     @map("id_rol")
   activo              Boolean  @default(true)
   

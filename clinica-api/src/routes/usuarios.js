@@ -1,6 +1,7 @@
 const express = require('express');
 const prisma = require('../config/database');
-const { authenticateToken, requireRole, requireOwnershipOrAdmin } = require('../middleware/auth');
+const { requireOwnershipOrAdmin } = require('../middleware/auth');
+const { clerkAuth, requireClerkRole } = require('../middleware/clerkAuth');
 const { ROLES } = require('../constants/roles');
 const { validateUsuario, validateId } = require('../middleware/validation');
 const { hashPassword } = require('../utils/password');
@@ -14,7 +15,7 @@ const router = express.Router();
  *     summary: Obtener todos los usuarios
  *     tags: [Usuarios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -79,7 +80,7 @@ const router = express.Router();
  */
 
 // GET /api/usuarios - Obtener todos los usuarios (solo admin)
-router.get('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), async (req, res) => {
+router.get('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), async (req, res) => {
   try {
     const { page = 1, limit = 10, search, rol, activo } = req.query;
     const skip = (page - 1) * limit;
@@ -144,7 +145,7 @@ router.get('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), async (re
  *     summary: Obtener usuario por ID
  *     tags: [Usuarios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -186,7 +187,7 @@ router.get('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), async (re
  */
 
 // GET /api/usuarios/:id - Obtener usuario por ID
-router.get('/:id', authenticateToken, requireOwnershipOrAdmin, validateId, async (req, res) => {
+router.get('/:id', clerkAuth, requireOwnershipOrAdmin, validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -236,7 +237,7 @@ router.get('/:id', authenticateToken, requireOwnershipOrAdmin, validateId, async
  *     description: Actualiza un usuario existente. Los usuarios solo pueden actualizar sus propios datos, los administradores pueden actualizar cualquier usuario.
  *     tags: [Usuarios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -326,7 +327,7 @@ router.get('/:id', authenticateToken, requireOwnershipOrAdmin, validateId, async
  *               $ref: '#/components/schemas/Error'
  */
 // PUT /api/usuarios/:id - Actualizar usuario
-router.put('/:id', authenticateToken, requireOwnershipOrAdmin, validateId, validateUsuario, async (req, res) => {
+router.put('/:id', clerkAuth, requireOwnershipOrAdmin, validateId, validateUsuario, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -374,7 +375,7 @@ router.put('/:id', authenticateToken, requireOwnershipOrAdmin, validateId, valid
  *     description: Desactiva un usuario (soft delete). Solo los administradores pueden desactivar usuarios.
  *     tags: [Usuarios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -422,7 +423,7 @@ router.put('/:id', authenticateToken, requireOwnershipOrAdmin, validateId, valid
  *               $ref: '#/components/schemas/Error'
  */
 // DELETE /api/usuarios/:id - Desactivar usuario (soft delete)
-router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.delete('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -452,7 +453,7 @@ router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), val
  *     description: Obtiene todas las citas de un usuario específico. Los usuarios solo pueden ver sus propias citas, los administradores pueden ver las citas de cualquier usuario.
  *     tags: [Usuarios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -528,7 +529,7 @@ router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), val
  *               $ref: '#/components/schemas/Error'
  */
 // GET /api/usuarios/:id/citas - Obtener citas del usuario
-router.get('/:id/citas', authenticateToken, requireOwnershipOrAdmin, validateId, async (req, res) => {
+router.get('/:id/citas', clerkAuth, requireOwnershipOrAdmin, validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10, estado } = req.query;

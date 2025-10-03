@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -12,9 +12,139 @@ import {
   FileText,
   User
 } from "lucide-react";
+import { useApiClient, apiEndpoints } from "@/utils/apiClient";
+
+interface UserData {
+  idUsuario: number;
+  nombre: string;
+  apellido1: string;
+  apellido2: string;
+  correoElectronico: string;
+  clerkId: string;
+  rol?: {
+    nombreRol: string;
+  };
+}
+
+interface UserValidation {
+  status: 'pending' | 'validating' | 'validated' | 'error';
+  message: string;
+  userData: UserData | null;
+}
 
 export default function PacientesPage() {
   const { user } = useUser();
+  const { getToken, isSignedIn } = useAuth();
+  const apiClient = useApiClient();
+  const [userValidation, setUserValidation] = useState<UserValidation>({
+    status: 'pending',
+    message: '',
+    userData: null
+  });
+
+  useEffect(() => {
+    const validateAndSyncUser = async () => {
+      if (isSignedIn && user) {
+        setUserValidation({ status: 'validating', message: 'Validando usuario...', userData: null });
+        
+        try {
+          // Obtener el token de Clerk
+          const token = await getToken();
+          console.log("=".repeat(60));
+          console.log("🔑 TOKEN DE CLERK OBTENIDO");
+          console.log("=".repeat(60));
+          console.log("📋 Para usar en Swagger:", `Bearer ${token}`);
+          console.log("🌐 URL del API:", "http://localhost:3001/api-docs");
+          console.log("=".repeat(60));
+          
+          if (token && token.split('.').length === 3) {
+            console.log("🧪 Validando y sincronizando usuario...");
+            
+            try {
+              // Sincronizar usuario con la base de datos
+              const syncResult = await apiClient.post(apiEndpoints.clerkSync(), {});
+              console.log("✅ Usuario sincronizado exitosamente:", syncResult);
+              
+              if (syncResult.user) {
+                setUserValidation({
+                  status: 'validated',
+                  message: 'Usuario validado y sincronizado correctamente',
+                  userData: syncResult.user
+                });
+                
+                console.log("📋 Información del usuario en la base de datos:");
+                console.log("  - ID:", syncResult.user.idUsuario);
+                console.log("  - Nombre:", syncResult.user.nombre);
+                console.log("  - Apellido1:", syncResult.user.apellido1);
+                console.log("  - Apellido2:", syncResult.user.apellido2);
+                console.log("  - Email:", syncResult.user.correoElectronico);
+                console.log("  - Clerk ID:", syncResult.user.clerkId);
+                console.log("  - Rol:", syncResult.user.rol?.nombreRol);
+              }
+
+              // Consultar historias de éxito
+              try {
+                console.log("📚 Consultando historias de éxito...");
+                const historiasResult = await apiClient.get(apiEndpoints.getHistoriasExito());
+                console.log("✅ Historias de éxito obtenidas:", historiasResult);
+                
+                if (historiasResult && Array.isArray(historiasResult)) {
+                  console.log(`📊 Total de historias encontradas: ${historiasResult.length}`);
+                  historiasResult.forEach((historia, index) => {
+                    console.log(`📖 Historia ${index + 1}:`, {
+                      id: historia.idHistoriaExito,
+                      titulo: historia.titulo,
+                      descripcion: historia.descripcion,
+                      fechaCreacion: historia.fechaCreacion,
+                      activa: historia.activa,
+                      paciente: historia.paciente ? {
+                        nombre: historia.paciente.nombre,
+                        apellido1: historia.paciente.apellido1,
+                        apellido2: historia.paciente.apellido2
+                      } : null
+                    });
+                  });
+                } else {
+                  console.log("📭 No se encontraron historias de éxito");
+                }
+              } catch (historiasError) {
+                console.error("❌ Error consultando historias de éxito:", historiasError);
+              }
+              
+            } catch (apiError) {
+              console.error("❌ Error validando/sincronizando usuario:", apiError);
+              setUserValidation({
+                status: 'error',
+                message: 'Error al validar usuario. Por favor, intenta de nuevo.',
+                userData: null
+              });
+            }
+          } else {
+            setUserValidation({
+              status: 'error',
+              message: 'Token de autenticación inválido',
+              userData: null
+            });
+          }
+        } catch (error) {
+          console.error("❌ Error obteniendo token:", error);
+          setUserValidation({
+            status: 'error',
+            message: 'Error de autenticación. Por favor, inicia sesión nuevamente.',
+            userData: null
+          });
+        }
+      } else {
+        setUserValidation({
+          status: 'pending',
+          message: 'Esperando autenticación...',
+          userData: null
+        });
+      }
+    };
+
+    validateAndSyncUser();
+  }, [isSignedIn, user, getToken]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -50,6 +180,53 @@ export default function PacientesPage() {
             </div>
           </div>
         </div>
+
+        {/* Indicador de estado de validación del usuario */}
+        {userValidation.status !== 'pending' && (
+          <div className="mb-6">
+            <Card className={`border-l-4 ${
+              userValidation.status === 'validated' ? 'border-green-500 bg-green-50 dark:bg-green-950' :
+              userValidation.status === 'validating' ? 'border-blue-500 bg-blue-50 dark:bg-blue-950' :
+              'border-red-500 bg-red-50 dark:bg-red-950'
+            }`}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${
+                    userValidation.status === 'validated' ? 'bg-green-500' :
+                    userValidation.status === 'validating' ? 'bg-blue-500 animate-pulse' :
+                    'bg-red-500'
+                  }`}></div>
+                  <div>
+                    <p className={`font-medium ${
+                      userValidation.status === 'validated' ? 'text-green-800 dark:text-green-200' :
+                      userValidation.status === 'validating' ? 'text-blue-800 dark:text-blue-200' :
+                      'text-red-800 dark:text-red-200'
+                    }`}>
+                      {userValidation.status === 'validated' ? '✅ Usuario validado' :
+                       userValidation.status === 'validating' ? '🔄 Validando usuario...' :
+                       '❌ Error de validación'}
+                    </p>
+                    <p className={`text-sm ${
+                      userValidation.status === 'validated' ? 'text-green-600 dark:text-green-300' :
+                      userValidation.status === 'validating' ? 'text-blue-600 dark:text-blue-300' :
+                      'text-red-600 dark:text-red-300'
+                    }`}>
+                      {userValidation.message}
+                    </p>
+                    {userValidation.userData && (
+                      <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                        <p><strong>ID:</strong> {userValidation.userData.idUsuario}</p>
+                        <p><strong>Nombre:</strong> {userValidation.userData.nombre} {userValidation.userData.apellido1} {userValidation.userData.apellido2}</p>
+                        <p><strong>Email:</strong> {userValidation.userData.correoElectronico}</p>
+                        <p><strong>Rol:</strong> {userValidation.userData.rol?.nombreRol || 'No asignado'}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Resumen de Salud */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

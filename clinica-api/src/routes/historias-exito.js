@@ -1,6 +1,6 @@
 const express = require('express');
 const prisma = require('../config/database');
-const { authenticateToken, requireRole } = require('../middleware/auth');
+const { clerkAuth, requireClerkRole } = require('../middleware/clerkAuth');
 const { ROLES, isPaciente, isAdministrador } = require('../constants/roles');
 const { validateHistoriaExito, validateId } = require('../middleware/validation');
 
@@ -14,7 +14,7 @@ const router = express.Router();
  *     description: Obtiene una lista paginada de historias de éxito. Requiere autenticación.
  *     tags: [Historias de Éxito]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -75,7 +75,7 @@ const router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 // GET /api/historias-exito - Obtener todas las historias de éxito
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', clerkAuth, async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -180,8 +180,38 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /historias-exito/{id}:
+ *   get:
+ *     summary: Obtener historia de éxito por ID
+ *     description: Obtiene una historia de éxito específica por su ID. Requiere autenticación Clerk.
+ *     tags: [Historias de Éxito]
+ *     security:
+ *       - clerkAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la historia de éxito
+ *     responses:
+ *       200:
+ *         description: Historia de éxito obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HistoriaExito'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // GET /api/historias-exito/:id - Obtener historia de éxito por ID
-router.get('/:id', authenticateToken, validateId, async (req, res) => {
+router.get('/:id', clerkAuth, validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -234,8 +264,73 @@ router.get('/:id', authenticateToken, validateId, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /historias-exito:
+ *   post:
+ *     summary: Crear nueva historia de éxito
+ *     description: Crea una nueva historia de éxito. Requiere autenticación Clerk.
+ *     tags: [Historias de Éxito]
+ *     security:
+ *       - clerkAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idServicio
+ *               - idMedico
+ *               - idPaciente
+ *               - titulo
+ *               - descripcion
+ *             properties:
+ *               idServicio:
+ *                 type: integer
+ *                 description: ID del servicio
+ *               idMedico:
+ *                 type: integer
+ *                 description: ID del médico
+ *               idPaciente:
+ *                 type: integer
+ *                 description: ID del paciente
+ *               titulo:
+ *                 type: string
+ *                 description: Título de la historia de éxito
+ *               descripcion:
+ *                 type: string
+ *                 description: Descripción detallada de la historia
+ *               fechaInicio:
+ *                 type: string
+ *                 format: date
+ *                 description: Fecha de inicio del tratamiento
+ *               fechaFin:
+ *                 type: string
+ *                 format: date
+ *                 description: Fecha de finalización del tratamiento
+ *               resultado:
+ *                 type: string
+ *                 description: Resultado obtenido
+ *               testimonio:
+ *                 type: string
+ *                 description: Testimonio del paciente
+ *     responses:
+ *       201:
+ *         description: Historia de éxito creada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HistoriaExito'
+ *       400:
+ *         $ref: '#/components/responses/BadRequestError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // POST /api/historias-exito - Crear nueva historia de éxito
-router.post('/', authenticateToken, validateHistoriaExito, async (req, res) => {
+router.post('/', clerkAuth, validateHistoriaExito, async (req, res) => {
   try {
     const { 
       idServicio, 
@@ -340,8 +435,74 @@ router.post('/', authenticateToken, validateHistoriaExito, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /historias-exito/{id}:
+ *   put:
+ *     summary: Actualizar historia de éxito
+ *     description: Actualiza una historia de éxito existente. Requiere autenticación Clerk.
+ *     tags: [Historias de Éxito]
+ *     security:
+ *       - clerkAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la historia de éxito
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               idServicio:
+ *                 type: integer
+ *                 description: ID del servicio
+ *               idMedico:
+ *                 type: integer
+ *                 description: ID del médico
+ *               idPaciente:
+ *                 type: integer
+ *                 description: ID del paciente
+ *               titulo:
+ *                 type: string
+ *                 description: Título de la historia de éxito
+ *               descripcion:
+ *                 type: string
+ *                 description: Descripción detallada de la historia
+ *               fechaInicio:
+ *                 type: string
+ *                 format: date
+ *                 description: Fecha de inicio del tratamiento
+ *               fechaFin:
+ *                 type: string
+ *                 format: date
+ *                 description: Fecha de finalización del tratamiento
+ *               resultado:
+ *                 type: string
+ *                 description: Resultado obtenido
+ *               testimonio:
+ *                 type: string
+ *                 description: Testimonio del paciente
+ *     responses:
+ *       200:
+ *         description: Historia de éxito actualizada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HistoriaExito'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // PUT /api/historias-exito/:id - Actualizar historia de éxito
-router.put('/:id', authenticateToken, validateId, async (req, res) => {
+router.put('/:id', clerkAuth, validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -418,8 +579,42 @@ router.put('/:id', authenticateToken, validateId, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /historias-exito/{id}:
+ *   delete:
+ *     summary: Eliminar historia de éxito
+ *     description: Elimina una historia de éxito. Requiere autenticación Clerk.
+ *     tags: [Historias de Éxito]
+ *     security:
+ *       - clerkAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la historia de éxito
+ *     responses:
+ *       200:
+ *         description: Historia de éxito eliminada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Historia de éxito eliminada exitosamente"
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // DELETE /api/historias-exito/:id - Eliminar historia de éxito
-router.delete('/:id', authenticateToken, validateId, async (req, res) => {
+router.delete('/:id', clerkAuth, validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -464,8 +659,40 @@ router.delete('/:id', authenticateToken, validateId, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /historias-exito/{id}/publicar:
+ *   post:
+ *     summary: Publicar historia de éxito
+ *     description: Publica una historia de éxito. Solo administradores pueden publicar.
+ *     tags: [Historias de Éxito]
+ *     security:
+ *       - clerkAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la historia de éxito
+ *     responses:
+ *       200:
+ *         description: Historia de éxito publicada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HistoriaExito'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // POST /api/historias-exito/:id/publicar - Publicar historia de éxito (solo admin)
-router.post('/:id/publicar', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.post('/:id/publicar', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -517,8 +744,40 @@ router.post('/:id/publicar', authenticateToken, requireRole([ROLES.ADMINISTRADOR
   }
 });
 
+/**
+ * @swagger
+ * /historias-exito/{id}/despublicar:
+ *   post:
+ *     summary: Despublicar historia de éxito
+ *     description: Despublica una historia de éxito. Solo administradores pueden despublicar.
+ *     tags: [Historias de Éxito]
+ *     security:
+ *       - clerkAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la historia de éxito
+ *     responses:
+ *       200:
+ *         description: Historia de éxito despublicada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HistoriaExito'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // POST /api/historias-exito/:id/despublicar - Despublicar historia de éxito (solo admin)
-router.post('/:id/despublicar', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.post('/:id/despublicar', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
 

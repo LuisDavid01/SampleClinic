@@ -6,6 +6,7 @@ const config = require('./config/env');
 const prisma = require('./config/database');
 const { specs, swaggerUi } = require('./config/swagger');
 const { authenticateToken } = require('./middleware/auth');
+const { clerkAuth, optionalClerkAuth } = require('./middleware/clerkAuth');
 
 // Importar rutas
 const authRoutes = require('./routes/auth');
@@ -14,6 +15,7 @@ const citaRoutes = require('./routes/citas');
 const servicioRoutes = require('./routes/servicios');
 const perfilRoutes = require('./routes/perfiles');
 const historiaExitoRoutes = require('./routes/historias-exito');
+const clerkProfileRoutes = require('./routes/clerkProfile');
 
 const app = express();
 
@@ -60,6 +62,7 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
   explorer: true,
@@ -74,6 +77,7 @@ app.use('/api/citas', citaRoutes);
 app.use('/api/servicios', servicioRoutes);
 app.use('/api/perfiles', perfilRoutes);
 app.use('/api/historias-exito', historiaExitoRoutes);
+app.use('/api/clerk', clerkProfileRoutes);
 
 /**
  * @swagger
@@ -110,10 +114,10 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Ruta de prueba de autenticación
+// Ruta de prueba de autenticación JWT (deprecated)
 app.get('/api/test-auth', authenticateToken, (req, res) => {
   res.json({
-    message: 'Autenticación exitosa',
+    message: 'Autenticación JWT exitosa (deprecated)',
     user: {
       id: req.user.idUsuario,
       nombre: req.user.nombre,
@@ -126,6 +130,249 @@ app.get('/api/test-auth', authenticateToken, (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+/**
+ * @swagger
+ * /test-clerk-auth:
+ *   get:
+ *     summary: Probar autenticación con Clerk
+ *     tags: [Clerk]
+ *     security:
+ *       - clerkAuth: []
+ *     responses:
+ *       200:
+ *         description: Autenticación Clerk exitosa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Autenticación Clerk exitosa"
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "user_2abc123def456"
+ *                     email:
+ *                       type: string
+ *                       example: "usuario@ejemplo.com"
+ *                     firstName:
+ *                       type: string
+ *                       example: "Juan"
+ *                     lastName:
+ *                       type: string
+ *                       example: "Pérez"
+ *                     sessionId:
+ *                       type: string
+ *                       example: "sess_2abc123def456"
+ *                     metadata:
+ *                       type: object
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2024-01-15T10:30:00.000Z"
+ *       401:
+ *         description: Token de autorización requerido o inválido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Token de autorización requerido"
+ *                 message:
+ *                   type: string
+ *                   example: "Debe proporcionar un token Bearer válido"
+ *       500:
+ *         description: Error interno del servidor
+ */
+
+/**
+ * @swagger
+ * /user/me:
+ *   get:
+ *     summary: Obtener información del usuario actual
+ *     tags: [Clerk]
+ *     security:
+ *       - clerkAuth: []
+ *     responses:
+ *       200:
+ *         description: Información del usuario actual
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Información del usuario actual"
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "user_30KfM9ZKYFQjNC7TqzVLzfSt8Vi"
+ *                     email:
+ *                       type: string
+ *                       example: "usuario@ejemplo.com"
+ *                     firstName:
+ *                       type: string
+ *                       example: "Juan"
+ *                     lastName:
+ *                       type: string
+ *                       example: "Pérez"
+ *                     sessionId:
+ *                       type: string
+ *                       example: "sess_33ZSrfIln5SnNs33P5ajCYrufQ2"
+ *                     metadata:
+ *                       type: object
+ *                       example: {}
+ *                     tokenPayload:
+ *                       type: object
+ *                       properties:
+ *                         sub:
+ *                           type: string
+ *                           example: "user_30KfM9ZKYFQjNC7TqzVLzfSt8Vi"
+ *                         sid:
+ *                           type: string
+ *                           example: "sess_33ZSrfIln5SnNs33P5ajCYrufQ2"
+ *                         exp:
+ *                           type: number
+ *                           example: 1759523014
+ *                         iat:
+ *                           type: number
+ *                           example: 1759522954
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       401:
+ *         description: Token de autorización inválido o faltante
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Token de autorización requerido"
+ *                 message:
+ *                   type: string
+ *                   example: "Debe proporcionar un token Bearer válido"
+ *       500:
+ *         description: Error interno del servidor
+ */
+
+/**
+ * @swagger
+ * /test-clerk-auth:
+ *   post:
+ *     summary: Probar autenticación con Clerk (POST con datos del usuario)
+ *     tags: [Clerk]
+ *     security:
+ *       - clerkAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               user:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "user_30KfM9ZKYFQjNC7TqzVLzfSt8Vi"
+ *                   email:
+ *                     type: string
+ *                     example: "usuario@ejemplo.com"
+ *                   firstName:
+ *                     type: string
+ *                     example: "Juan"
+ *                   lastName:
+ *                     type: string
+ *                     example: "Pérez"
+ *                   metadata:
+ *                     type: object
+ *                     example: {}
+ *     responses:
+ *       200:
+ *         description: Autenticación Clerk exitosa con datos del frontend
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Autenticación Clerk exitosa con datos del frontend"
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "user_30KfM9ZKYFQjNC7TqzVLzfSt8Vi"
+ *                     email:
+ *                       type: string
+ *                       example: "usuario@ejemplo.com"
+ *                     firstName:
+ *                       type: string
+ *                       example: "Juan"
+ *                     lastName:
+ *                       type: string
+ *                       example: "Pérez"
+ *                     sessionId:
+ *                       type: string
+ *                       example: "sess_33ZSrfIln5SnNs33P5ajCYrufQ2"
+ *                     metadata:
+ *                       type: object
+ *                       example: {}
+ *                 frontendData:
+ *                   type: object
+ *                   description: "Datos enviados desde el frontend"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       401:
+ *         description: Token de autorización inválido o faltante
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Token de autorización requerido"
+ *                 message:
+ *                   type: string
+ *                   example: "Debe proporcionar un token Bearer válido"
+ *       500:
+ *         description: Error interno del servidor
+ */
+// Endpoint para obtener información del usuario actual
+app.get('/api/user/me', clerkAuth, (req, res) => {
+  res.json({
+    message: 'Información del usuario actual',
+    user: {
+      id: req.user.id,
+      email: req.user.email,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      apellido1: req.user.apellido1,
+      apellido2: req.user.apellido2,
+      sessionId: req.user.sessionId,
+      metadata: req.user.metadata,
+      tokenPayload: req.user.tokenPayload
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
+
 
 // Middleware de manejo de errores
 app.use((err, req, res, next) => {

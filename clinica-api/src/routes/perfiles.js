@@ -1,13 +1,74 @@
 const express = require('express');
 const prisma = require('../config/database');
-const { authenticateToken, requireRole, requireOwnershipOrAdmin } = require('../middleware/auth');
+const { requireOwnershipOrAdmin } = require('../middleware/auth');
+const { clerkAuth, requireClerkRole } = require('../middleware/clerkAuth');
 const { ROLES, isAdministrador } = require('../constants/roles');
 const { validatePerfil, validateId } = require('../middleware/validation');
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /perfiles:
+ *   get:
+ *     summary: Obtener todos los perfiles
+ *     description: Obtiene una lista paginada de perfiles médicos. Requiere autenticación Clerk.
+ *     tags: [Perfiles]
+ *     security:
+ *       - clerkAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Número de elementos por página
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Buscar por especialidad, descripción o nombre del médico
+ *       - in: query
+ *         name: especialidad
+ *         schema:
+ *           type: string
+ *         description: Filtrar por especialidad
+ *     responses:
+ *       200:
+ *         description: Lista de perfiles obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 perfiles:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Perfil'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     total:
+ *                       type: integer
+ *                     pages:
+ *                       type: integer
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // GET /api/perfiles - Obtener todos los perfiles
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', clerkAuth, async (req, res) => {
   try {
     const { page = 1, limit = 10, search, especialidad } = req.query;
     const skip = (page - 1) * limit;
@@ -80,8 +141,38 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /perfiles/{id}:
+ *   get:
+ *     summary: Obtener perfil por ID
+ *     description: Obtiene un perfil médico específico por su ID. Requiere autenticación Clerk.
+ *     tags: [Perfiles]
+ *     security:
+ *       - clerkAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del perfil
+ *     responses:
+ *       200:
+ *         description: Perfil obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Perfil'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // GET /api/perfiles/:id - Obtener perfil por ID
-router.get('/:id', authenticateToken, validateId, async (req, res) => {
+router.get('/:id', clerkAuth, validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -127,8 +218,58 @@ router.get('/:id', authenticateToken, validateId, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /perfiles:
+ *   post:
+ *     summary: Crear nuevo perfil
+ *     description: Crea un nuevo perfil médico. Requiere autenticación Clerk y rol de administrador.
+ *     tags: [Perfiles]
+ *     security:
+ *       - clerkAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idMedico
+ *               - especialidad
+ *             properties:
+ *               idMedico:
+ *                 type: integer
+ *                 description: ID del médico
+ *               fotografia:
+ *                 type: string
+ *                 description: URL de la fotografía del médico
+ *               experienciaProfesional:
+ *                 type: string
+ *                 description: Experiencia profesional del médico
+ *               descripcionBreve:
+ *                 type: string
+ *                 description: Descripción breve del perfil
+ *               especialidad:
+ *                 type: string
+ *                 description: Especialidad del médico
+ *     responses:
+ *       201:
+ *         description: Perfil creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Perfil'
+ *       400:
+ *         $ref: '#/components/responses/BadRequestError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // POST /api/perfiles - Crear nuevo perfil
-router.post('/', authenticateToken, validatePerfil, async (req, res) => {
+router.post('/', clerkAuth, validatePerfil, async (req, res) => {
   try {
     const { idMedico, fotografia, experienciaProfesional, descripcionBreve, especialidad } = req.body;
 
@@ -198,8 +339,57 @@ router.post('/', authenticateToken, validatePerfil, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /perfiles/{id}:
+ *   put:
+ *     summary: Actualizar perfil
+ *     description: Actualiza un perfil médico existente. Requiere autenticación Clerk.
+ *     tags: [Perfiles]
+ *     security:
+ *       - clerkAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del perfil
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fotografia:
+ *                 type: string
+ *                 description: URL de la fotografía del médico
+ *               experienciaProfesional:
+ *                 type: string
+ *                 description: Experiencia profesional del médico
+ *               descripcionBreve:
+ *                 type: string
+ *                 description: Descripción breve del perfil
+ *               especialidad:
+ *                 type: string
+ *                 description: Especialidad del médico
+ *     responses:
+ *       200:
+ *         description: Perfil actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Perfil'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // PUT /api/perfiles/:id - Actualizar perfil
-router.put('/:id', authenticateToken, validateId, async (req, res) => {
+router.put('/:id', clerkAuth, validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -263,8 +453,44 @@ router.put('/:id', authenticateToken, validateId, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /perfiles/{id}:
+ *   delete:
+ *     summary: Eliminar perfil
+ *     description: Elimina un perfil médico. Solo el propietario o administrador pueden eliminar.
+ *     tags: [Perfiles]
+ *     security:
+ *       - clerkAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del perfil
+ *     responses:
+ *       200:
+ *         description: Perfil eliminado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Perfil eliminado exitosamente"
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 // DELETE /api/perfiles/:id - Eliminar perfil
-router.delete('/:id', authenticateToken, validateId, async (req, res) => {
+router.delete('/:id', clerkAuth, validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -310,7 +536,7 @@ router.delete('/:id', authenticateToken, validateId, async (req, res) => {
 });
 
 // POST /api/perfiles/:id/certificaciones - Agregar certificación al perfil
-router.post('/:id/certificaciones', authenticateToken, validateId, async (req, res) => {
+router.post('/:id/certificaciones', clerkAuth, validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const { idCertificacion } = req.body;
@@ -397,7 +623,7 @@ router.post('/:id/certificaciones', authenticateToken, validateId, async (req, r
 });
 
 // DELETE /api/perfiles/:id/certificaciones/:idCertificacion - Remover certificación del perfil
-router.delete('/:id/certificaciones/:idCertificacion', authenticateToken, validateId, async (req, res) => {
+router.delete('/:id/certificaciones/:idCertificacion', clerkAuth, validateId, async (req, res) => {
   try {
     const { id, idCertificacion } = req.params;
 
@@ -465,7 +691,7 @@ router.delete('/:id/certificaciones/:idCertificacion', authenticateToken, valida
 });
 
 // POST /api/perfiles/:id/servicios - Agregar servicio al perfil
-router.post('/:id/servicios', authenticateToken, validateId, async (req, res) => {
+router.post('/:id/servicios', clerkAuth, validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const { idServicio } = req.body;
@@ -552,7 +778,7 @@ router.post('/:id/servicios', authenticateToken, validateId, async (req, res) =>
 });
 
 // DELETE /api/perfiles/:id/servicios/:idServicio - Remover servicio del perfil
-router.delete('/:id/servicios/:idServicio', authenticateToken, validateId, async (req, res) => {
+router.delete('/:id/servicios/:idServicio', clerkAuth, validateId, async (req, res) => {
   try {
     const { id, idServicio } = req.params;
 

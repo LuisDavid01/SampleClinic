@@ -1,6 +1,6 @@
 const express = require('express');
 const prisma = require('../config/database');
-const { authenticateToken, requireRole } = require('../middleware/auth');
+const { clerkAuth, requireClerkRole } = require('../middleware/clerkAuth');
 const { ROLES } = require('../constants/roles');
 const { validateServicio, validateId } = require('../middleware/validation');
 
@@ -14,7 +14,7 @@ const router = express.Router();
  *     description: Obtiene una lista paginada de servicios disponibles. Requiere autenticación.
  *     tags: [Servicios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -75,7 +75,7 @@ const router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 // GET /api/servicios - Obtener todos los servicios
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', clerkAuth, async (req, res) => {
   try {
     const { page = 1, limit = 10, search, activo } = req.query;
     const skip = (page - 1) * limit;
@@ -131,7 +131,7 @@ router.get('/', authenticateToken, async (req, res) => {
  *     description: Obtiene los detalles de un servicio específico por su ID. Requiere autenticación.
  *     tags: [Servicios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -176,7 +176,7 @@ router.get('/', authenticateToken, async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // GET /api/servicios/:id - Obtener servicio por ID
-router.get('/:id', authenticateToken, validateId, async (req, res) => {
+router.get('/:id', clerkAuth, validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -258,7 +258,7 @@ router.get('/:id', authenticateToken, validateId, async (req, res) => {
  *     description: Crea un nuevo servicio. Solo los administradores pueden crear servicios.
  *     tags: [Servicios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -326,7 +326,7 @@ router.get('/:id', authenticateToken, validateId, async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/servicios - Crear nuevo servicio (solo admin)
-router.post('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateServicio, async (req, res) => {
+router.post('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateServicio, async (req, res) => {
   try {
     const { nombreServicio, descripcion, precio, activo = true } = req.body;
 
@@ -361,7 +361,7 @@ router.post('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validate
  *     description: Actualiza un servicio existente. Solo los administradores pueden actualizar servicios.
  *     tags: [Servicios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -441,7 +441,7 @@ router.post('/', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validate
  *               $ref: '#/components/schemas/Error'
  */
 // PUT /api/servicios/:id - Actualizar servicio (solo admin)
-router.put('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, validateServicio, async (req, res) => {
+router.put('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, validateServicio, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -485,7 +485,7 @@ router.put('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), valida
  *     description: Desactiva un servicio (soft delete). Solo los administradores pueden desactivar servicios.
  *     tags: [Servicios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -533,7 +533,7 @@ router.put('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), valida
  *               $ref: '#/components/schemas/Error'
  */
 // DELETE /api/servicios/:id - Desactivar servicio (solo admin)
-router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.delete('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -585,7 +585,7 @@ router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), val
  *     description: Obtiene todos los perfiles de fisioterapeutas asociados a un servicio específico. Requiere autenticación.
  *     tags: [Servicios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -655,7 +655,7 @@ router.delete('/:id', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), val
  *               $ref: '#/components/schemas/Error'
  */
 // GET /api/servicios/:id/perfiles - Obtener perfiles que ofrecen el servicio
-router.get('/:id/perfiles', authenticateToken, validateId, async (req, res) => {
+router.get('/:id/perfiles', clerkAuth, validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
@@ -716,7 +716,7 @@ router.get('/:id/perfiles', authenticateToken, validateId, async (req, res) => {
  *     description: Asocia un perfil de fisioterapeuta con un servicio específico. Solo los administradores pueden realizar esta acción.
  *     tags: [Servicios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -794,7 +794,7 @@ router.get('/:id/perfiles', authenticateToken, validateId, async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/servicios/:id/perfiles - Asociar perfil con servicio (solo admin)
-router.post('/:id/perfiles', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.post('/:id/perfiles', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const { idPerfil } = req.body;
@@ -872,7 +872,7 @@ router.post('/:id/perfiles', authenticateToken, requireRole([ROLES.ADMINISTRADOR
  *     description: Desasocia un perfil de fisioterapeuta de un servicio específico. Solo los administradores pueden realizar esta acción.
  *     tags: [Servicios]
  *     security:
- *       - bearerAuth: []
+ *       - clerkAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -931,7 +931,7 @@ router.post('/:id/perfiles', authenticateToken, requireRole([ROLES.ADMINISTRADOR
  *               $ref: '#/components/schemas/Error'
  */
 // DELETE /api/servicios/:id/perfiles/:idPerfil - Desasociar perfil del servicio (solo admin)
-router.delete('/:id/perfiles/:idPerfil', authenticateToken, requireRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.delete('/:id/perfiles/:idPerfil', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
   try {
     const { id, idPerfil } = req.params;
 

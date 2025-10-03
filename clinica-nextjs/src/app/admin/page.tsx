@@ -1,5 +1,8 @@
 "use client"
 
+import { useState, useEffect } from "react";
+import { useUser, useAuth } from "@clerk/nextjs";
+import { useApiClient, apiEndpoints } from "@/utils/apiClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -31,10 +34,98 @@ import {
 	Radar,
 } from "recharts"
 
+interface UserData {
+  idUsuario: number;
+  nombre: string;
+  apellido1: string;
+  apellido2: string;
+  correoElectronico: string;
+  clerkId: string;
+  rol?: {
+    nombreRol: string;
+  };
+}
 
-
+interface UserValidation {
+  status: 'pending' | 'validating' | 'validated' | 'error';
+  message: string;
+  userData: UserData | null;
+}
 
 export default function AdminDashboard() {
+  const { user } = useUser();
+  const { getToken, isSignedIn } = useAuth();
+  const apiClient = useApiClient();
+  const [userValidation, setUserValidation] = useState<UserValidation>({
+    status: 'pending',
+    message: '',
+    userData: null
+  });
+
+  useEffect(() => {
+    const validateUser = async () => {
+      if (isSignedIn && user) {
+        setUserValidation({ status: 'validating', message: 'Validando usuario...', userData: null });
+        
+        try {
+          const token = await getToken();
+          
+          if (token && token.split('.').length === 3) {
+            console.log("🔄 Validación de usuario en admin iniciada...");
+            
+            try {
+              // Obtener perfil del usuario desde Clerk
+              const profileResult = await apiClient.get(apiEndpoints.clerkProfile());
+              console.log("✅ Usuario validado en admin:", profileResult);
+              
+              if (profileResult.dbUser) {
+                setUserValidation({
+                  status: 'validated',
+                  message: 'Usuario validado correctamente',
+                  userData: profileResult.dbUser
+                });
+                
+                console.log("👤 Usuario admin en base de datos:");
+                console.log("  - ID:", profileResult.dbUser.idUsuario);
+                console.log("  - Nombre:", profileResult.dbUser.nombre);
+                console.log("  - Email:", profileResult.dbUser.correoElectronico);
+                console.log("  - Rol:", profileResult.dbUser.rol?.nombreRol);
+              }
+            } catch (apiError) {
+              console.error("❌ Error en validación de admin:", apiError);
+              const errorMessage = apiError instanceof Error ? apiError.message : 'Error desconocido';
+              setUserValidation({
+                status: 'error',
+                message: `Error al validar usuario: ${errorMessage}`,
+                userData: null
+              });
+            }
+          } else {
+            setUserValidation({
+              status: 'error',
+              message: 'Token de autenticación inválido',
+              userData: null
+            });
+          }
+        } catch (error) {
+          console.error("❌ Error obteniendo token en admin:", error);
+          setUserValidation({
+            status: 'error',
+            message: 'Error de autenticación',
+            userData: null
+          });
+        }
+      } else {
+        setUserValidation({
+          status: 'pending',
+          message: 'Esperando autenticación...',
+          userData: null
+        });
+      }
+    };
+
+    validateUser();
+  }, [isSignedIn, user, getToken]);
 
 	const monthlyData = [
 		{ month: "Ene", consultas: 180, terapias: 165 },
@@ -137,6 +228,51 @@ export default function AdminDashboard() {
 						<p className="text-lg font-semibold ">{new Date().toLocaleDateString("es-ES", { timeZone: "UTC" })}</p>
 					</div>
 				</div>
+
+				{/* Indicador de estado de validación del usuario */}
+				{userValidation.status !== 'pending' && (
+					<Card className={`border-l-4 ${
+						userValidation.status === 'validated' ? 'border-green-500 bg-green-50 dark:bg-green-950' :
+						userValidation.status === 'validating' ? 'border-blue-500 bg-blue-50 dark:bg-blue-950' :
+						'border-red-500 bg-red-50 dark:bg-red-950'
+					}`}>
+						<CardContent className="p-4">
+							<div className="flex items-center gap-3">
+								<div className={`w-3 h-3 rounded-full ${
+									userValidation.status === 'validated' ? 'bg-green-500' :
+									userValidation.status === 'validating' ? 'bg-blue-500 animate-pulse' :
+									'bg-red-500'
+								}`}></div>
+								<div>
+									<p className={`font-medium ${
+										userValidation.status === 'validated' ? 'text-green-800 dark:text-green-200' :
+										userValidation.status === 'validating' ? 'text-blue-800 dark:text-blue-200' :
+										'text-red-800 dark:text-red-200'
+									}`}>
+										{userValidation.status === 'validated' ? '✅ Usuario validado' :
+										 userValidation.status === 'validating' ? '🔄 Validando usuario...' :
+										 '❌ Error de validación'}
+									</p>
+									<p className={`text-sm ${
+										userValidation.status === 'validated' ? 'text-green-600 dark:text-green-300' :
+										userValidation.status === 'validating' ? 'text-blue-600 dark:text-blue-300' :
+										'text-red-600 dark:text-red-300'
+									}`}>
+										{userValidation.message}
+									</p>
+									{userValidation.userData && (
+										<div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+											<p><strong>ID:</strong> {userValidation.userData.idUsuario}</p>
+											<p><strong>Nombre:</strong> {userValidation.userData.nombre} {userValidation.userData.apellido1} {userValidation.userData.apellido2}</p>
+											<p><strong>Email:</strong> {userValidation.userData.correoElectronico}</p>
+											<p><strong>Rol:</strong> {userValidation.userData.rol?.nombreRol || 'No asignado'}</p>
+										</div>
+									)}
+								</div>
+							</div>
+						</CardContent>
+					</Card>
+				)}
 
 				{/* Stats Cards */}
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
