@@ -19,8 +19,8 @@ import {
 	LogOut,
 	Users,
 } from "lucide-react";
-import { chatEvent, chatRoomEvent, NewMessageEvent, SendMessageEvent } from "@/types/chat";
-import { cn } from "@/lib/utils";
+import { chatEvent, chatRoomEvent, GetHistoryEvent, NewMessageEvent, SendMessageEvent } from "@/types/chat";
+import { cn, smoothScrollTo } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { useAuth } from "@clerk/nextjs";
 import { useNotification } from "../UseNotification";
@@ -124,6 +124,13 @@ export default function SupportChat() {
 			};
 
 		} catch (err) {
+			showNotification({
+				type: "error",
+				title: "Error de conexión",
+				message: "Intente conectarse más tarde",
+				timestamp: new Date(),
+			})
+
 			setConnectionStatus('error');
 		}
 
@@ -157,10 +164,27 @@ export default function SupportChat() {
 						timestamp: new Date(),
 					});
 				}
+				smoothScrollTo('chat-end');
+
 
 				break;
 			case "change_chatroom":
 				console.log("change chatroom");
+				break;
+			case "get_history":
+				console.log("got the chat history");
+				const payloadHistory = event.payload as GetHistoryEvent;
+				const historyMessages = payloadHistory.messages.map(msg => ({
+					id: crypto.randomUUID(),
+					sender: msg.from,
+					role: msg.role,
+					text: msg.message,
+					timestamp: new Date(msg.sent).toLocaleTimeString(),
+				}));
+				setMessages(historyMessages);
+				smoothScrollTo('chat-end');
+
+				break;
 			default:
 				alert("unsupported event type");
 				break;
@@ -320,6 +344,7 @@ export default function SupportChat() {
 													</div>
 												</div>
 											))}
+											<div id="chat-end" />
 										</div>
 									</ScrollArea>
 								</CardContent>

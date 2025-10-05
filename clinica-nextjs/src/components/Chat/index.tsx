@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { MessageCircle, LogOut, Send, Clock, X, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn, smoothScrollTo } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { chatEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
 import { useAuth } from "@clerk/nextjs";
@@ -138,7 +138,7 @@ export default function FloatingChat() {
 						timestamp: new Date().toLocaleTimeString()
 					}
 				]);
-				if (!isOpenRef.current && messageEvent.role === 'Support') {
+				if (!isOpenRef && messageEvent.role === 'Support') {
 					showNotification({
 						type: "connected",
 						title: `Nuevo mensaje de ${messageEvent.from}`,
@@ -146,6 +146,8 @@ export default function FloatingChat() {
 						timestamp: new Date(),
 					})
 				}
+				smoothScrollTo('chat-end');
+
 				break;
 			case "change_chatroom":
 				console.log("change chatroom");
@@ -280,6 +282,7 @@ export default function FloatingChat() {
 												</div>
 											</div>
 										))}
+										<div id="chat-end" />
 									</div>
 								</ScrollArea>
 							</CardContent>

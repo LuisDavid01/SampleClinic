@@ -17,6 +17,7 @@ const (
 	EventNewMessage  = "new_message"
 	EventChangeRoom  = "change_chatroom"
 	EventGetRooms    = "get_chatrooms"
+	EventGetHistory  = "get_history"
 )
 
 type SendMessageEvent struct {
@@ -36,4 +37,8 @@ type ChangeChatRoomEvent struct {
 
 type GetChatRoomsEvent struct {
 	Rooms RoomList `json:"rooms"`
+}
+
+type GetHistoryEvent struct {
+	History []NewMessageEvent `json:"messages"`
 }

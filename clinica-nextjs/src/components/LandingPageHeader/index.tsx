@@ -13,19 +13,9 @@ import { Button } from "@/components/ui/button";
 import MobileMenu from "../MobileMenu/index";
 import ThemeToggle from "../ThemeToggle";
 import { LogOut, LogIn } from "lucide-react";
+import { smoothScrollTo } from "@/lib/utils";
 
-const smoothScrollTo = (elementId: string) => {
-	const element = document.getElementById(elementId);
-	if (element) {
-		const headerHeight = 0; // altura del header + padding adicional
-		const elementPosition = element.offsetTop - headerHeight;
 
-		window.scrollTo({
-			top: elementPosition,
-			behavior: 'smooth'
-		});
-	}
-};
 
 export const LandingPageHeader: React.FC = () => {
 	const { user } = useUser();

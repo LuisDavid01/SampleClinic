@@ -195,6 +195,14 @@ func sendMessage(event Event, c *Client) error {
 			client.egress <- outgoingEvent
 		}
 	}
+
+	room := c.Manager.getRoomByID(c.chatroom)
+	if room != nil {
+		room.History = append(room.History, broadMessage)
+		if len(room.History) > 50 {
+			room.History = room.History[len(room.History)-50:]
+		}
+	}
 	return nil
 }
 
@@ -209,6 +217,35 @@ func chatRoomHandler(event Event, c *Client) error {
 	}
 	log.Println("changing to chatroom: ", changeChatRoomEvent.Name)
 	c.chatroom = changeChatRoomEvent.Name
+
+	room := c.Manager.getRoomByID(c.chatroom)
+	if room == nil {
+		log.Println("Room not found")
+		return nil
+	}
+
+	historyEvent := GetHistoryEvent{
+		History: room.History,
+	}
+	data, err := json.Marshal(historyEvent)
+	if err != nil {
+		return fmt.Errorf("Couldnt parse the history: %v", err)
+	}
+	outgoingEvent := Event{
+		Type:    EventGetHistory,
+		Payload: data,
+	}
+	log.Println("sending history...")
+	c.egress <- outgoingEvent
+	return nil
+}
+
+func (m *Manager) getRoomByID(roomID string) *Room {
+	m.RLock()
+	defer m.RUnlock()
+	if room, ok := m.Rooms[roomID]; ok {
+		return room
+	}
 
 	return nil
 }

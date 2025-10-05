@@ -1,10 +1,4 @@
-export interface Message {
-	id: string;
-	content: string;
-	timestamp: Date;
-	isFromSupport: boolean;
-	isRead: boolean;
-}
+
 /*
 export interface Chat {
 	id: string;
@@ -26,10 +20,12 @@ export class chatRoomEvent {
 
 	}
 }
+
+
 export class chatEvent {
 	type: string;
-	payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | string;
-	constructor(type: string, payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | string) {
+	payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | GetHistoryEvent | string;
+	constructor(type: string, payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | GetHistoryEvent | string) {
 		this.type = type;
 		this.payload = payload;
 	}
@@ -50,6 +46,8 @@ export class NewMessageEvent {
 }
 
 
+
+
 export class SendMessageEvent {
 	message: string;
 
@@ -58,4 +56,9 @@ export class SendMessageEvent {
 		this.message = message;
 
 	}
+}
+
+export type GetHistoryEvent = {
+	messages: NewMessageEvent[];
+
 }
