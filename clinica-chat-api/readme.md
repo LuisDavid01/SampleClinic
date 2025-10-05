@@ -36,6 +36,7 @@ Microservicio  encargado de manejar alta carga de conexiones de forma eficiente 
 - [x] Autorizar acciones dependiendo del rol paciente, recepcionista 
 - [x] Crear salas entre  paciente y recepcionista
 - [x] Persistir los  mensajes en memoria
-- [ ] Persistir chats en memoria
-- [ ] Enviar notificaciones en tiempo real
+- [x] Persistir chats en memoria
+- [x] Enviar notificaciones en tiempo real
 - [ ] enviar  chats activos  y actualizarlos
+- [ ] Encuestas de satisfaccion
