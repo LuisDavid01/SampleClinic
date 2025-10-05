@@ -36,13 +36,25 @@ export default function SupportChat() {
 		id: string; text: string; sender: string; role: 'Pacient' | 'Support'; timestamp: string
 	}>>([]);
 	const { showNotification } = useNotification()
-
+	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const scrollAreaRef = useRef<HTMLDivElement>(null);
 
 	const isOpenRef = useRef(isOpen);
 	useEffect(() => {
 		isOpenRef.current = isOpen;
 	}, [isOpen]);
 
+	const scrollToBottom = () => {
+		messagesEndRef.current?.scrollIntoView({
+			behavior: "smooth",
+			block: "end"
+		});
+	};
+	useEffect(() => {
+		if (messages.length > 0) {
+			scrollToBottom();
+		}
+	}, [messages]);
 	useEffect(() => {
 
 
@@ -328,7 +340,7 @@ export default function SupportChat() {
 								</CardHeader>
 
 								<CardContent className="flex-1 px-4 overflow-hidden">
-									<ScrollArea className="h-full pr-4">
+									<ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
 										<div className="space-y-3">
 											{messages.map(msg => (
 												<div key={msg.id} className={`flex ${msg.role === 'Pacient' ? 'justify-start' : 'justify-end'}`}>
@@ -344,7 +356,7 @@ export default function SupportChat() {
 													</div>
 												</div>
 											))}
-											<div id="chat-end" />
+											<div ref={messagesEndRef} />
 										</div>
 									</ScrollArea>
 								</CardContent>
