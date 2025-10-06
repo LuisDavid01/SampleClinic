@@ -153,7 +153,7 @@ export default function FloatingChat() {
 
 				if (!isOpenRef.current && messageEvent.role === 'Support') {
 					showNotification({
-						type: "connected",
+						type: "newMessage",
 						title: `Nuevo mensaje de ${messageEvent.from}`,
 						message: messageEvent.message,
 						timestamp: new Date(),

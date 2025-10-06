@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X, MessageCircle, Info, CheckCircle, AlertTriangle, AlertCircle } from "lucide-react"
+import { X, MessageCircle, Info, CheckCircle, AlertTriangle, AlertCircle, MailPlus, Inbox } from "lucide-react"
 import { useNotification, type Notification } from "../NotificationProvider"
 import { cn } from "../../lib/utils"
 
@@ -42,6 +42,8 @@ export function NotificationToast({ notification }: NotificationToastProps) {
 		switch (notification.type) {
 			case "connected":
 				return <MessageCircle className="h-5 w-5 text-primary" />
+			case "newMessage":
+				return <Inbox className="h-5 w-5 text-primary" />
 			case "success":
 				return <CheckCircle className="h-5 w-5 text-primary" />
 			case "warning":

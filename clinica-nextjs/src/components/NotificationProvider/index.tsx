@@ -6,7 +6,7 @@ import { NotificationContainer } from "../NotificationContainer"
 
 export interface Notification {
 	id: string
-	type: "connected" | "info" | "success" | "warning" | "error"
+	type: "connected" | "info" | "newMessage" | "success" | "warning" | "error"
 	title: string
 	message: string
 	timestamp?: Date

@@ -169,7 +169,7 @@ export default function SupportChat() {
 
 				if (!isOpenRef.current && messageEvent.role === 'Pacient') {
 					showNotification({
-						type: "connected",
+						type: "newMessage",
 						title: `Nuevo mensaje de ${messageEvent.from}`,
 						message: messageEvent.message,
 						timestamp: new Date(),

@@ -62,3 +62,13 @@ export type GetHistoryEvent = {
 	messages: NewMessageEvent[];
 
 }
+
+type chatroom = {
+	id: string;
+	name: string;
+	lastMessage: string;
+}
+
+export type GetChatRoomsEvent = {
+	rooms: chatroom[];
+}
