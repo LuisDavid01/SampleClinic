@@ -119,14 +119,6 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("New client connected: %s , role: %s, chatroom:  %s\n", client.Username, client.Rol, client.chatroom)
 
-	/* if the user is admin he gets all the rooms
-	if client.Rol == "admin" {
-		log.Println("intentando enviar los rooms...")
-		if err := m.getRooms(client); err != nil {
-			log.Printf("Error sending the rooms: %v", err)
-		}
-	}
-	*/
 	go client.Read()
 	go client.Write()
 }
@@ -251,9 +243,23 @@ func (m *Manager) getRoomByID(roomID string) *Room {
 }
 
 func (m *Manager) getRooms(c *Client) error {
-	m.RLock()
-	defer m.RUnlock()
-	data, err := json.Marshal(m.Rooms)
+	var rooms GetChatRoomsEvent
+	for _, room := range m.Rooms {
+		roomEvent := RoomEvent{
+			ID:   room.ID,
+			Name: room.Name,
+		}
+
+		if len(room.History) > 0 {
+			lastMsg := room.History[len(room.History)-1]
+			roomEvent.LastMessage = lastMsg.Message
+		} else {
+			roomEvent.LastMessage = ""
+		}
+
+		rooms.Rooms = append(rooms.Rooms, roomEvent)
+	}
+	data, err := json.Marshal(&rooms)
 	if err != nil {
 		return fmt.Errorf("Couldnt parse the rooms: %v", err)
 	}
@@ -262,7 +268,7 @@ func (m *Manager) getRooms(c *Client) error {
 		Type:    EventGetRooms,
 		Payload: data,
 	}
-
+	log.Println("sending rooms...")
 	c.egress <- outgoingEvent
 
 	return nil

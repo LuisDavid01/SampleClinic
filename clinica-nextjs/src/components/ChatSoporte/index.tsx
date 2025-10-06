@@ -20,7 +20,7 @@ import {
 	Users,
 } from "lucide-react";
 import { chatEvent, chatRoomEvent, GetHistoryEvent, NewMessageEvent, SendMessageEvent } from "@/types/chat";
-import { cn, smoothScrollTo } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { useAuth } from "@clerk/nextjs";
 import { useNotification } from "../UseNotification";
@@ -118,8 +118,7 @@ export default function SupportChat() {
 					timestamp: new Date(),
 				})
 				setConnectionStatus('connected');
-
-				setConnectionStatus('connected');
+				getChatRooms();
 			};
 
 			wsRef.current.onmessage = (event) => {
@@ -176,7 +175,6 @@ export default function SupportChat() {
 						timestamp: new Date(),
 					});
 				}
-				smoothScrollTo('chat-end');
 
 
 				break;
@@ -194,8 +192,13 @@ export default function SupportChat() {
 					timestamp: new Date(msg.sent).toLocaleTimeString(),
 				}));
 				setMessages(historyMessages);
-				smoothScrollTo('chat-end');
 
+				break;
+			case "get_chatrooms":
+				console.log("got the chatroom");
+				break;
+			case "error":
+				console.log("Error event")
 				break;
 			default:
 				alert("unsupported event type");
@@ -214,7 +217,12 @@ export default function SupportChat() {
 		}
 	}
 
-	function sendEvent(eventName: string, payload: SendMessageEvent | NewMessageEvent | chatRoomEvent) {
+	function getChatRooms() {
+		console.log("getting chatrooms...")
+		sendEvent("get_chatrooms", "");
+	}
+
+	function sendEvent(eventName: string, payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | string) {
 		try {
 			const event = new chatEvent(eventName, payload);
 			wsRef.current?.send(JSON.stringify(event));

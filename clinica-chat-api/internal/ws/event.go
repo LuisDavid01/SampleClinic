@@ -20,6 +20,12 @@ const (
 	EventGetHistory  = "get_history"
 )
 
+type RoomEvent struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	LastMessage string `json:"last_message"`
+}
+
 type SendMessageEvent struct {
 	Message string `json:"message"`
 	From    string `json:"from"`
@@ -36,7 +42,7 @@ type ChangeChatRoomEvent struct {
 }
 
 type GetChatRoomsEvent struct {
-	Rooms RoomList `json:"rooms"`
+	Rooms []RoomEvent `json:"rooms"`
 }
 
 type GetHistoryEvent struct {
