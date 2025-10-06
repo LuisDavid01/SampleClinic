@@ -128,11 +128,22 @@ export default function SupportChat() {
 				routeEvents(evnt);
 			};
 
-			wsRef.current.onclose = () => {
+			wsRef.current.onclose = (event) => {
 				console.log("WebSocket disconnected");
-				setConnectionStatus('connected');
+				if (event.code === 1000) {
+					setConnectionStatus(null);
+				} else {
+					setConnectionStatus('error');
+					showNotification({
+						type: "error",
+						title: "Conexión perdida",
+						message: "Intente reconectar",
+						timestamp: new Date(),
+					});
+				}
 
 			};
+
 
 		} catch (err) {
 			showNotification({
@@ -264,7 +275,10 @@ export default function SupportChat() {
 
 	const handleExitChat = () => {
 		// Cierra la conexion y limpia los mensajes
-		wsRef.current?.close();
+		if (wsRef.current) {
+			console.log("Cerrando la conexion")
+			wsRef.current.close(1000, "User closed chat");
+		}
 		setMessages([]);
 		wsRef.current = null;
 		setIsOpen(false);
