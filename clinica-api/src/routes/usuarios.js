@@ -1,12 +1,12 @@
-const express = require('express');
-const prisma = require('../config/database');
-const { requireOwnershipOrAdmin } = require('../middleware/auth');
-const { clerkAuth, requireClerkRole } = require('../middleware/clerkAuth');
-const { ROLES } = require('../constants/roles');
-const { validateUsuario, validateId } = require('../middleware/validation');
-const { hashPassword } = require('../utils/password');
+import express from 'express';
+import prisma from '../config/database.js';
+import { requireOwnershipOrAdmin } from '../middleware/auth.js';
+import { clerkAuth, requireClerkRole } from '../middleware/clerkAuth.js';
+import { ROLES } from '../constants/roles.js';
+import { validateUsuario, validateId } from '../middleware/validation.js';
+import { hashPassword } from '../utils/password.js';
 
-const router = Router();
+const router = express.Router();
 
 /**
  * @swagger
