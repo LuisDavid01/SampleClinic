@@ -1,4 +1,4 @@
-const { verifyToken, createClerkClient } = require('@clerk/backend');
+import { verifyToken, createClerkClient } from '@clerk/backend';
 
 /**
  * Separa el apellido completo en apellido1 y apellido2
@@ -249,7 +249,7 @@ const requireClerkRole = (allowedRoles = []) => {
   };
 };
 
-module.exports = {
+export {
   clerkAuth,
   optionalClerkAuth,
   requireClerkRole

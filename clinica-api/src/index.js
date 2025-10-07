@@ -1,23 +1,27 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const config = require('./config/env');
-const prisma = require('./config/database');
-const { specs, swaggerUi } = require('./config/swagger');
-const { authenticateToken } = require('./middleware/auth');
-const { clerkAuth, optionalClerkAuth } = require('./middleware/clerkAuth');
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { json, urlencoded } from 'express';
+import config from './config/env.js';
+import prisma from './config/database.js';
+import { specs, swaggerUi } from './config/swagger.js';
+import { authenticateToken } from './middleware/auth.js';
+import { clerkAuth, optionalClerkAuth } from './middleware/clerkAuth.js';
 
 // Importar rutas
-const authRoutes = require('./routes/auth');
-const usuarioRoutes = require('./routes/usuarios');
-const citaRoutes = require('./routes/citas');
-const servicioRoutes = require('./routes/servicios');
-const perfilRoutes = require('./routes/perfiles');
-const historiaExitoRoutes = require('./routes/historias-exito');
-const clerkProfileRoutes = require('./routes/clerkProfile');
+import authRoutes from './routes/auth.js';
+import usuarioRoutes from './routes/usuarios.js';
+import citaRoutes from './routes/citas.js';
+import servicioRoutes from './routes/servicios.js';
+import perfilRoutes from './routes/perfiles.js';
+import historiaExitoRoutes from './routes/historias-exito.js';
+import clerkProfileRoutes from './routes/clerkProfile.js';
 
 const app = express();
+
+// Extraer variables de configuración
+const { port, nodeEnv, corsOrigin } = config;
 
 // Middleware de seguridad
 app.use(helmet({

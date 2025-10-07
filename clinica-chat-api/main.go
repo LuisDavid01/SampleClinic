@@ -27,13 +27,13 @@ func main() {
 	flag.Parse()
 	err := godotenv.Load()
 	if err != nil {
-		panic(err)
+		console.log(err)
 	}
 	clerk.SetKey(os.Getenv("CLERK_SECRET_KEY"))
 
 	app, err := app.NewApplication()
 	if err != nil {
-		panic(err)
+		console.log(err)
 	}
 
 	r := routes.SetupRoutes(app)

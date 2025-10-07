@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import prisma from '../config/database.js';
 import { authenticateToken, requireRole, requireOwnershipOrAdmin } from '../middleware/auth.js';
+import { clerkAuth, requireClerkRole } from '../middleware/clerkAuth.js';
 import { ROLES, isPaciente, isFisioterapeuta, isAdministrador, canManageAppointments } from '../constants/roles.js';
 import { validateCita, validateId } from '../middleware/validation.js';
 
