@@ -33,7 +33,7 @@ func main() {
 
 	app, err := app.NewApplication()
 	if err != nil {
-		console.log(err)
+		panic(err)
 	}
 
 	r := routes.SetupRoutes(app)
