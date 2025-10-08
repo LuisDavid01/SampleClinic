@@ -1,5 +1,5 @@
-const prisma = require('../config/database');
-const { createClerkClient } = require('@clerk/backend');
+import prisma from '../config/database.js';
+import { createClerkClient } from '@clerk/backend';
 
 /**
  * Separa el apellido completo en apellido1 y apellido2
@@ -297,7 +297,7 @@ async function syncClerkUserMiddleware(req, res, next) {
   }
 }
 
-module.exports = {
+export {
   syncClerkUser,
   determineUserRole,
   getOrCreateClerkUser,
