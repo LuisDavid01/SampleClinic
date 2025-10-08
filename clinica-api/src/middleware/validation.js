@@ -13,7 +13,7 @@ const handleValidationErrors = (req, res, next) => {
 	next();
 };
 
-// Validaciones para usuarios
+// Validaciones para usuarios (crear)
 const validateUsuario = [
 	body('nombre')
 		.notEmpty()
@@ -38,6 +38,7 @@ const validateUsuario = [
 		.normalizeEmail(),
 
 	body('contrasena')
+		.optional()
 		.isLength({ min: 6 })
 		.withMessage('La contraseña debe tener al menos 6 caracteres'),
 
@@ -60,6 +61,68 @@ const validateUsuario = [
 		.optional()
 		.isInt({ min: 1 })
 		.withMessage('El ID del rol debe ser un número entero positivo'),
+
+	handleValidationErrors
+];
+
+// Validaciones para actualizar usuarios (sin contraseña requerida)
+const validateUsuarioUpdate = [
+	body('nombre')
+		.notEmpty()
+		.withMessage('El nombre es requerido')
+		.isLength({ min: 2, max: 100 })
+		.withMessage('El nombre debe tener entre 2 y 100 caracteres'),
+
+	body('apellido1')
+		.notEmpty()
+		.withMessage('El primer apellido es requerido')
+		.isLength({ min: 2, max: 100 })
+		.withMessage('El primer apellido debe tener entre 2 y 100 caracteres'),
+
+	body('apellido2')
+		.optional()
+		.isLength({ max: 100 })
+		.withMessage('El segundo apellido no puede exceder 100 caracteres'),
+
+	body('fechaNacimiento')
+		.optional()
+		.isISO8601()
+		.withMessage('La fecha de nacimiento debe ser válida'),
+
+	body('correoElectronico')
+		.isEmail()
+		.withMessage('Debe proporcionar un correo electrónico válido')
+		.normalizeEmail(),
+
+	body('contrasena')
+		.optional()
+		.isLength({ min: 6 })
+		.withMessage('La contraseña debe tener al menos 6 caracteres'),
+
+	body('telefonoPrincipal')
+		.optional()
+		.isLength({ max: 20 })
+		.withMessage('El teléfono principal no puede exceder 20 caracteres'),
+
+	body('telefonoSecundario')
+		.optional()
+		.isLength({ max: 20 })
+		.withMessage('El teléfono secundario no puede exceder 20 caracteres'),
+
+	body('direccionResidencia')
+		.optional()
+		.isLength({ max: 255 })
+		.withMessage('La dirección no puede exceder 255 caracteres'),
+
+	body('idRol')
+		.optional()
+		.isInt({ min: 1 })
+		.withMessage('El ID del rol debe ser un número entero positivo'),
+
+	body('activo')
+		.optional()
+		.isBoolean()
+		.withMessage('El campo activo debe ser verdadero o falso'),
 
 	handleValidationErrors
 ];
@@ -198,6 +261,7 @@ const validateId = [
 export {
 	handleValidationErrors,
 	validateUsuario,
+	validateUsuarioUpdate,
 	validateCita,
 	validateServicio,
 	validatePerfil,

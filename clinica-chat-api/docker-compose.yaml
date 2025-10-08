@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # Chat API (Go)
+  clinica-chat-api:
+    container_name: clinica-chat-api
+    build: .
+    ports:
+      - "8081:8081"
+    environment:
+      # Clerk Authentication
+      CLERK_SECRET_KEY: "sk_test_REVOKED"
+      CLERK_PUBLISHABLE_KEY: "pk_test_dG91Y2hpbmctbWFsbGFyZC04NC5jbGVyay5hY2NvdW50cy5kZXYk"
+      
+      # Server Configuration
+      PORT: 8081
+      NODE_ENV: "development"
+      GO_ENV: "development"
+      
+      # Chat Configuration
+      CHAT_ROOM_PREFIX: "chat_"
+      MAX_CONNECTIONS_PER_ROOM: 100
+    networks:
+      - chat-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  chat-network:
+    driver: bridge

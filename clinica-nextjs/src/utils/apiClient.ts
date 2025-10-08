@@ -28,7 +28,6 @@ export class ApiClient {
         'Content-Type': 'application/json'
       }
     });
-
     if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
@@ -55,7 +54,15 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        console.error('API Error Details:', errorData);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        console.error('Could not parse error response:', e);
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -80,7 +87,15 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+      let errorMessage = `Error ${response.status}: ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        console.error('API Error Details:', errorData);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (e) {
+        console.error('Could not parse error response:', e);
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -129,7 +144,7 @@ export const apiEndpoints = {
   
   // Clerk
   clerkProfile: () => '/clerk/profile',
-  clerkSync: () => '/clerk/sync',
+  clerkSync: () => '/clerk/profile', // Usar el mismo endpoint que clerkProfile
   
   // Citas
   getCitas: () => '/citas',

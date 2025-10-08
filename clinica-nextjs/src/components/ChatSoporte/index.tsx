@@ -89,7 +89,7 @@ export default function SupportChat() {
 			}).then((data) => {
 				return data.otp;
 			})
-			wsRef.current = new WebSocket(`ws://localhost:8080/ws?otp=` + otp);
+			wsRef.current = new WebSocket(`ws://localhost:8081/ws?otp=` + otp);
 
 			wsRef.current.onerror = (error) => {
 				console.log("WebSocket error:", error);

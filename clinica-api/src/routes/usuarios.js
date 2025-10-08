@@ -3,7 +3,7 @@ import prisma from '../config/database.js';
 import { requireOwnershipOrAdmin } from '../middleware/auth.js';
 import { clerkAuth, requireClerkRole } from '../middleware/clerkAuth.js';
 import { ROLES } from '../constants/roles.js';
-import { validateUsuario, validateId } from '../middleware/validation.js';
+import { validateUsuario, validateUsuarioUpdate, validateId } from '../middleware/validation.js';
 import { hashPassword } from '../utils/password.js';
 
 const router = express.Router();
@@ -80,10 +80,12 @@ const router = express.Router();
  */
 
 // GET /api/usuarios - Obtener todos los usuarios (solo admin)
-router.get('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), async (req, res) => {
+router.get('/', clerkAuth, requireClerkRole(['admin']), async (req, res) => {
   try {
     const { page = 1, limit = 10, search, rol, activo } = req.query;
     const skip = (page - 1) * limit;
+    
+    console.log('🔍 Parámetros de consulta:', { page, limit, search, rol, activo });
 
     // Construir filtros
     const where = {};
@@ -98,12 +100,26 @@ router.get('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), async (req, 
     }
 
     if (rol) {
-      where.rol = { nombreRol: rol };
+      // Si el rol es "paciente", buscar por ID 4 (PACIENTE)
+      if (rol === 'paciente') {
+        where.idRol = 4; // ROLES.PACIENTE
+      } else if (rol === 'admin') {
+        where.idRol = 1; // ROLES.ADMINISTRADOR
+      } else if (rol === 'fisioterapeuta') {
+        where.idRol = 2; // ROLES.FISIOTERAPEUTA
+      } else if (rol === 'recepcionista') {
+        where.idRol = 3; // ROLES.RECEPCIONISTA
+      } else {
+        // Fallback: buscar por nombre de rol
+        where.rol = { nombreRol: rol };
+      }
     }
 
     if (activo !== undefined) {
       where.activo = activo === 'true';
     }
+
+    console.log('🔍 Filtros aplicados:', where);
 
     const [usuarios, total] = await Promise.all([
       prisma.usuario.findMany({
@@ -119,8 +135,13 @@ router.get('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), async (req, 
     // Remover contraseñas de la respuesta
     const usuariosSinContrasena = usuarios.map(({ contrasena, ...usuario }) => usuario);
 
+    console.log('✅ Usuarios encontrados:', usuariosSinContrasena.length, 'de', total, 'total');
+
     res.json({
       usuarios: usuariosSinContrasena,
+      total,
+      pagina: parseInt(page),
+      totalPaginas: Math.ceil(total / limit),
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -134,6 +155,208 @@ router.get('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), async (req, 
     res.status(500).json({
       error: 'Error interno del servidor',
       message: 'No se pudieron obtener los usuarios'
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /usuarios:
+ *   post:
+ *     summary: Crear nuevo usuario
+ *     description: Crea un nuevo usuario en el sistema. Solo los administradores pueden crear usuarios.
+ *     tags: [Usuarios]
+ *     security:
+ *       - clerkAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *               - apellido1
+ *               - correoElectronico
+ *               - contrasena
+ *               - idRol
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *                 maxLength: 100
+ *                 description: Nombre del usuario
+ *                 example: "Juan"
+ *               apellido1:
+ *                 type: string
+ *                 maxLength: 100
+ *                 description: Primer apellido
+ *                 example: "Pérez"
+ *               apellido2:
+ *                 type: string
+ *                 maxLength: 100
+ *                 description: Segundo apellido
+ *                 example: "García"
+ *               fechaNacimiento:
+ *                 type: string
+ *                 format: date
+ *                 description: Fecha de nacimiento
+ *                 example: "1990-01-01"
+ *               telefonoPrincipal:
+ *                 type: string
+ *                 maxLength: 20
+ *                 description: Teléfono principal
+ *                 example: "+506 8888-8888"
+ *               telefonoSecundario:
+ *                 type: string
+ *                 maxLength: 20
+ *                 description: Teléfono secundario
+ *                 example: "+506 8888-8889"
+ *               correoElectronico:
+ *                 type: string
+ *                 maxLength: 150
+ *                 format: email
+ *                 description: Correo electrónico
+ *                 example: "juan.perez@email.com"
+ *               contrasena:
+ *                 type: string
+ *                 minLength: 6
+ *                 description: Contraseña del usuario
+ *                 example: "password123"
+ *               direccionResidencia:
+ *                 type: string
+ *                 maxLength: 255
+ *                 description: Dirección de residencia
+ *                 example: "San José, Costa Rica"
+ *               idRol:
+ *                 type: integer
+ *                 description: ID del rol del usuario
+ *                 example: 3
+ *               activo:
+ *                 type: boolean
+ *                 description: Estado del usuario
+ *                 example: true
+ *     responses:
+ *       201:
+ *         description: Usuario creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Usuario creado exitosamente"
+ *                 usuario:
+ *                   $ref: '#/components/schemas/Usuario'
+ *       400:
+ *         description: Datos de entrada inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Acceso denegado - solo administradores
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Conflicto - correo electrónico ya existe
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+// POST /api/usuarios - Crear nuevo usuario (solo admin)
+router.post('/', clerkAuth, requireClerkRole(['admin']), validateUsuario, async (req, res) => {
+  try {
+    const {
+      nombre,
+      apellido1,
+      apellido2,
+      fechaNacimiento,
+      telefonoPrincipal,
+      telefonoSecundario,
+      correoElectronico,
+      contrasena,
+      direccionResidencia,
+      idRol,
+      activo = true
+    } = req.body;
+
+    // Verificar que el rol existe
+    if (idRol) {
+      const rol = await prisma.rol.findUnique({
+        where: { idRol: parseInt(idRol) }
+      });
+
+      if (!rol) {
+        return res.status(400).json({
+          error: 'Rol inválido',
+          message: 'El rol especificado no existe'
+        });
+      }
+    }
+
+    // Preparar datos para crear usuario
+    const usuarioData = {
+      nombre,
+      apellido1,
+      apellido2,
+      fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+      telefonoPrincipal,
+      telefonoSecundario,
+      correoElectronico,
+      direccionResidencia,
+      idRol: idRol ? parseInt(idRol) : null,
+      activo
+    };
+
+    // Hashear la contraseña - si no se proporciona, usar valor por defecto
+    if (contrasena) {
+      usuarioData.contrasena = await hashPassword(contrasena);
+    } else {
+      // Para usuarios creados desde el portal sin contraseña
+      usuarioData.contrasena = await hashPassword("Portal_Created");
+    }
+
+    const usuario = await prisma.usuario.create({
+      data: usuarioData,
+      include: { rol: true }
+    });
+
+    // Remover contraseña de la respuesta
+    const { contrasena: _, ...usuarioSinContrasena } = usuario;
+
+    res.status(201).json({
+      message: 'Usuario creado exitosamente',
+      usuario: usuarioSinContrasena
+    });
+
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({
+        error: 'Conflicto de datos',
+        message: 'Ya existe un usuario con este correo electrónico'
+      });
+    }
+
+    console.error('Error al crear usuario:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo crear el usuario'
     });
   }
 });
@@ -327,10 +550,21 @@ router.get('/:id', clerkAuth, requireOwnershipOrAdmin, validateId, async (req, r
  *               $ref: '#/components/schemas/Error'
  */
 // PUT /api/usuarios/:id - Actualizar usuario
-router.put('/:id', clerkAuth, requireOwnershipOrAdmin, validateId, validateUsuario, async (req, res) => {
+router.put('/:id', clerkAuth, requireClerkRole(['admin']), validateId, validateUsuarioUpdate, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
+    
+    console.log('🔍 Actualizando usuario:', { id, updateData });
+    console.log('🔍 Usuario autenticado:', req.user?.id, req.user?.email);
+    console.log('🔍 Roles del usuario:', req.user?.metadata?.role, req.user?.metadata?.roles);
+    console.log('🔍 Datos recibidos del body:', req.body);
+    console.log('🔍 Campos específicos:', {
+      nombre: updateData.nombre,
+      apellido1: updateData.apellido1,
+      correoElectronico: updateData.correoElectronico,
+      activo: updateData.activo
+    });
 
     // Si se está actualizando la contraseña, hashearla
     if (updateData.contrasena) {
@@ -343,6 +577,8 @@ router.put('/:id', clerkAuth, requireOwnershipOrAdmin, validateId, validateUsuar
       include: { rol: true }
     });
 
+    console.log('✅ Usuario actualizado exitosamente:', usuario.idUsuario);
+
     // Remover contraseña de la respuesta
     const { contrasena, ...usuarioSinContrasena } = usuario;
 
@@ -352,6 +588,11 @@ router.put('/:id', clerkAuth, requireOwnershipOrAdmin, validateId, validateUsuar
     });
 
   } catch (error) {
+    console.error('❌ Error al actualizar usuario:', error);
+    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error code:', error.code);
+    console.error('❌ Error meta:', error.meta);
+    
     if (error.code === 'P2002') {
       return res.status(409).json({
         error: 'Conflicto de datos',
@@ -359,10 +600,11 @@ router.put('/:id', clerkAuth, requireOwnershipOrAdmin, validateId, validateUsuar
       });
     }
 
-    console.error('Error al actualizar usuario:', error);
     res.status(500).json({
       error: 'Error interno del servidor',
-      message: 'No se pudo actualizar el usuario'
+      message: 'No se pudo actualizar el usuario',
+      details: error.message,
+      code: error.code
     });
   }
 });
@@ -423,7 +665,7 @@ router.put('/:id', clerkAuth, requireOwnershipOrAdmin, validateId, validateUsuar
  *               $ref: '#/components/schemas/Error'
  */
 // DELETE /api/usuarios/:id - Desactivar usuario (soft delete)
-router.delete('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.delete('/:id', clerkAuth, requireClerkRole(['admin']), validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
