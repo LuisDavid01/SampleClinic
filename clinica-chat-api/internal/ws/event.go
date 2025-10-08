@@ -18,14 +18,20 @@ const (
 	EventChangeRoom  = "change_chatroom"
 	EventGetRooms    = "get_chatrooms"
 	EventGetHistory  = "get_history"
+	EventError       = "error_message"
 )
 
 type RoomEvent struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	LastMessage string `json:"last_message"`
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	LastMessage   string    `json:"lastMessage"`
+	LastMessageAt time.Time `json:"sent"`
 }
 
+type ErrorMessageEvent struct {
+	ErrorMessage string    `json:"error"`
+	Sent         time.Time `json:"sent"`
+}
 type SendMessageEvent struct {
 	Message string `json:"message"`
 	From    string `json:"from"`

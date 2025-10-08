@@ -24,8 +24,11 @@ export class chatRoomEvent {
 
 export class chatEvent {
 	type: string;
-	payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | GetHistoryEvent | string;
-	constructor(type: string, payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | GetHistoryEvent | string) {
+	payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | GetHistoryEvent | errorMessageEvent |
+		GetChatRoomsEvent | string;
+	constructor(type: string, payload: SendMessageEvent |
+		NewMessageEvent | chatRoomEvent | GetHistoryEvent |
+		errorMessageEvent | GetChatRoomsEvent | string) {
 		this.type = type;
 		this.payload = payload;
 	}
@@ -63,12 +66,18 @@ export type GetHistoryEvent = {
 
 }
 
-type chatroom = {
+export type rooms = {
 	id: string;
 	name: string;
 	lastMessage: string;
+	sent: Date;
 }
 
 export type GetChatRoomsEvent = {
-	rooms: chatroom[];
+	rooms: rooms[];
+}
+
+export type errorMessageEvent = {
+	error: string;
+	sent: Date;
 }

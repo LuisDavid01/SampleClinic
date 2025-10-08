@@ -107,10 +107,10 @@ func (c *Client) Write() {
 				return
 			}
 
-			log.Println("Message sent")
+			//log.Println("Message sent")
 
 		case <-ticker.C:
-			log.Println("ping")
+			//log.Println("ping")
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				log.Printf("Error sending ping message: %v", err)
 				return
@@ -121,6 +121,6 @@ func (c *Client) Write() {
 }
 
 func (c *Client) pongHandler(pongMsg string) error {
-	log.Println("pong")
+	//log.Println("pong")
 	return c.Conn.SetReadDeadline(time.Now().Add(pongWait))
 }

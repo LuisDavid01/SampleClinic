@@ -12,7 +12,7 @@ import { MessageCircle, LogOut, Send, Clock, X, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
-import { chatEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
+import { chatEvent, errorMessageEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
 import { useAuth } from "@clerk/nextjs";
 import { useNotification } from "../UseNotification";
 
@@ -173,6 +173,18 @@ export default function FloatingChat() {
 				break;
 			case "change_chatroom":
 				console.log("change chatroom");
+				break;
+			case "error_message":
+				console.log("Error message");
+				const errorPayload = event.payload as errorMessageEvent;
+				showNotification({
+					type: "error",
+					title: "Error",
+					message: errorPayload.error,
+					timestamp: new Date(errorPayload.sent),
+				})
+
+				break;
 			default:
 				alert("unsupported event type");
 				break;

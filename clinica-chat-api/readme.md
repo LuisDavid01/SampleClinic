@@ -38,5 +38,6 @@ Microservicio  encargado de manejar alta carga de conexiones de forma eficiente 
 - [x] Persistir los  mensajes en memoria
 - [x] Persistir chats en memoria
 - [x] Enviar notificaciones en tiempo real
+- [x] Enviar errores al cliente
 - [ ] enviar  chats activos  y actualizarlos
 - [ ] Encuestas de satisfaccion
