@@ -129,14 +129,33 @@ CREATE TABLE auditoria (
 );
 
 -- 14. Tabla Expedientes_Medicos
-CREATE TABLE expedientes_medicos (
+CREATE TABLE expediente (
     id_expediente SERIAL PRIMARY KEY,
     id_paciente INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
+    cedula VARCHAR(50) NOT NULL,
+    estado VARCHAR(50) NOT NULL,
     id_medico INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE SET NULL,
-    diagnostico TEXT,
-    tratamiento TEXT,
-    observaciones TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    descripcion TEXT
+	fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 15. Tabla Documentos
+CREATE TABLE documentos (
+    id_documento SERIAL PRIMARY KEY,
+    url VARCHAR(255) NOT NULL,
+    tipo_documento VARCHAR(50) CHECK (tipo_documento IN ('expediente', 'consentimiento')),
+	fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id_expediente INT REFERENCES expediente(id_expediente) ON UPDATE CASCADE ON DELETE SET NULL
+);
+
+-- 16. Tabla Diagnostico
+CREATE TABLE diagnostico (
+    id_diagnostico SERIAL PRIMARY KEY,
+    id_paciente INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
+    fecha DATE DEFAULT CURRENT_DATE,
+    id_doctor INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE SET NULL,
+    diagnostico TEXT NOT NULL,
+    id_expediente INT REFERENCES expediente(id_expediente) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 -- INSERTAR DATOS INICIALES
