@@ -237,3 +237,43 @@ model ExpedienteMedico {
   @@map("expedientes_medicos")
 }
 
+model Encuesta {
+  idEncuesta       Int       @id @default(autoincrement()) @map("id_encuesta")
+  calificacion     Int
+  idRecepcionista  Int?      @map("id_recepcionista")
+  comentario       String?   @db.Text
+  fechaRegistro    DateTime  @default(now()) @map("fecha_registro")
+
+  // Relaciones
+  recepcionista    Usuario?  @relation(fields: [idRecepcionista], references: [idUsuario], onDelete: SetNull)
+
+  @@map("encuestas")
+}
+
+model Auditoria {
+  idLog            Int       @id @default(autoincrement()) @map("id_log")
+  nombreAccion     String    @map("nombre_accion")
+  idUsuario        Int?      @map("id_usuario")
+  fechaEjecucion   DateTime  @default(now()) @map("fecha_ejecucion")
+
+  // Relaciones
+  usuario          Usuario?  @relation(fields: [idUsuario], references: [idUsuario], onDelete: SetNull)
+
+  @@map("auditoria")
+}
+
+model ExpedienteMedico {
+  idExpediente     Int       @id @default(autoincrement()) @map("id_expediente")
+  idPaciente       Int       @map("id_paciente")
+  idMedico         Int?      @map("id_medico")
+  diagnostico      String?   @db.Text
+  tratamiento      String?   @db.Text
+  observaciones    String?   @db.Text
+  fechaCreacion    DateTime  @default(now()) @map("fecha_creacion")
+
+  // Relaciones
+  paciente         Usuario   @relation("ExpedientePaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
+  medico           Usuario?  @relation("ExpedienteMedico", fields: [idMedico], references: [idUsuario], onDelete: SetNull)
+
+  @@map("expedientes_medicos")
+}

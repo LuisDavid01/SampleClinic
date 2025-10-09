@@ -111,6 +111,34 @@ CREATE TABLE IF NOT EXISTS historias_exito (
     fecha_publicacion DATE
 );
 
+-- 12. Tabla Encuestas
+CREATE TABLE encuestas (
+    id_encuesta SERIAL PRIMARY KEY,
+    calificacion INT CHECK (calificacion BETWEEN 1 AND 5),
+    id_recepcionista INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE SET NULL,
+    comentario TEXT,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 13. Tabla Auditoria
+CREATE TABLE auditoria (
+    id_log SERIAL PRIMARY KEY,
+    nombre_accion VARCHAR(255) NOT NULL,
+    id_usuario INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE SET NULL,
+    fecha_ejecucion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 14. Tabla Expedientes_Medicos
+CREATE TABLE expedientes_medicos (
+    id_expediente SERIAL PRIMARY KEY,
+    id_paciente INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
+    id_medico INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE SET NULL,
+    diagnostico TEXT,
+    tratamiento TEXT,
+    observaciones TEXT,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- INSERTAR DATOS INICIALES
 
 -- Insertar roles básicos
