@@ -1,8 +1,8 @@
 # Usar Node.js 18 como imagen base con Debian para mejor compatibilidad con Prisma
 FROM node:18-slim
 
-# Instalar dependencias del sistema necesarias para Prisma
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+# Instalar dependencias del sistema necesarias para Prisma y healthcheck
+RUN apt-get update && apt-get install -y openssl wget && rm -rf /var/lib/apt/lists/*
 
 # Establecer directorio de trabajo
 WORKDIR /app

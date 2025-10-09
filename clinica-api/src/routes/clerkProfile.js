@@ -1,6 +1,7 @@
-const express = require('express');
-const prisma = require('../config/database');
-const { clerkAuth } = require('../middleware/clerkAuth');
+import express from 'express';
+import prisma from '../config/database.js';
+import { clerkAuth } from '../middleware/clerkAuth.js';
+import { syncClerkUserMiddleware } from '../utils/clerkSync.js';
 
 const router = express.Router();
 
@@ -110,4 +111,4 @@ router.get('/profile', clerkAuth, syncClerkUserMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

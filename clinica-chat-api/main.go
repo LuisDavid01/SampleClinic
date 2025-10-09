@@ -27,7 +27,7 @@ func main() {
 	flag.Parse()
 	err := godotenv.Load()
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 	clerk.SetKey(os.Getenv("CLERK_SECRET_KEY"))
 
