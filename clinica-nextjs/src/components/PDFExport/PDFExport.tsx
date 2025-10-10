@@ -3,72 +3,72 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, FileText, Loader2 } from "lucide-react";
-import { Diagnostico } from "@/types/paciente";
+import { Diagnostico } from "@/types/PacienteTypes";
 
 interface PDFExportProps {
-  diagnostico: Diagnostico;
-  pacienteNombre: string;
-  className?: string;
+	diagnostico: Diagnostico;
+	pacienteNombre: string;
+	className?: string;
 }
 
 export function PDFExport({ diagnostico, pacienteNombre, className }: PDFExportProps) {
-  const [isExporting, setIsExporting] = useState(false);
+	const [isExporting, setIsExporting] = useState(false);
 
-  const handleExportPDF = async () => {
-    setIsExporting(true);
-    
-    try {
-      // Aquí se implementaría la lógica real de exportación a PDF
-      // Por ahora simulamos un delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // En producción, esto generaría y descargaría el PDF
-      console.log('Exportando diagnóstico a PDF:', diagnostico.id);
-      
-      // Simular descarga
-      const link = document.createElement('a');
-      link.href = '#';
-      link.download = `diagnostico-${diagnostico.id}-${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-    } catch (error) {
-      console.error('Error al exportar PDF:', error);
-    } finally {
-      setIsExporting(false);
-    }
-  };
+	const handleExportPDF = async () => {
+		setIsExporting(true);
 
-  return (
-    <Button
-      onClick={handleExportPDF}
-      disabled={isExporting}
-      className={className}
-      variant="outline"
-      size="sm"
-    >
-      {isExporting ? (
-        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-      ) : (
-        <Download className="w-4 h-4 mr-2" />
-      )}
-      {isExporting ? 'Generando PDF...' : 'Exportar PDF'}
-    </Button>
-  );
+		try {
+			// Aquí se implementaría la lógica real de exportación a PDF
+			// Por ahora simulamos un delay
+			await new Promise(resolve => setTimeout(resolve, 2000));
+
+			// En producción, esto generaría y descargaría el PDF
+			console.log('Exportando diagnóstico a PDF:', diagnostico.id);
+
+			// Simular descarga
+			const link = document.createElement('a');
+			link.href = '#';
+			link.download = `diagnostico-${diagnostico.id}-${new Date().toISOString().split('T')[0]}.pdf`;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+
+		} catch (error) {
+			console.error('Error al exportar PDF:', error);
+		} finally {
+			setIsExporting(false);
+		}
+	};
+
+	return (
+		<Button
+			onClick={handleExportPDF}
+			disabled={isExporting}
+			className={className}
+			variant="outline"
+			size="sm"
+		>
+			{isExporting ? (
+				<Loader2 className="w-4 h-4 mr-2 animate-spin" />
+			) : (
+				<Download className="w-4 h-4 mr-2" />
+			)}
+			{isExporting ? 'Generando PDF...' : 'Exportar PDF'}
+		</Button>
+	);
 }
 
 // Componente para generar el contenido del PDF
 export function generatePDFContent(diagnostico: Diagnostico, pacienteNombre: string) {
-  const formatFecha = (fecha: Date) => {
-    return new Intl.DateTimeFormat('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(fecha);
-  };
+	const formatFecha = (fecha: Date) => {
+		return new Intl.DateTimeFormat('es-ES', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		}).format(fecha);
+	};
 
-  return `
+	return `
     <!DOCTYPE html>
     <html>
     <head>
