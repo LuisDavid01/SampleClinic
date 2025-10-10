@@ -11,14 +11,12 @@ export const HomeHero = () => {
 				className="absolute top-0 left-0 w-full h-full object-cover object-[35%_75%]  md:object-cover  z-0"
 			>
 				<source
-					src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/output.mp4"
-					type="video/mp4"
+					src="/output.webm"
+					type="video/webm"
 				/>
+				video not supported
 			</video>
-
-
-			<div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-black/40 via-black/20 to-black/40 z-10"></div>
-
+			<div className="absolute inset-0 bg-black/45 z-5" aria-label="fondo-negro-frente-al-video" />
 			<div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 					<div className="text-center lg:text-left ">
