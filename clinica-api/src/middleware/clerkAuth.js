@@ -233,10 +233,33 @@ const requireClerkRole = (allowedRoles = []) => {
       });
     }
 
+    // Obtener roles del usuario (puede estar en roles array o role string)
     const userRoles = req.user.metadata?.roles || [];
+    const userRole = req.user.metadata?.role;
+    
+    // Si hay un rol individual, agregarlo a la lista
+    if (userRole && !userRoles.includes(userRole)) {
+      userRoles.push(userRole);
+    }
+    
+    console.log('🔍 Verificando roles:', {
+      userRoles,
+      userRole,
+      allowedRoles,
+      metadata: req.user.metadata,
+      userId: req.user.id,
+      userEmail: req.user.email
+    });
+    
     const hasRequiredRole = allowedRoles.some(role => userRoles.includes(role));
 
     if (!hasRequiredRole && allowedRoles.length > 0) {
+      console.log('❌ Acceso denegado:', {
+        requiredRoles: allowedRoles,
+        userRoles: userRoles,
+        userRole: userRole
+      });
+      
       return res.status(403).json({
         error: 'Acceso denegado',
         message: 'No tiene permisos suficientes para acceder a este recurso',
@@ -245,6 +268,7 @@ const requireClerkRole = (allowedRoles = []) => {
       });
     }
 
+    console.log('✅ Acceso permitido para roles:', userRoles);
     next();
   };
 };

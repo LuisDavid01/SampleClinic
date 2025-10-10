@@ -15,10 +15,11 @@ module.exports = {
 		return [
 			{
 				source: '/api/chat/:path*',
-				destination: 'http://localhost:8080/api/:path*',
+				destination: 'http://chat-clinica-api.stackkub.com/api/:path*',
 			},
 			{
 				source: '/api/:path*',
+				//destination: 'https://clinica-api.stackkub.com:3001/:path*',
 				destination: 'http://localhost:3001/:path*',
 			},
 

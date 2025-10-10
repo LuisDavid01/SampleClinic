@@ -50,36 +50,22 @@ export default function PacientesPage() {
         try {
           // Obtener el token de Clerk
           const token = await getToken();
-          console.log("=".repeat(60));
-          console.log("🔑 TOKEN DE CLERK OBTENIDO");
-          console.log("=".repeat(60));
-          console.log("📋 Para usar en Swagger:", `Bearer ${token}`);
-          console.log("🌐 URL del API:", "http://localhost:3001/api-docs");
-          console.log("=".repeat(60));
           
           if (token && token.split('.').length === 3) {
             console.log("🧪 Validando y sincronizando usuario...");
             
             try {
               // Sincronizar usuario con la base de datos
-              const syncResult = await apiClient.post(apiEndpoints.clerkSync(), {});
+              const syncResult = await apiClient.get(apiEndpoints.clerkProfile());
               console.log("✅ Usuario sincronizado exitosamente:", syncResult);
               
-              if (syncResult.user) {
+              if (syncResult.dbUser) {
                 setUserValidation({
                   status: 'validated',
                   message: 'Usuario validado y sincronizado correctamente',
-                  userData: syncResult.user
+                  userData: syncResult.dbUser
                 });
                 
-                console.log("📋 Información del usuario en la base de datos:");
-                console.log("  - ID:", syncResult.user.idUsuario);
-                console.log("  - Nombre:", syncResult.user.nombre);
-                console.log("  - Apellido1:", syncResult.user.apellido1);
-                console.log("  - Apellido2:", syncResult.user.apellido2);
-                console.log("  - Email:", syncResult.user.correoElectronico);
-                console.log("  - Clerk ID:", syncResult.user.clerkId);
-                console.log("  - Rol:", syncResult.user.rol?.nombreRol);
               }
 
               // Consultar historias de éxito

@@ -10,7 +10,8 @@ import {
   Folder,
   CalendarDays,
   Shield,
-  Users
+  Users,
+  UserPlus
 } from "lucide-react";
 import Link from "next/link";
 import { checkRole } from "@/utils/roles";
@@ -65,6 +66,17 @@ export default async function dasboardLayout({
               <Link href={"/admin/ManageUsers"}>
                 <User className="w-4 h-4 mr-3" />
                 <span>Gestionar usuarios</span>
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
+              <Link href={"/admin/pacientes"}>
+                <UserPlus className="w-4 h-4 mr-3" />
+                <span>Pacientes</span>
               </Link>
             </Button>
 
