@@ -1,5 +1,5 @@
 'use client'
-import { useActionState } from 'react'
+import { useActionState, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import {
@@ -13,6 +13,10 @@ import {
 } from '@/components/ui/Form'
 import { ISSUE_STATUS, Expediente } from '@/types/Expediente'
 import { createExpediente, updateExpediente } from '@/actions/expedientes'
+import { useQuery } from '@tanstack/react-query'
+import { apiEndpoints, useApiClient } from '@/utils/apiClient'
+import { AdminPaciente } from '@/types/AdminPaciente'
+
 
 const doctors = [
 	{ label: 'Guillermo', value: 'guillermo' },
@@ -35,6 +39,25 @@ export default function ExpedienteForm({
 	expediente,
 	isEditing = false,
 }: ExpedienteFormProps) {
+	const apiClient = useApiClient();
+
+	const { isLoading, data: patients = [] } = useQuery<AdminPaciente[]>({
+		queryKey: ['pacients-file'],
+		queryFn: async () => {
+			const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=paciente`)
+			console.log(res)
+			return res.usuarios;
+		},
+		staleTime: 5 * 60 * 1000,
+
+	})
+	const patientOptions = useMemo(() => {
+		if (!patients) return [];
+		return patients.map((p) => ({
+			label: `${p.nombre} ${p.apellido1}`, // ajustá según tus campos reales
+			value: String(p.idUsuario),
+		}));
+	}, [patients]);
 
 	const router = useRouter()
 
@@ -47,7 +70,7 @@ export default function ExpedienteForm({
 		const data = {
 			descripcion: formData.get('descripcion') as string,
 			estado: formData.get('status') as 'activo' | 'inactivo',
-			idPaciente: formData.get('idPaciente') as string,
+			idPaciente: Number(formData.get("idPaciente")),
 			cedula: formData.get('cedula') as string,
 			idDoctor: formData.get('idDoctor') as string
 		}
@@ -98,17 +121,15 @@ export default function ExpedienteForm({
 
 			<FormGroup>
 				<FormLabel htmlFor="idPaciente">Nombre del paciente</FormLabel>
-				<FormInput
+				<FormSelect
 					id="idPaciente"
 					name="idPaciente"
-					placeholder="Paciente"
+					options={patientOptions}
 					defaultValue={expediente?.idPaciente || ''}
 					required
-					minLength={3}
-					maxLength={100}
-					disabled={isPending}
 					aria-describedby="title-error"
 					className={state?.errors?.title ? 'border-red-500' : ''}
+					disabled={isLoading}
 				/>
 				{state?.errors?.title && (
 					<p id="title-error" className="text-sm text-red-500">

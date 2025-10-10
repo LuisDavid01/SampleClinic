@@ -4,12 +4,13 @@ import { auth } from '@clerk/nextjs/server'
 
 const ExpedienteSchema = z.object({
 	idPaciente: z
-		.string(),
+		.string()
+		.transform((val) => parseInt(val, 10))
+		.refine((val) => !isNaN(val), "Debe ser un número válido"),
 
-	cedula: z.string().min(1, 'Se requiere la cedula')
-		.max(9, 'La cedula no puede tener mas de 9 caracteres')
-		.regex(/^\d-\d{4}-\d{4}$/, 'El formato de la cedula incorrecto'),
-
+	cedula: z
+		.string()
+		.regex(/^\d{9}$/, 'La cédula debe tener exactamente 9 dígitos y sin guiones'),
 	descripcion: z.string().optional().nullable(),
 
 	idDoctor: z.string(),

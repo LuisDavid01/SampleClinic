@@ -7,7 +7,11 @@ import "./globals.css";
 import ChatSelect from "@/components/ChatSelect";
 import { ClerkErrorBoundary } from "@/components/ClerkErrorBoundary";
 import { NotificationProvider } from "@/components/NotificationProvider";
-
+import {
+	QueryClient,
+	QueryClientProvider,
+} from '@tanstack/react-query'
+import { ClientProviders } from "@/components/ClientProviders";
 const inter = Inter({
 	subsets: ["latin"],
 	variable: "--font-inter-sans",
@@ -51,19 +55,7 @@ export default async function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<ClerkProvider
-			appearance={{
-				variables: {
-					colorPrimary: "var(--primary)",
-					colorBackground: "var(--background)",
-					colorInputBackground: "var(--input)",
-					colorNeutral: "var(--foreground)",
-					colorShimmer: "var(--accent)",
-					colorText: "var(--text-foreground)",
-				},
-			}}
-			localization={esES}
-		>
+		<ClientProviders>
 			<html lang="en" className="hide-scroll" suppressHydrationWarning>
 				<head>
 					<script
@@ -91,6 +83,6 @@ export default async function RootLayout({
 					</ClerkErrorBoundary>
 				</body>
 			</html>
-		</ClerkProvider>
+		</ClientProviders>
 	);
 }
