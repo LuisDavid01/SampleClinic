@@ -132,7 +132,7 @@ CREATE TABLE auditoria (
 CREATE TABLE expediente (
     id_expediente SERIAL PRIMARY KEY,
     id_paciente INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
-    cedula VARCHAR(50) NOT NULL,
+    cedula VARCHAR(50) UNIQUE NOT NULL,
     estado VARCHAR(50) NOT NULL,
     id_medico INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE SET NULL,
     descripcion TEXT
