@@ -14,13 +14,13 @@ module.exports = {
 	async rewrites() {
 		return [
 			{
-				source: '/api/chat/:path*',
-				destination: 'http://chat-clinica-api.stackkub.com/api/:path*',
+				source: '/chat/:path*',
+				destination: `${process.env.NEXT_PUBLIC_CHAT_API_BASE_URL}/:path*`,
 			},
 			{
 				source: '/api/:path*',
-				//destination: 'https://clinica-api.stackkub.com:3001/:path*',
-				destination: 'http://localhost:3001/:path*',
+				destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/:path*`,
+				//destination: 'http://localhost:3001/:path*',
 			},
 
 		];

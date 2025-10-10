@@ -59,6 +59,7 @@ export default async function RootLayout({
 					colorInputBackground: "var(--input)",
 					colorNeutral: "var(--foreground)",
 					colorShimmer: "var(--accent)",
+					colorText: "var(--text-foreground)",
 				},
 			}}
 			localization={esES}

@@ -24,6 +24,8 @@ func checkOrigin(r *http.Request) bool {
 	switch origin {
 	case "http://localhost:3000":
 		return true
+	case "https://fisioterapeuta-ep.vercel.app":
+		return true
 	default:
 		return false
 	}

@@ -160,7 +160,7 @@
 
 	/* Accent más vibrante en modo oscuro */
 	--accent: oklch(0.72 0.18 35);
-	--accent-foreground: oklch(0.15 0.02 180);
+	--accent-foreground: oklch(0.95 0.01 75);
 
 	/* Warning adaptado */
 	--warning: oklch(0.80 0.15 85);

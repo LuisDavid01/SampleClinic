@@ -69,7 +69,7 @@ export default function SupportChat() {
 
 			const token = await getToken();
 
-			const otp = await fetch('/api/chat/otp', {
+			const otp = await fetch('/chat/otp', {
 				headers: {
 					"Authorization": `Bearer ${token}`,
 					"Content-Type": "application/json",
