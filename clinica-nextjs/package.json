@@ -27,6 +27,7 @@
 		"@radix-ui/react-slot": "^1.2.3",
 		"@radix-ui/react-switch": "^1.2.6",
 		"@radix-ui/react-tabs": "^1.1.13",
+		"@tanstack/react-query": "^5.90.2",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"cmdk": "^1.1.1",
@@ -40,11 +41,13 @@
 		"react-dom": "^19.1.1",
 		"react-dropzone": "^14.3.8",
 		"recharts": "^3.2.0",
-		"tailwind-merge": "^3.3.1"
+		"tailwind-merge": "^3.3.1",
+		"zod": "^4.1.12"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.3.1",
 		"@tailwindcss/postcss": "^4.1.13",
+		"@tanstack/eslint-plugin-query": "^5.91.0",
 		"@types/node": "^20.19.14",
 		"@types/react": "^19.1.13",
 		"@types/react-dom": "^19.1.9",

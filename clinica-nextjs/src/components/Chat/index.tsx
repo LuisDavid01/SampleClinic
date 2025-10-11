@@ -55,7 +55,7 @@ export default function FloatingChat() {
 		try {
 
 			const token = await getToken();
-			const otp = await fetch('/api/chat/otp', {
+			const otp = await fetch('/chat/otp', {
 				headers: {
 					"Authorization": `Bearer ${token}`,
 					"Content-Type": "application/json",
@@ -75,7 +75,7 @@ export default function FloatingChat() {
 			}).then((data) => {
 				return data.otp;
 			})
-			wsRef.current = new WebSocket(`ws://localhost:8081/ws?otp=` + otp);
+			wsRef.current = new WebSocket(`ws://localhost:8080/ws?otp=` + otp);
 
 			wsRef.current.onerror = (error) => {
 				console.log("WebSocket error:", error);

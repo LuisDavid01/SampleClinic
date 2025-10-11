@@ -112,7 +112,7 @@ export const AcercaDeSection = () => {
 
 
 								<Image
-									src="https://pub-ea02a55403d04609aeb9b3b618e1c834.r2.dev/acerca-de.webp"
+									src="/acerca-de.webp"
 									priority={true}
 									width={600}
 									height={600}
