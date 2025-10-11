@@ -19,7 +19,7 @@ COPY . .
 # Generar el cliente de Prisma
 RUN npx prisma generate
 
-Hacer ejecutables los scripts
+# Hacer ejecutables los scripts
 RUN chmod +x scripts/start.sh scripts/init-prisma.sh
 
 # Instalar postgresql-client para pg_isready
