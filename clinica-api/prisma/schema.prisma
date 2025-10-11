@@ -43,6 +43,12 @@ model Usuario {
   historiasExitoComoMedico   HistoriaExito[] @relation("HistoriaMedico")
   historiasExitoComoPaciente HistoriaExito[] @relation("HistoriaPaciente")
   sesiones            Sesion[]
+  encuestas           Encuesta[]
+  auditorias          Auditoria[]
+  expedientesComoPaciente Expediente[] @relation("ExpedientePaciente")
+  expedientesComoMedico    Expediente[] @relation("ExpedienteMedico")
+  diagnosticosComoPaciente Diagnostico[] @relation("DiagnosticoPaciente")
+  diagnosticosComoDoctor   Diagnostico[] @relation("DiagnosticoDoctor")
 
   @@map("usuarios")
 }
@@ -194,48 +200,6 @@ model Sesion {
   @@map("sesiones")
 }
 
-model Encuesta {
-  idEncuesta       Int       @id @default(autoincrement()) @map("id_encuesta")
-  calificacion     Int
-  idRecepcionista  Int?      @map("id_recepcionista")
-  comentario       String?   @db.Text
-  fechaRegistro    DateTime  @default(now()) @map("fecha_registro")
-
-  // Relaciones
-  recepcionista    Usuario?  @relation(fields: [idRecepcionista], references: [idUsuario], onDelete: SetNull)
-
-  @@map("encuestas")
-}
-
-
-model Auditoria {
-  idLog            Int       @id @default(autoincrement()) @map("id_log")
-  nombreAccion     String    @map("nombre_accion")
-  idUsuario        Int?      @map("id_usuario")
-  fechaEjecucion   DateTime  @default(now()) @map("fecha_ejecucion")
-
-  // Relaciones
-  usuario          Usuario?  @relation(fields: [idUsuario], references: [idUsuario], onDelete: SetNull)
-
-  @@map("auditoria")
-}
-
-
-model ExpedienteMedico {
-  idExpediente     Int       @id @default(autoincrement()) @map("id_expediente")
-  idPaciente       Int       @map("id_paciente")
-  idMedico         Int?      @map("id_medico")
-  diagnostico      String?   @db.Text
-  tratamiento      String?   @db.Text
-  observaciones    String?   @db.Text
-  fechaCreacion    DateTime  @default(now()) @map("fecha_creacion")
-
-  // Relaciones
-  paciente         Usuario   @relation("ExpedientePaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
-  medico           Usuario?  @relation("ExpedienteMedico", fields: [idMedico], references: [idUsuario], onDelete: SetNull)
-
-  @@map("expedientes_medicos")
-}
 
 model Encuesta {
   idEncuesta       Int       @id @default(autoincrement()) @map("id_encuesta")
@@ -262,18 +226,49 @@ model Auditoria {
   @@map("auditoria")
 }
 
-model ExpedienteMedico {
+model Expediente {
   idExpediente     Int       @id @default(autoincrement()) @map("id_expediente")
   idPaciente       Int       @map("id_paciente")
+  cedula           String    @unique @db.VarChar(50)
+  estado           String    @db.VarChar(50)
   idMedico         Int?      @map("id_medico")
-  diagnostico      String?   @db.Text
-  tratamiento      String?   @db.Text
-  observaciones    String?   @db.Text
+  descripcion      String?   @db.Text
   fechaCreacion    DateTime  @default(now()) @map("fecha_creacion")
 
   // Relaciones
   paciente         Usuario   @relation("ExpedientePaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
   medico           Usuario?  @relation("ExpedienteMedico", fields: [idMedico], references: [idUsuario], onDelete: SetNull)
+  documentos       Documento[]
+  diagnosticos     Diagnostico[]
 
-  @@map("expedientes_medicos")
+  @@map("expediente")
+}
+
+model Documento {
+  idDocumento      Int       @id @default(autoincrement()) @map("id_documento")
+  url              String    @db.VarChar(255)
+  tipoDocumento    String    @map("tipo_documento") @db.VarChar(50)
+  fechaCreacion    DateTime  @default(now()) @map("fecha_creacion")
+  idExpediente     Int?      @map("id_expediente")
+
+  // Relaciones
+  expediente       Expediente? @relation(fields: [idExpediente], references: [idExpediente], onDelete: SetNull)
+
+  @@map("documentos")
+}
+
+model Diagnostico {
+  idDiagnostico    Int       @id @default(autoincrement()) @map("id_diagnostico")
+  idPaciente       Int       @map("id_paciente")
+  fecha            DateTime  @default(now()) @db.Date
+  idDoctor         Int?      @map("id_doctor")
+  diagnostico      String    @db.Text
+  idExpediente     Int?      @map("id_expediente")
+
+  // Relaciones
+  paciente         Usuario   @relation("DiagnosticoPaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
+  doctor           Usuario?  @relation("DiagnosticoDoctor", fields: [idDoctor], references: [idUsuario], onDelete: SetNull)
+  expediente       Expediente? @relation(fields: [idExpediente], references: [idExpediente], onDelete: SetNull)
+
+  @@map("diagnostico")
 }
