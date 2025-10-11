@@ -175,4 +175,10 @@ export const apiEndpoints = {
 	createHistoriaExito: () => '/historias-exito',
 	updateHistoriaExito: (id: string) => `/historias-exito/${id}`,
 	deleteHistoriaExito: (id: string) => `/historias-exito/${id}`,
+
+	// Expedientes
+	getExpedientes: () => '/expedientes',
+	createExpediente: () => '/expedientes',
+	updateExpediente: (id: string) => `/expedientes/${id}`,
+	deleteExpediente: (id: string) => `/expedientes/${id}`,
 };

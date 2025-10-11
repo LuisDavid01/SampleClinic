@@ -21,7 +21,9 @@ export default function EditFilePage() {
 		descripcion: "Prueba de funcionalidad",
 		cedula: "2-8732-0032",
 		idDoctor: "Maria",
-		estado: 'Activo' as Status
+		estado: 'Activo' as Status,
+		createdAt: new Date(),
+		updatedAt: new Date(),
 	}
 
 	return (

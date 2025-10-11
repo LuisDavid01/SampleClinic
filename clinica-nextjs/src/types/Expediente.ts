@@ -9,6 +9,8 @@ export type Expediente = {
 	descripcion?: string,
 	idDoctor: string
 	estado: Status
+	createdAt: Date,
+	updatedAt: Date,
 	// resto de campos
 
 }

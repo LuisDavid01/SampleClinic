@@ -1,6 +1,7 @@
 'use server'
 import { z } from 'zod'
 import { auth } from '@clerk/nextjs/server'
+import { checkRole } from '@/utils/roles'
 
 const ExpedienteSchema = z.object({
 	idPaciente: z
@@ -20,12 +21,43 @@ const ExpedienteSchema = z.object({
 
 })
 
+
+
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+
 export type ExpedienteData = z.infer<typeof ExpedienteSchema>
+export async function getExpedientes(page: number, search?: string, limit: number = 10) {
+
+	const user = await auth();
+	if (!user.userId && !checkRole('admin')) {
+		return [];
+	}
+
+	const params = new URLSearchParams({
+		page: page.toString(),
+		limit: limit.toString(),
+		...(search && { search }),
+	});
+
+	const res = await fetch(`${baseUrl}/api/expedientes?${params}`, {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+
+			authorization: `Bearer ${user.getToken()}`
+		}
+	});
+	if (!res.ok) {
+		throw new Error('Failed to fetch expedientes');
+	}
+	return res.json();
+
+}
 
 export async function createExpediente(data: ExpedienteData): Promise<ActionResponse> {
 	try {
 		const user = await auth()
-		if (!user.userId) {
+		if (!user.userId && !checkRole('admin')) {
 			return {
 				success: false,
 				message: 'Unauthorized access',
@@ -47,9 +79,11 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 		const validatedData = validationResult.data
 
 		// fetch
-		await fetch('/api/expedientes', {
+		await fetch(`${baseUrl}/api/expedientes`, {
 			method: 'POST',
 			headers: {
+				'Content-Type': 'application/json',
+
 				authorization: `Bearer ${user.getToken()}`,
 			},
 			body: JSON.stringify(validatedData),
@@ -75,7 +109,8 @@ export async function updateExpediente(
 	try {
 		// Security check - ensure user is authenticated
 		const user = await auth()
-		if (!user.userId) {
+
+		if (!user.userId && !checkRole('admin')) {
 			return {
 				success: false,
 				message: 'Acceso no autorizado',
@@ -111,9 +146,11 @@ export async function updateExpediente(
 			updateData.idDoctor = validatedData.idDoctor
 
 		// Update issue
-		await fetch(`/api/expedientes/${id}`, {
+		await fetch(`${baseUrl}/api/expedientes/${id}`, {
 			method: 'PUT',
 			headers: {
+				'Content-Type': 'application/json',
+
 				authorization: `Bearer ${user.getToken()}`
 			},
 			body: JSON.stringify(updateData),
@@ -133,12 +170,13 @@ export async function updateExpediente(
 export async function deleteExpediente(id: number) {
 	try {
 		const user = await auth()
-		if (!user.userId) {
+		if (!user.userId && !checkRole('admin')) {
+
 			throw new Error('Unauthorized')
 		}
 
 		// Delete Expediente
-		await fetch(`/api/expedientes/${id}`, {
+		await fetch(`${baseUrl}/api/expedientes/${id}`, {
 			method: 'DELETE',
 			headers: {
 				authorization: `Bearer ${user.getToken()}`

@@ -25,15 +25,18 @@ import {
 	ChevronsRight
 } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils"
-
+import { Expediente } from "@/types/Expediente"
+import { useQuery } from "@tanstack/react-query"
+import { useApiClient } from "@/utils/apiClient"
+import { deleteExpediente, getExpedientes } from "@/actions/expedientes"
+import { useState } from "react"
 // Mock data
-const files = [
-	{ id: 1, nombre: "Luis Vargas", status: "activo", updatedAt: new Date(2025, 0, 3), doctor: "Dra. María García" },
-	{ id: 2, nombre: "Diego Vargas", status: "activo", updatedAt: new Date(2025, 2, 5), doctor: "Dr. Carlos Rodríguez" },
-]
 
 
-//const files = []
+
+
+
+
 const statusConfig = {
 	activo: {
 		label: "Activo",
@@ -46,6 +49,18 @@ const statusConfig = {
 }
 
 export const ExpedientesList = () => {
+	const apiClient = useApiClient();
+	const [page, setPage] = useState(1);
+	const [limit, setLimit] = useState(10);
+	const [search, setSearch] = useState("");
+
+	// se trae los datos del backend
+	const { isLoading, data = [] } = useQuery<Expediente[]>({
+		queryKey: [`expedientes-${page}-${search}-${limit}`],
+		queryFn: () => getExpedientes(page, search, limit),
+		staleTime: 2 * 60 * 1000,
+
+	})
 	return (
 		<>
 			{/* Filters */}
@@ -111,8 +126,8 @@ export const ExpedientesList = () => {
 			{/* Desktop Table */}
 			<Card className="hidden lg:block">
 				<CardContent className="p-0">
-					<div className="overflow-x-auto">
-						<Table>
+					<div >
+						<Table className=" overflow-x-auto">
 							<TableHeader>
 								<TableRow>
 									<TableHead>Paciente</TableHead>
@@ -123,96 +138,133 @@ export const ExpedientesList = () => {
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{
-									files.map((file) => {
-										const statusConfig_ = statusConfig[file.status as keyof typeof statusConfig]
 
-										return (
-											<TableRow key={file.id} className="hover:bg-muted/50">
-												<TableCell className="font-medium">
-													<div className="flex items-center gap-2">
-														{file.nombre}
-													</div>
-												</TableCell>
-												<TableCell>
-													<Badge className={statusConfig_?.color}>
-														{statusConfig_?.label}
-													</Badge>
-												</TableCell>
-												<TableCell>{file.doctor}</TableCell>
-												<TableCell className=" text-sm">
-													{formatRelativeTime(file.updatedAt)}
-												</TableCell>
-												<TableCell>
-													<Link href={`files/${file.id}/edit`}>
-														<Button variant="outline" size="sm" className="mr-3">
-															Ver
+								{isLoading ? (
+									<TableRow>
+										<TableCell colSpan={5} className="text-center">
+											Cargando...
+										</TableCell>
+									</TableRow>
+								) :
+
+									!data || data.length === 0 ? (
+										<TableRow>
+											<TableCell colSpan={5} className="text-center">No hay registros</TableCell>
+										</TableRow>
+									) :
+
+										data.map((file) => {
+											const statusConfig_ = statusConfig[file.estado as keyof typeof statusConfig]
+
+											return (
+												<TableRow key={file.id} className="hover:bg-muted/50">
+													<TableCell className="font-medium">
+														<div className="flex items-center gap-2">
+															{file.idPaciente}
+														</div>
+													</TableCell>
+													<TableCell>
+														<Badge className={statusConfig_?.color}>
+															{statusConfig_?.label}
+														</Badge>
+													</TableCell>
+													<TableCell>{file.idDoctor}</TableCell>
+													<TableCell className=" text-sm">
+														{formatRelativeTime(file.updatedAt)}
+													</TableCell>
+													<TableCell>
+														<Link href={`data/${file.id}/edit`}>
+															<Button variant="outline" size="sm" className="mr-3">
+																Ver
+															</Button>
+														</Link>
+
+
+														<Button variant="destructive" size="sm" className="mr-3"
+															onClick={() => {
+																deleteExpediente(file.id);
+															}}
+														>
+															Eliminar
 														</Button>
-													</Link>
+													</TableCell>
+												</TableRow>
+											)
+										})
 
 
-													<Button variant="destructive" size="sm" className="mr-3">
-														Eliminar
-													</Button>
-												</TableCell>
-											</TableRow>
-										)
-									})}
+								}
 							</TableBody>
 						</Table>
 					</div>
 				</CardContent>
-			</Card>
+			</Card >
 
 			{/* Mobile Cards */}
-			<div className="lg:hidden space-y-4">
-				{files.map((file) => {
-					const statusConfig_ = statusConfig[file.status as keyof typeof statusConfig]
+			< div className="lg:hidden space-y-4" >
+				{isLoading ? (
+					<div className="text-center">
+						cargando...
+					</div>
+				) :
 
-					return (
-						<Card key={file.id}>
-							<CardContent className="p-4">
-								<div className="flex items-start justify-between mb-3">
-									<div className="flex items-center gap-2">
-										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-											<User className="h-4 w-4 text-muted-foreground" />
+					!data || data.length === 0 ? (
+						<div className="text-center">
+							No hay registros
+						</div>
+					) : (
+
+						data.map((file) => {
+							const statusConfig_ = statusConfig[file.estado as keyof typeof statusConfig]
+
+							return (
+								<Card key={file.id}>
+									<CardContent className="p-4">
+										<div className="flex items-start justify-between mb-3">
+											<div className="flex items-center gap-2">
+												<div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+													<User className="h-4 w-4 text-muted-foreground" />
+												</div>
+												<div>
+													<h3 className="font-medium">{file.idPaciente}</h3>
+													<p className="text-sm text-muted-foreground">{file.idDoctor}</p>
+												</div>
+											</div>
+											<Badge className={statusConfig_?.color}>
+												{statusConfig_?.label}
+											</Badge>
 										</div>
-										<div>
-											<h3 className="font-medium">{file.nombre}</h3>
-											<p className="text-sm text-muted-foreground">{file.doctor}</p>
+
+										<div className="space-y-2">
+											<div className="flex items-center justify-between">
+												<p className="text-sm text-muted-foreground">Actualizado</p>
+												<p className="text-sm font-medium">{file.updatedAt.getDate()}</p>
+											</div>
+
+											<div className="flex gap-2 pt-2">
+												<Link href={`files/${file.id}/edit`} className="flex-1">
+													<Button variant="outline" className="w-full mb-3">
+														Ver expediente
+													</Button>
+												</Link>
+												<Button variant="destructive" size="sm" className="w-full mb-3"
+													onClick={() => {
+														deleteExpediente(file.id);
+													}}
+												>
+													Eliminar
+												</Button>
+											</div>
 										</div>
-									</div>
-									<Badge className={statusConfig_?.color}>
-										{statusConfig_?.label}
-									</Badge>
-								</div>
-
-								<div className="space-y-2">
-									<div className="flex items-center justify-between">
-										<p className="text-sm text-muted-foreground">Actualizado</p>
-										<p className="text-sm font-medium">{file.updatedAt.getDate()}</p>
-									</div>
-
-									<div className="flex gap-2 pt-2">
-										<Link href={`files/${file.id}/edit`} className="flex-1">
-											<Button variant="outline" className="w-full mb-3">
-												Ver expediente
-											</Button>
-										</Link>
-										<Button variant="destructive" size="sm" className="w-full mb-3"
-										>
-											Eliminar
-										</Button>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					)
-				})}
-			</div>
+									</CardContent>
+								</Card>
+							)
+						}))
+				}
+			</div >
 
 			{/* Pagination */}
-			<Card>
+			< Card >
 				<CardContent className="p-4">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 						<div className="flex items-center gap-2">
@@ -272,7 +324,7 @@ export const ExpedientesList = () => {
 						</div>
 					</div>
 				</CardContent>
-			</Card>
+			</Card >
 		</>
 	)
 }

@@ -1,5 +1,5 @@
 'use client'
-import { useActionState, useMemo, useState } from 'react'
+import { useActionState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import {
@@ -54,7 +54,7 @@ export default function ExpedienteForm({
 	const patientOptions = useMemo(() => {
 		if (!patients) return [];
 		return patients.map((p) => ({
-			label: `${p.nombre} ${p.apellido1}`, // ajustá según tus campos reales
+			label: `${p.nombre} ${p.apellido1}`,
 			value: String(p.idUsuario),
 		}));
 	}, [patients]);
