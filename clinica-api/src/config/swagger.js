@@ -442,6 +442,190 @@ const options = {
               $ref: '#/components/schemas/Usuario'
             }
           }
+        },
+        Expediente: {
+          type: 'object',
+          required: ['idPaciente', 'cedula', 'estado'],
+          properties: {
+            idExpediente: {
+              type: 'integer',
+              description: 'ID único del expediente'
+            },
+            idPaciente: {
+              type: 'integer',
+              description: 'ID del paciente'
+            },
+            cedula: {
+              type: 'string',
+              minLength: 5,
+              maxLength: 50,
+              description: 'Cédula del paciente',
+              example: '12345678'
+            },
+            estado: {
+              type: 'string',
+              minLength: 2,
+              maxLength: 50,
+              description: 'Estado del expediente',
+              example: 'activo'
+            },
+            idMedico: {
+              type: 'integer',
+              description: 'ID del médico asignado'
+            },
+            descripcion: {
+              type: 'string',
+              maxLength: 1000,
+              description: 'Descripción del expediente'
+            },
+            fechaCreacion: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha de creación del expediente'
+            },
+            paciente: {
+              $ref: '#/components/schemas/Usuario'
+            },
+            medico: {
+              $ref: '#/components/schemas/Usuario'
+            },
+            documentos: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  idDocumento: {
+                    type: 'integer',
+                    description: 'ID del documento'
+                  },
+                  url: {
+                    type: 'string',
+                    description: 'URL del documento'
+                  },
+                  tipoDocumento: {
+                    type: 'string',
+                    enum: ['expediente', 'consentimiento'],
+                    description: 'Tipo de documento'
+                  },
+                  fechaCreacion: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'Fecha de creación del documento'
+                  }
+                }
+              },
+              description: 'Documentos asociados al expediente'
+            },
+            diagnosticos: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  idDiagnostico: {
+                    type: 'integer',
+                    description: 'ID del diagnóstico'
+                  },
+                  idPaciente: {
+                    type: 'integer',
+                    description: 'ID del paciente'
+                  },
+                  fecha: {
+                    type: 'string',
+                    format: 'date',
+                    description: 'Fecha del diagnóstico'
+                  },
+                  idDoctor: {
+                    type: 'integer',
+                    description: 'ID del doctor que realizó el diagnóstico'
+                  },
+                  diagnostico: {
+                    type: 'string',
+                    description: 'Descripción del diagnóstico'
+                  },
+                  doctor: {
+                    $ref: '#/components/schemas/Usuario'
+                  }
+                }
+              },
+              description: 'Diagnósticos asociados al expediente'
+            }
+          }
+        }
+      },
+      responses: {
+        BadRequest: {
+          description: 'Solicitud incorrecta',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/Error'
+              }
+            }
+          }
+        },
+        Unauthorized: {
+          description: 'No autorizado',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  error: {
+                    type: 'string',
+                    example: 'Token no válido'
+                  }
+                }
+              }
+            }
+          }
+        },
+        Forbidden: {
+          description: 'Acceso prohibido',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  error: {
+                    type: 'string',
+                    example: 'No tienes permisos para realizar esta acción'
+                  }
+                }
+              }
+            }
+          }
+        },
+        NotFound: {
+          description: 'Recurso no encontrado',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  error: {
+                    type: 'string',
+                    example: 'Recurso no encontrado'
+                  }
+                }
+              }
+            }
+          }
+        },
+        InternalServerError: {
+          description: 'Error interno del servidor',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  error: {
+                    type: 'string',
+                    example: 'Error interno del servidor'
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -474,6 +658,10 @@ const options = {
       {
         name: 'Historias de Éxito',
         description: 'Testimonios y casos de éxito'
+      },
+      {
+        name: 'Expedientes',
+        description: 'Gestión de expedientes médicos'
       },
       {
         name: 'Sistema',
