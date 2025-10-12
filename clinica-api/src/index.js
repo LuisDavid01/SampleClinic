@@ -16,6 +16,7 @@ import citaRoutes from './routes/citas.js';
 import servicioRoutes from './routes/servicios.js';
 import perfilRoutes from './routes/perfiles.js';
 import historiaExitoRoutes from './routes/historias-exito.js';
+import expedienteRoutes from './routes/expedientes.js';
 import clerkProfileRoutes from './routes/clerkProfile.js';
 
 const app = express();
@@ -81,6 +82,7 @@ app.use('/api/citas', citaRoutes);
 app.use('/api/servicios', servicioRoutes);
 app.use('/api/perfiles', perfilRoutes);
 app.use('/api/historias-exito', historiaExitoRoutes);
+app.use('/api/expedientes', expedienteRoutes);
 app.use('/api/clerk', clerkProfileRoutes);
 
 /**

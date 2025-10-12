@@ -19,8 +19,11 @@ COPY . .
 # Generar el cliente de Prisma
 RUN npx prisma generate
 
-# Hacer ejecutable el script de inicio
-RUN chmod +x scripts/start.sh
+# Hacer ejecutables los scripts
+RUN chmod +x scripts/start.sh scripts/init-prisma.sh
+
+# Instalar postgresql-client para pg_isready
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
 
 # Crear usuario no-root para seguridad
 RUN groupadd -g 1001 nodejs
@@ -33,5 +36,5 @@ USER nodejs
 # Exponer el puerto
 EXPOSE 3001
 
-# Comando para iniciar la aplicación
-CMD ["./scripts/start.sh"]
+# Comando para iniciar la aplicación con inicialización automática
+CMD ["./scripts/init-prisma.sh"]

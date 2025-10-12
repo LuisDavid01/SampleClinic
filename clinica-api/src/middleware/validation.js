@@ -249,6 +249,66 @@ const validateHistoriaExito = [
 	handleValidationErrors
 ];
 
+// Validaciones para expedientes (crear)
+const validateExpediente = [
+	body('idPaciente')
+		.isInt({ min: 1 })
+		.withMessage('El ID del paciente debe ser un número entero positivo'),
+
+	body('cedula')
+		.notEmpty()
+		.withMessage('La cédula es requerida')
+		.isLength({ min: 5, max: 50 })
+		.withMessage('La cédula debe tener entre 5 y 50 caracteres')
+		.matches(/^[A-Za-z0-9-]+$/)
+		.withMessage('La cédula solo puede contener letras, números y guiones'),
+
+	body('estado')
+		.notEmpty()
+		.withMessage('El estado es requerido')
+		.isLength({ min: 2, max: 50 })
+		.withMessage('El estado debe tener entre 2 y 50 caracteres'),
+
+	body('idMedico')
+		.optional()
+		.isInt({ min: 1 })
+		.withMessage('El ID del médico debe ser un número entero positivo'),
+
+	body('descripcion')
+		.optional()
+		.isLength({ max: 1000 })
+		.withMessage('La descripción no puede exceder 1000 caracteres'),
+
+	handleValidationErrors
+];
+
+// Validaciones para expedientes (actualizar)
+const validateExpedienteUpdate = [
+	body('cedula')
+		.optional()
+		.isLength({ min: 5, max: 50 })
+		.withMessage('La cédula debe tener entre 5 y 50 caracteres')
+		.matches(/^[A-Za-z0-9-]+$/)
+		.withMessage('La cédula solo puede contener letras, números y guiones'),
+
+	body('estado')
+		.optional()
+		.isLength({ min: 2, max: 50 })
+		.withMessage('El estado debe tener entre 2 y 50 caracteres'),
+
+	body('idMedico')
+		.optional()
+		.isInt({ min: 1 })
+		.withMessage('El ID del médico debe ser un número entero positivo'),
+
+	body('descripcion')
+		.optional()
+		.isLength({ max: 1000 })
+		.withMessage('La descripción no puede exceder 1000 caracteres'),
+
+	handleValidationErrors
+];
+
 // Validaciones para parámetros de ID
 const validateId = [
 	param('id')
@@ -266,6 +326,8 @@ export {
 	validateServicio,
 	validatePerfil,
 	validateHistoriaExito,
+	validateExpediente,
+	validateExpedienteUpdate,
 	validateId
 };
 

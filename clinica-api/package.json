@@ -10,7 +10,14 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "test": "node run-tests.js all",
+    "test:funcional": "node run-tests.js funcional",
+    "test:integration": "node run-tests.js integration",
+    "test:performance": "node run-tests.js performance",
+    "test:tokens": "node run-tests.js tokens",
+    "test:menu": "node run-tests.js menu",
+    "test:populate": "node scripts/populate-essential-data.js"
   },
   "keywords": [
     "api",
@@ -23,7 +30,7 @@
   "license": "ISC",
   "dependencies": {
     "@clerk/backend": "^2.17.0",
-    "@prisma/client": "^5.7.1",
+    "@prisma/client": "^6.17.1",
     "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -38,6 +45,6 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
-    "prisma": "^5.7.1"
+    "prisma": "^6.17.1"
   }
 }
