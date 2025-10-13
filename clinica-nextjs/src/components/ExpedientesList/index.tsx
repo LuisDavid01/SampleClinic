@@ -27,6 +27,7 @@ import { Expediente } from "@/types/Expediente"
 import { useQuery } from "@tanstack/react-query"
 import { deleteExpediente, getExpedientes } from "@/actions/expedientes"
 import { useState } from "react"
+import { useNotification } from "../UseNotification";
 // Mock data
 
 
@@ -46,6 +47,7 @@ const statusConfig = {
 }
 
 export const ExpedientesList = () => {
+	const { showNotification } = useNotification()
 	//	const apiClient = useApiClient();
 	const [page, setPage] = useState(1);
 	const [limit, setLimit] = useState(10);
@@ -59,7 +61,7 @@ export const ExpedientesList = () => {
 			console.log(res);
 			return res.expedientes
 		},
-		staleTime: 2 * 60 * 1000,
+		staleTime: 1 * 60 * 1000,
 
 	})
 	return (
@@ -116,7 +118,9 @@ export const ExpedientesList = () => {
 								</SelectContent>
 							</Select>
 
-							<Button variant="outline" size="icon">
+							<Button variant="outline" size="icon"
+								onClick={() => refetch()}
+							>
 								<RefreshCw className="w-4 h-4" />
 							</Button>
 						</div>
@@ -161,7 +165,7 @@ export const ExpedientesList = () => {
 												<TableRow key={file.idExpediente} className="hover:bg-muted/50">
 													<TableCell className="font-medium">
 														<div className="flex items-center gap-2">
-															{file.paciente?.nombre}
+															{file.paciente.nombre + " " + file.paciente.apellido1}
 														</div>
 													</TableCell>
 													<TableCell>
@@ -182,9 +186,18 @@ export const ExpedientesList = () => {
 
 
 														<Button variant="destructive" size="sm" className="mr-3"
-															onClick={() => {
+															onClick={async () => {
 																deleteExpediente(file.idExpediente);
-																refetch();
+																await refetch();
+																showNotification(
+																	{
+																		title: "Expediente eliminado",
+																		message: `El expediente fue eliminado`,
+																		type: "success",
+
+																	}
+
+																)
 															}}
 														>
 															Eliminar
@@ -228,7 +241,7 @@ export const ExpedientesList = () => {
 													<User className="h-4 w-4 text-muted-foreground" />
 												</div>
 												<div>
-													<h3 className="font-medium">{file.idPaciente}</h3>
+													<h3 className="font-medium">{file.paciente.nombre + " " + file.paciente.apellido1}</h3>
 													<p className="text-sm text-muted-foreground">{file.idMedico}</p>
 												</div>
 											</div>
@@ -250,10 +263,20 @@ export const ExpedientesList = () => {
 													</Button>
 												</Link>
 												<Button variant="destructive" size="sm" className="w-full mb-3"
-													onClick={() => {
+													onClick={async () => {
 														deleteExpediente(file.idExpediente);
-														refetch();
+														await refetch();
+														showNotification(
+															{
+																title: "Expediente eliminado",
+																message: `El expediente fue eliminado`,
+																type: "success",
+
+															}
+
+														)
 													}}
+
 												>
 													Eliminar
 												</Button>

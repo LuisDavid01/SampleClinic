@@ -55,7 +55,7 @@ export default function ExpedienteForm({
 				queryKey: ['doctors'], queryFn: async () => {
 					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=admin`)
 					return res.usuarios;
-				}, staleTime: 10 * 60 * 1000,
+				}, staleTime: 1 * 60 * 1000,
 			},
 			{
 				queryKey: ['pacients'],
@@ -63,7 +63,7 @@ export default function ExpedienteForm({
 					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}`)
 					return res.usuarios;
 				},
-				staleTime: 3 * 60 * 1000,
+				staleTime: 1 * 60 * 1000,
 
 			}
 		]
@@ -119,11 +119,8 @@ export default function ExpedienteForm({
 					router.push('/admin/files')
 
 				}
-				// En caso de editar invalidar el cache
-				if (expediente?.idExpediente) {
-					await queryClient.invalidateQueries({ queryKey: ['expediente', String(expediente.idExpediente)] });
-				}
-				router.refresh()
+				await queryClient.invalidateQueries({ queryKey: ['expediente'] });
+				router.refresh();
 			}
 
 			return result
@@ -158,26 +155,28 @@ export default function ExpedienteForm({
 					{state.message}
 				</div>
 			)}
-
-			<FormGroup>
-				<FormLabel htmlFor="idPaciente">Nombre del paciente</FormLabel>
-				<FormSelect
-					id="idPaciente"
-					name="idPaciente"
-					options={patientOptions}
-					defaultValue={expediente?.idPaciente || ''}
-					required
-					aria-describedby="title-error"
-					className={state?.errors?.title ? 'border-red-500' : ''}
-					disabled={isLoading}
-				/>
-				{state?.errors?.title && (
-					<p id="title-error" className="text-sm text-red-500">
-						{state.errors.title[0]}
-					</p>
-				)}
-			</FormGroup>
-
+			{patientOptions.length === 0 ? (
+				<div className="text-muted-foreground">Cargando pacientes...</div>
+			) : (
+				<FormGroup>
+					<FormLabel htmlFor="idPaciente">Nombre del paciente</FormLabel>
+					<FormSelect
+						id="idPaciente"
+						name="idPaciente"
+						options={patientOptions}
+						defaultValue={String(expediente?.idPaciente)}
+						required
+						aria-describedby="title-error"
+						className={state?.errors?.title ? 'border-red-500' : ''}
+						disabled={isLoading || patientOptions.length === 0}
+					/>
+					{state?.errors?.title && (
+						<p id="title-error" className="text-sm text-red-500">
+							{state.errors.title[0]}
+						</p>
+					)}
+				</FormGroup>
+			)}
 
 			<FormGroup>
 				<FormLabel htmlFor="cedula">Cedula de identidad</FormLabel>
@@ -189,7 +188,7 @@ export default function ExpedienteForm({
 					required
 					minLength={3}
 					maxLength={12}
-					disabled={isPending}
+					disabled={isLoading}
 					aria-describedby="cedula-error"
 					className={state?.errors?.cedula ? 'border-red-500' : ''}
 				/>
@@ -228,7 +227,7 @@ export default function ExpedienteForm({
 					name="idDoctor"
 					options={doctorOptions}
 					defaultValue={expediente?.idMedico || ''}
-					disabled={isPending}
+					disabled={isLoading}
 					aria-describedby="description-error"
 					className={state?.errors?.description ? 'border-red-500' : ''}
 				/>
@@ -245,9 +244,9 @@ export default function ExpedienteForm({
 					<FormSelect
 						id="status"
 						name="status"
-						defaultValue={expediente?.estado || 'Activo'}
+						defaultValue={String(expediente?.estado)}
 						options={statusOptions}
-						disabled={isPending}
+						disabled={isLoading}
 						required
 						aria-describedby="status-error"
 						className={state?.errors?.status ? 'border-red-500' : ''}
