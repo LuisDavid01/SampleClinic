@@ -1,8 +1,7 @@
 import { ArrowLeftIcon, Edit, FileSignatureIcon, FileText, LucideBookUser } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
-import NewExpediente from '@/components/NewExpediente'
-import { Status } from '@/types/Expediente'
+
 import {
 	Card,
 	CardContent,
@@ -14,18 +13,10 @@ import DocumentosExpediente from '@/components/DocuementosExpediente'
 import ConsentManagement from '@/components/ConsentManagment'
 import DiagnosticoTable from '@/components/DiagnosticoTable'
 
-export default function EditFilePage() {
-	const mock = {
-		id: 2,
-		idPaciente: "luis angel",
-		descripcion: "Prueba de funcionalidad",
-		cedula: "2-8732-0032",
-		idDoctor: "Maria",
-		estado: 'Activo' as Status,
-		createdAt: new Date(),
-		updatedAt: new Date(),
-	}
+import { ExpedienteByID } from '@/components/ExpedienteByID'
 
+export default async function EditFilePage({ params }) {
+	const { id } = await params
 	return (
 		<div className="space-y-6 p-6 bg-background min-h-screen">
 			<Link
@@ -49,9 +40,7 @@ export default function EditFilePage() {
 					<CardDescription>Información general del paciente</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<Suspense fallback={<div>loading...</div>}>
-						<NewExpediente expediente={mock} isEditing />
-					</Suspense>
+					<ExpedienteByID id={id} />
 				</CardContent>
 			</Card>
 
