@@ -12,7 +12,7 @@ import { MessageCircle, LogOut, Send, Clock, X, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
-import { chatEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
+import { chatEvent, errorMessageEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
 import { useAuth } from "@clerk/nextjs";
 import { useNotification } from "../UseNotification";
 
@@ -26,12 +26,25 @@ export default function FloatingChat() {
 	const [messages, setMessages] = useState<Array<{
 		id: string; text: string; sender: string; role: 'Pacient' | 'Support'; timestamp: string
 	}>>([]);
-
+	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const scrollAreaRef = useRef<HTMLDivElement>(null);
 	const isOpenRef = useRef(isOpen);
 	useEffect(() => {
 		isOpenRef.current = isOpen;
 	}, [isOpen]);
+	const scrollToBottom = () => {
+		messagesEndRef.current?.scrollIntoView({
+			behavior: "smooth",
+			block: "end"
+		});
+	};
 
+
+	useEffect(() => {
+		if (messages.length > 0) {
+			scrollToBottom();
+		}
+	}, [messages]);
 	useEffect(() => {
 
 
@@ -101,9 +114,19 @@ export default function FloatingChat() {
 				routeEvents(evnt);
 			};
 
-			wsRef.current.onclose = () => {
+			wsRef.current.onclose = (event) => {
 				console.log("WebSocket disconnected");
-				setConnectionStatus('connected');
+				if (event.code === 1000) {
+					setConnectionStatus('error');
+				} else {
+					setConnectionStatus('error');
+					showNotification({
+						type: "error",
+						title: "Conexión perdida",
+						message: "Intente reconectar",
+						timestamp: new Date(),
+					});
+				}
 
 			};
 
@@ -125,7 +148,6 @@ export default function FloatingChat() {
 		}
 		switch (event.type) {
 			case "new_message":
-				console.log("new message");
 				const payload = event.payload as NewMessageEvent;
 				const messageEvent = Object.assign(new NewMessageEvent(payload.message, payload.from, payload.role, payload.sent))
 				setMessages(prev => [
@@ -138,17 +160,31 @@ export default function FloatingChat() {
 						timestamp: new Date().toLocaleTimeString()
 					}
 				]);
+
 				if (!isOpenRef.current && messageEvent.role === 'Support') {
 					showNotification({
-						type: "connected",
+						type: "newMessage",
 						title: `Nuevo mensaje de ${messageEvent.from}`,
 						message: messageEvent.message,
 						timestamp: new Date(),
 					})
 				}
+
 				break;
 			case "change_chatroom":
 				console.log("change chatroom");
+				break;
+			case "error_message":
+				console.log("Error message");
+				const errorPayload = event.payload as errorMessageEvent;
+				showNotification({
+					type: "error",
+					title: "Error",
+					message: errorPayload.error,
+					timestamp: new Date(errorPayload.sent),
+				})
+
+				break;
 			default:
 				alert("unsupported event type");
 				break;
@@ -168,7 +204,6 @@ export default function FloatingChat() {
 	}
 	function sendMessage() {
 		const newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
-		console.log("message: ", newMessage?.value);
 		if (newMessage) {
 			sendEvent("send_message", new SendMessageEvent(newMessage.value));
 			/*
@@ -196,8 +231,10 @@ export default function FloatingChat() {
 	};
 
 	const handleExitChat = () => {
-		// Cierra la conexion y limpia los mensajes
-		wsRef.current?.close();
+		if (wsRef.current) {
+			console.log("Cerrando la conexion")
+			wsRef.current.close(1000, "User closed chat");
+		}
 		setMessages([]);
 		wsRef.current = null;
 		setIsOpen(false);
@@ -264,7 +301,7 @@ export default function FloatingChat() {
 							</CardHeader>
 
 							<CardContent className="flex-1 px-4 overflow-hidden">
-								<ScrollArea className="h-full pr-4">
+								<ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
 									<div className="space-y-3">
 										{messages.map(msg => (
 											<div key={msg.id} className={`flex ${msg.role === 'Pacient' ? 'justify-end' : 'justify-start'}`}>
@@ -280,6 +317,7 @@ export default function FloatingChat() {
 												</div>
 											</div>
 										))}
+										<div ref={messagesEndRef} />
 									</div>
 								</ScrollArea>
 							</CardContent>

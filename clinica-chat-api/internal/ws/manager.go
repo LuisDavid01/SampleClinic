@@ -79,7 +79,6 @@ func NewManager(ctx context.Context) *Manager {
 //	@Failure		401	{string}	string	"Unauthorized"
 //	@Router			/ws [get]
 func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
-
 	otp := r.URL.Query().Get("otp")
 
 	if otp == "" {
@@ -92,8 +91,6 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-
-	log.Println(authUsr)
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -121,14 +118,6 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("New client connected: %s , role: %s, chatroom:  %s\n", client.Username, client.Rol, client.chatroom)
 
-	/* if the user is admin he gets all the rooms
-	if client.Rol == "admin" {
-		log.Println("intentando enviar los rooms...")
-		if err := m.getRooms(client); err != nil {
-			log.Printf("Error sending the rooms: %v", err)
-		}
-	}
-	*/
 	go client.Read()
 	go client.Write()
 }
@@ -145,12 +134,13 @@ func (m *Manager) RemoveClient(client *Client) {
 	defer m.Unlock()
 
 	if _, ok := m.Clients[client]; ok {
-		log.Printf("Client removed:  %s", client.Username)
 		if client.Rol == "Pacient" {
 			m.removeRoom(client.chatroom)
 		}
 		client.Conn.Close()
 		delete(m.Clients, client)
+		log.Printf("Client removed:  %s", client.Username)
+
 	}
 }
 
@@ -167,6 +157,7 @@ func sendMessage(event Event, c *Client) error {
 	var chatevent SendMessageEvent
 	log.Printf("Revived event: %+v", event)
 	if err := json.Unmarshal(event.Payload, &chatevent); err != nil {
+		errorMessageHandler("Bad payload", time.Now(), c)
 		return fmt.Errorf("Bad payload, %v", err)
 	}
 
@@ -185,6 +176,7 @@ func sendMessage(event Event, c *Client) error {
 
 	data, err := json.Marshal(broadMessage)
 	if err != nil {
+		errorMessageHandler("Couldnt send the message", time.Now(), c)
 		return fmt.Errorf("Error marshalling the message: %v", err)
 	}
 	outgoingEvent := Event{
@@ -197,29 +189,115 @@ func sendMessage(event Event, c *Client) error {
 			client.egress <- outgoingEvent
 		}
 	}
+
+	room := c.Manager.getRoomByID(c.chatroom)
+	if room != nil {
+		room.History = append(room.History, broadMessage)
+		if len(room.History) > 50 {
+			room.History = room.History[len(room.History)-50:]
+		}
+	}
+
+	return nil
+}
+
+func errorMessageHandler(message string, sent time.Time, c *Client) error {
+
+	errorEvent := ErrorMessageEvent{
+		ErrorMessage: message,
+		Sent:         sent,
+	}
+
+	data, err := json.Marshal(errorEvent)
+
+	if err != nil {
+		return fmt.Errorf("Error sending the message to the user")
+	}
+
+	outgoingEvent := Event{
+		Type:    EventError,
+		Payload: data,
+	}
+
+	c.egress <- outgoingEvent
 	return nil
 }
 
 func chatRoomHandler(event Event, c *Client) error {
 	if c.Rol != "admin" {
+		errorMessageHandler("Unauthorized", time.Now(), c)
 		return fmt.Errorf("Authorized action")
 	}
 
 	var changeChatRoomEvent ChangeChatRoomEvent
 	if err := json.Unmarshal(event.Payload, &changeChatRoomEvent); err != nil {
+		errorMessageHandler("Bad payload", time.Now(), c)
 		return fmt.Errorf("Bad payload in request: %v", err)
 	}
 	log.Println("changing to chatroom: ", changeChatRoomEvent.Name)
 	c.chatroom = changeChatRoomEvent.Name
 
+	// Si la sala es vacio, no enviamos historial
+	if changeChatRoomEvent.Name != "" {
+		room := c.Manager.getRoomByID(c.chatroom)
+		if room == nil {
+			errorMessageHandler("Room not found", time.Now(), c)
+			log.Println("Room not found")
+			return nil
+		}
+
+		historyEvent := GetHistoryEvent{
+			History: room.History,
+		}
+		data, err := json.Marshal(historyEvent)
+		if err != nil {
+			return fmt.Errorf("Couldnt parse the history: %v", err)
+		}
+		outgoingEvent := Event{
+			Type:    EventGetHistory,
+			Payload: data,
+		}
+		log.Println("sending history...")
+		c.egress <- outgoingEvent
+
+	}
+
+	return nil
+}
+
+func (m *Manager) getRoomByID(roomID string) *Room {
+	m.RLock()
+	defer m.RUnlock()
+	if room, ok := m.Rooms[roomID]; ok {
+		return room
+	}
+
 	return nil
 }
 
 func (m *Manager) getRooms(c *Client) error {
-	m.RLock()
-	defer m.RUnlock()
-	data, err := json.Marshal(m.Rooms)
+	var rooms GetChatRoomsEvent
+	for _, room := range m.Rooms {
+		roomEvent := RoomEvent{
+			ID:   room.ID,
+			Name: room.Name,
+		}
+
+		if len(room.History) > 0 {
+			lastMsg := room.History[len(room.History)-1]
+			roomEvent.LastMessage = lastMsg.Message
+			roomEvent.LastMessageAt = lastMsg.Sent
+		} else {
+			roomEvent.LastMessage = ""
+			roomEvent.LastMessageAt = time.Now()
+		}
+
+		rooms.Rooms = append(rooms.Rooms, roomEvent)
+	}
+	data, err := json.Marshal(&rooms)
 	if err != nil {
+		errorMessageHandler("Couldnt sent the chatrooms", time.Now(), c)
+
 		return fmt.Errorf("Couldnt parse the rooms: %v", err)
 	}
 
@@ -227,7 +305,7 @@ func (m *Manager) getRooms(c *Client) error {
 		Type:    EventGetRooms,
 		Payload: data,
 	}
-
+	log.Println("sending rooms...")
 	c.egress <- outgoingEvent
 
 	return nil
@@ -235,6 +313,7 @@ func (m *Manager) getRooms(c *Client) error {
 
 func getRoomsHandler(event Event, c *Client) error {
 	if c.Rol != "admin" {
+		errorMessageHandler("Unauthorized", time.Now(), c)
 		return fmt.Errorf("Unauthorized action")
 	}
 

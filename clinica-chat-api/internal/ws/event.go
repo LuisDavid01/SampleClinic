@@ -17,8 +17,21 @@ const (
 	EventNewMessage  = "new_message"
 	EventChangeRoom  = "change_chatroom"
 	EventGetRooms    = "get_chatrooms"
+	EventGetHistory  = "get_history"
+	EventError       = "error_message"
 )
 
+type RoomEvent struct {
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	LastMessage   string    `json:"lastMessage"`
+	LastMessageAt time.Time `json:"sent"`
+}
+
+type ErrorMessageEvent struct {
+	ErrorMessage string    `json:"error"`
+	Sent         time.Time `json:"sent"`
+}
 type SendMessageEvent struct {
 	Message string `json:"message"`
 	From    string `json:"from"`
@@ -35,5 +48,9 @@ type ChangeChatRoomEvent struct {
 }
 
 type GetChatRoomsEvent struct {
-	Rooms RoomList `json:"rooms"`
+	Rooms []RoomEvent `json:"rooms"`
+}
+
+type GetHistoryEvent struct {
+	History []NewMessageEvent `json:"messages"`
 }

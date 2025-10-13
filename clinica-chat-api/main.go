@@ -15,7 +15,7 @@ import (
 )
 
 // @title						Clinica Chat API
-// @version					1.0
+// @version					1.3
 // @description				Microservicio de chat en tiempo real para Selena Fisiotarepia
 // @termsOfService				http://swagger.io/terms/
 // @securityDefinitions.apikey	BearerAuth
