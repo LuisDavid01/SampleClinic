@@ -11,17 +11,14 @@ import {
 	FormSelect,
 	FormError,
 } from '@/components/ui/Form'
-import { ISSUE_STATUS, Expediente } from '@/types/Expediente'
+import { EXPEDIENTE_STATUS, Expediente } from '@/types/Expediente'
 import { createExpediente, updateExpediente } from '@/actions/expedientes'
-import { useQuery } from '@tanstack/react-query'
+import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { apiEndpoints, useApiClient } from '@/utils/apiClient'
 import { AdminPaciente } from '@/types/AdminPaciente'
+import { cn } from '@/lib/utils'
 
 
-const doctors = [
-	{ label: 'Guillermo', value: 'guillermo' },
-	{ label: 'María', value: 'maria' },
-]
 
 
 interface ExpedienteFormProps {
@@ -40,24 +37,56 @@ export default function ExpedienteForm({
 	isEditing = false,
 }: ExpedienteFormProps) {
 	const apiClient = useApiClient();
+	const queryClient = useQueryClient();
+	/*
+		const { isLoading, data: pacients } = useQuery<AdminPaciente[]>({
+			queryKey: ['pacients'],
+			queryFn: async () => {
+				const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=paciente`)
+				return res.usuarios;
+			},
+			staleTime: 3 * 60 * 1000,
+	
+		})
+	*/
+	const results = useQueries({
+		queries: [
+			{
+				queryKey: ['doctors'], queryFn: async () => {
+					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=admin`)
+					return res.usuarios;
+				}, staleTime: 10 * 60 * 1000,
+			},
+			{
+				queryKey: ['pacients'],
+				queryFn: async () => {
+					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}`)
+					return res.usuarios;
+				},
+				staleTime: 3 * 60 * 1000,
 
-	const { isLoading, data: patients = [] } = useQuery<AdminPaciente[]>({
-		queryKey: ['pacients-file'],
-		queryFn: async () => {
-			const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=paciente`)
-			console.log(res)
-			return res.usuarios;
-		},
-		staleTime: 5 * 60 * 1000,
+			}
+		]
+	});
+	const isLoading = results.some((r) => r.isLoading);
+	const pacients = results[1].data ?? []
 
-	})
+	const doctors = results[0].data ?? [];
+
+	const doctorOptions = useMemo(
+		() => doctors.map((d: any) => ({ label: `${d.nombre} ${d.apellido1}`, value: String(d.idUsuario) })),
+		[doctors]
+	);
+
+
+
 	const patientOptions = useMemo(() => {
-		if (!patients) return [];
-		return patients.map((p) => ({
+		if (!pacients) return [];
+		return pacients.map((p: AdminPaciente) => ({
 			label: `${p.nombre} ${p.apellido1}`,
 			value: String(p.idUsuario),
 		}));
-	}, [patients]);
+	}, [pacients]);
 
 	const router = useRouter()
 
@@ -72,24 +101,29 @@ export default function ExpedienteForm({
 			estado: formData.get('status') as 'activo' | 'inactivo',
 			idPaciente: Number(formData.get("idPaciente")),
 			cedula: formData.get('cedula') as string,
-			idDoctor: formData.get('idDoctor') as string
+			idDoctor: Number(formData.get('idDoctor')),
 		}
 
 		try {
 			// Call the appropriate action based on whether we're editing or creating
 
 			const result = isEditing
-				? await updateExpediente(Number(expediente!.id), data)
+				? await updateExpediente(Number(expediente!.idExpediente), data)
 				: await createExpediente(data)
 
 
-			console.log("Result:", result)
 			// Handle successful submission
 			if (result.success) {
-				router.refresh()
 				if (!isEditing) {
+					await queryClient.invalidateQueries({ queryKey: ['expedientes'] });
 					router.push('/admin/files')
+
 				}
+				// En caso de editar invalidar el cache
+				if (expediente?.idExpediente) {
+					await queryClient.invalidateQueries({ queryKey: ['expediente', String(expediente.idExpediente)] });
+				}
+				router.refresh()
 			}
 
 			return result
@@ -100,23 +134,29 @@ export default function ExpedienteForm({
 				errors: undefined,
 			}
 		}
-	}, initialState)
+	}, initialState);
 
-	const statusOptions = Object.values(ISSUE_STATUS).map(({ label, value }) => ({
+	const statusOptions = Object.values(EXPEDIENTE_STATUS).map(({ label, value }) => ({
 		label,
 		value,
-	}))
+	}));
 
 
 	return (
 		<Form action={formAction}>
 			{state?.message && (
-				<FormError
-					className={`mb-4 ${state.success ? 'bg-green-100 text-green-800 border-green-300' : ''
-						}`}
+				<div
+					className={cn(
+						' mb-4 w-full max-w-md rounded-md border px-4 py-2',
+						state.success
+							? 'bg-green-50 text-green-800 border-green-300'
+							: 'bg-red-50 text-red-800 border-red-300'
+					)}
+					role="status"
+					aria-live={state.success ? 'polite' : 'assertive'}
 				>
 					{state.message}
-				</FormError>
+				</div>
 			)}
 
 			<FormGroup>
@@ -186,8 +226,8 @@ export default function ExpedienteForm({
 				<FormSelect
 					id="idDoctor"
 					name="idDoctor"
-					options={doctors}
-					defaultValue={expediente?.idDoctor || ''}
+					options={doctorOptions}
+					defaultValue={expediente?.idMedico || ''}
 					disabled={isPending}
 					aria-describedby="description-error"
 					className={state?.errors?.description ? 'border-red-500' : ''}

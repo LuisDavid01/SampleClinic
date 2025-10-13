@@ -21,13 +21,10 @@ import {
 	Search,
 	ChevronRight,
 	ChevronLeft,
-	ChevronsLeft,
-	ChevronsRight
 } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils"
 import { Expediente } from "@/types/Expediente"
 import { useQuery } from "@tanstack/react-query"
-import { useApiClient } from "@/utils/apiClient"
 import { deleteExpediente, getExpedientes } from "@/actions/expedientes"
 import { useState } from "react"
 // Mock data
@@ -49,15 +46,19 @@ const statusConfig = {
 }
 
 export const ExpedientesList = () => {
-	const apiClient = useApiClient();
+	//	const apiClient = useApiClient();
 	const [page, setPage] = useState(1);
 	const [limit, setLimit] = useState(10);
 	const [search, setSearch] = useState("");
 
 	// se trae los datos del backend
-	const { isLoading, data = [] } = useQuery<Expediente[]>({
-		queryKey: [`expedientes-${page}-${search}-${limit}`],
-		queryFn: () => getExpedientes(page, search, limit),
+	const { isLoading, data = [], refetch } = useQuery<Expediente[]>({
+		queryKey: [`expedientes`, page, search, limit],
+		queryFn: async () => {
+			const res = await getExpedientes(page, search, limit);
+			console.log(res);
+			return res.expedientes
+		},
 		staleTime: 2 * 60 * 1000,
 
 	})
@@ -157,10 +158,10 @@ export const ExpedientesList = () => {
 											const statusConfig_ = statusConfig[file.estado as keyof typeof statusConfig]
 
 											return (
-												<TableRow key={file.id} className="hover:bg-muted/50">
+												<TableRow key={file.idExpediente} className="hover:bg-muted/50">
 													<TableCell className="font-medium">
 														<div className="flex items-center gap-2">
-															{file.idPaciente}
+															{file.paciente?.nombre}
 														</div>
 													</TableCell>
 													<TableCell>
@@ -168,12 +169,12 @@ export const ExpedientesList = () => {
 															{statusConfig_?.label}
 														</Badge>
 													</TableCell>
-													<TableCell>{file.idDoctor}</TableCell>
+													<TableCell>{file.medico?.nombre ?? 'no hay medico'}</TableCell>
 													<TableCell className=" text-sm">
-														{formatRelativeTime(file.updatedAt)}
+														{formatRelativeTime(file.fechaCreacion)}
 													</TableCell>
 													<TableCell>
-														<Link href={`data/${file.id}/edit`}>
+														<Link href={`files/${file.idExpediente}/edit`}>
 															<Button variant="outline" size="sm" className="mr-3">
 																Ver
 															</Button>
@@ -182,7 +183,8 @@ export const ExpedientesList = () => {
 
 														<Button variant="destructive" size="sm" className="mr-3"
 															onClick={() => {
-																deleteExpediente(file.id);
+																deleteExpediente(file.idExpediente);
+																refetch();
 															}}
 														>
 															Eliminar
@@ -218,7 +220,7 @@ export const ExpedientesList = () => {
 							const statusConfig_ = statusConfig[file.estado as keyof typeof statusConfig]
 
 							return (
-								<Card key={file.id}>
+								<Card key={file.idExpediente}>
 									<CardContent className="p-4">
 										<div className="flex items-start justify-between mb-3">
 											<div className="flex items-center gap-2">
@@ -227,7 +229,7 @@ export const ExpedientesList = () => {
 												</div>
 												<div>
 													<h3 className="font-medium">{file.idPaciente}</h3>
-													<p className="text-sm text-muted-foreground">{file.idDoctor}</p>
+													<p className="text-sm text-muted-foreground">{file.idMedico}</p>
 												</div>
 											</div>
 											<Badge className={statusConfig_?.color}>
@@ -238,18 +240,19 @@ export const ExpedientesList = () => {
 										<div className="space-y-2">
 											<div className="flex items-center justify-between">
 												<p className="text-sm text-muted-foreground">Actualizado</p>
-												<p className="text-sm font-medium">{file.updatedAt.getDate()}</p>
+												<p className="text-sm font-medium">{file.fechaCreacion}</p>
 											</div>
 
 											<div className="flex gap-2 pt-2">
-												<Link href={`files/${file.id}/edit`} className="flex-1">
+												<Link href={`files/${file.idExpediente}/edit`} className="flex-1">
 													<Button variant="outline" className="w-full mb-3">
 														Ver expediente
 													</Button>
 												</Link>
 												<Button variant="destructive" size="sm" className="w-full mb-3"
 													onClick={() => {
-														deleteExpediente(file.id);
+														deleteExpediente(file.idExpediente);
+														refetch();
 													}}
 												>
 													Eliminar
@@ -269,7 +272,9 @@ export const ExpedientesList = () => {
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 						<div className="flex items-center gap-2">
 							<span className="text-sm text-muted-foreground">Mostrar</span>
-							<Select defaultValue="10">
+							<Select defaultValue={limit.toString()} onValueChange={(value) => {
+								setLimit(parseInt(value));
+							}}>
 								<SelectTrigger className="w-20">
 									<SelectValue />
 								</SelectTrigger>
@@ -281,45 +286,34 @@ export const ExpedientesList = () => {
 								</SelectContent>
 							</Select>
 							<span className="text-sm text-muted-foreground">
-								de {2} registros
+								de {data.length} registros
 							</span>
 						</div>
 
 						<div className="flex items-center gap-2">
 							<Button
+								className="cursor-pointer"
+
 								variant="outline"
 								size="sm"
-
-								disabled
-							>
-								<ChevronsLeft className="w-4 h-4" />
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-
-								disabled
+								disabled={page <= 1}
+								onClick={() => setPage(page - 1)}
 							>
 								<ChevronLeft className="w-4 h-4" />
 							</Button>
 
 							<span className="text-sm px-4">
-								Página 1 de 2
+								Página {page}
 							</span>
 
 							<Button
+								className="cursor-pointer"
 								variant="outline"
 								size="sm"
-								disabled
+								disabled={data.length < limit}
+								onClick={() => setPage(page + 1)}
 							>
 								<ChevronRight className="w-4 h-4" />
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								disabled
-							>
-								<ChevronsRight className="w-4 h-4" />
 							</Button>
 						</div>
 					</div>

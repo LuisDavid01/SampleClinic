@@ -5,16 +5,15 @@ import { checkRole } from '@/utils/roles'
 
 const ExpedienteSchema = z.object({
 	idPaciente: z
-		.string()
-		.transform((val) => parseInt(val, 10))
-		.refine((val) => !isNaN(val), "Debe ser un número válido"),
+		.number('Invalido'),
 
 	cedula: z
 		.string()
 		.regex(/^\d{9}$/, 'La cédula debe tener exactamente 9 dígitos y sin guiones'),
 	descripcion: z.string().optional().nullable(),
 
-	idDoctor: z.string(),
+	idDoctor: z
+		.number('Invalido'),
 
 	estado: z.enum(['activo', 'inactivo'], {
 	}),
@@ -39,12 +38,35 @@ export async function getExpedientes(page: number, search?: string, limit: numbe
 		...(search && { search }),
 	});
 
-	const res = await fetch(`${baseUrl}/api/expedientes?${params}`, {
+	const res = await fetch(`${baseUrl}/expedientes?${params}`, {
 		method: 'GET',
 		headers: {
 			'Content-Type': 'application/json',
 
-			authorization: `Bearer ${user.getToken()}`
+			authorization: `Bearer ${await user.getToken()}`
+		}
+	});
+	if (!res.ok) {
+		throw new Error('Failed to fetch expedientes');
+	}
+	return res.json();
+
+}
+
+export async function getExpedienteByID(id: number) {
+
+	const user = await auth();
+	if (!user.userId && !checkRole('admin')) {
+		return [];
+	}
+
+
+	const res = await fetch(`${baseUrl}/expedientes/${id}`, {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+
+			authorization: `Bearer ${await user.getToken()}`
 		}
 	});
 	if (!res.ok) {
@@ -79,12 +101,12 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 		const validatedData = validationResult.data
 
 		// fetch
-		await fetch(`${baseUrl}/api/expedientes`, {
+		await fetch(`${baseUrl}/expedientes`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 
-				authorization: `Bearer ${user.getToken()}`,
+				authorization: `Bearer ${await user.getToken()}`,
 			},
 			body: JSON.stringify(validatedData),
 		})
@@ -146,12 +168,12 @@ export async function updateExpediente(
 			updateData.idDoctor = validatedData.idDoctor
 
 		// Update issue
-		await fetch(`${baseUrl}/api/expedientes/${id}`, {
+		await fetch(`${baseUrl}/expedientes/${id}`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
 
-				authorization: `Bearer ${user.getToken()}`
+				authorization: `Bearer ${await user.getToken()}`
 			},
 			body: JSON.stringify(updateData),
 		})
@@ -176,10 +198,10 @@ export async function deleteExpediente(id: number) {
 		}
 
 		// Delete Expediente
-		await fetch(`${baseUrl}/api/expedientes/${id}`, {
+		await fetch(`${baseUrl}/expedientes/${id}`, {
 			method: 'DELETE',
 			headers: {
-				authorization: `Bearer ${user.getToken()}`
+				authorization: `Bearer ${await user.getToken()}`
 			}
 		})
 		return { success: true, message: 'Expediente eliminado correctamente' }
