@@ -21,13 +21,10 @@ import {
 	Search,
 	ChevronRight,
 	ChevronLeft,
-	ChevronsLeft,
-	ChevronsRight
 } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils"
 import { Expediente } from "@/types/Expediente"
 import { useQuery } from "@tanstack/react-query"
-import { useApiClient } from "@/utils/apiClient"
 import { deleteExpediente, getExpedientes } from "@/actions/expedientes"
 import { useState } from "react"
 // Mock data
@@ -56,7 +53,7 @@ export const ExpedientesList = () => {
 
 	// se trae los datos del backend
 	const { isLoading, data = [], refetch } = useQuery<Expediente[]>({
-		queryKey: [`expedientes`],
+		queryKey: [`expedientes`, page, search, limit],
 		queryFn: async () => {
 			const res = await getExpedientes(page, search, limit);
 			console.log(res);
