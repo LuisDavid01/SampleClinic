@@ -131,6 +131,47 @@ CREATE TABLE IF NOT EXISTS sesiones (
     user_agent TEXT
 );
 
+-- 13. Tabla Antecedentes Clínicos
+CREATE TABLE IF NOT EXISTS antecedentes_clinicos (
+    id_antecedente SERIAL PRIMARY KEY,
+    id_paciente INTEGER UNIQUE REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    
+    -- Historial médico general
+    historial_medico TEXT,
+    condiciones_preexistentes TEXT,
+    
+    -- Alergias específicas por tipo
+    alergias_medicamentos TEXT,
+    alergias_alimentos TEXT,
+    alergias_ambientales TEXT,
+    alergias_otras TEXT,
+    
+    -- Medicamentos
+    medicamentos_actuales TEXT,
+    medicamentos_previos TEXT,
+    
+    -- Cirugías con detalles
+    cirugias_previas TEXT,
+    procedimientos_medicos TEXT,
+    
+    -- Información adicional
+    hospitalizaciones_previas TEXT,
+    antecedentes_familiares TEXT,
+    habitos_toxicos TEXT,
+    
+    -- Urgencias médicas
+    urgencias_medicas TEXT,
+    contacto_emergencia_nombre VARCHAR(100),
+    contacto_emergencia_telefono VARCHAR(20),
+    contacto_emergencia_relacion VARCHAR(50),
+    
+    -- Metadatos
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_medico_registro INTEGER REFERENCES usuarios(id_usuario),
+    notas_adicionales TEXT
+);
+
 -- Crear índices para mejorar el rendimiento
 CREATE INDEX IF NOT EXISTS idx_usuarios_correo ON usuarios(correo_electronico);
 CREATE INDEX IF NOT EXISTS idx_usuarios_rol ON usuarios(id_rol);
@@ -143,10 +184,41 @@ CREATE INDEX IF NOT EXISTS idx_sesiones_creacion ON sesiones(fecha_creacion);
 CREATE INDEX IF NOT EXISTS idx_sesiones_actividad ON sesiones(ultima_actividad);
 CREATE INDEX IF NOT EXISTS idx_sesiones_activa ON sesiones(activa);
 
+-- 18. Tabla Auditoría Antecedentes
+CREATE TABLE IF NOT EXISTS auditoria_antecedentes (
+    id SERIAL PRIMARY KEY,
+    accion VARCHAR(50) NOT NULL,
+    recurso VARCHAR(50) NOT NULL,
+    recurso_id INTEGER,
+    metodo VARCHAR(10) NOT NULL,
+    url TEXT NOT NULL,
+    status_code INTEGER NOT NULL,
+    usuario_id INTEGER REFERENCES usuarios(id_usuario),
+    usuario_info JSONB,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    detalles JSONB
+);
+
+-- Índices para antecedentes clínicos
+CREATE INDEX IF NOT EXISTS idx_antecedentes_paciente ON antecedentes_clinicos(id_paciente);
+CREATE INDEX IF NOT EXISTS idx_antecedentes_medico ON antecedentes_clinicos(id_medico_registro);
+CREATE INDEX IF NOT EXISTS idx_antecedentes_fecha_creacion ON antecedentes_clinicos(fecha_creacion);
+CREATE INDEX IF NOT EXISTS idx_antecedentes_fecha_actualizacion ON antecedentes_clinicos(fecha_actualizacion);
+
+-- Índices para auditoría de antecedentes
+CREATE INDEX IF NOT EXISTS idx_auditoria_accion ON auditoria_antecedentes(accion);
+CREATE INDEX IF NOT EXISTS idx_auditoria_recurso ON auditoria_antecedentes(recurso);
+CREATE INDEX IF NOT EXISTS idx_auditoria_recurso_id ON auditoria_antecedentes(recurso_id);
+CREATE INDEX IF NOT EXISTS idx_auditoria_usuario_id ON auditoria_antecedentes(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_auditoria_timestamp ON auditoria_antecedentes(timestamp);
+
 -- Insertar datos iniciales
 INSERT INTO roles (nombre_rol, descripcion) VALUES 
 ('admin', 'Administrador del sistema'),
-('medico', 'Médico fisioterapeuta'),
+('fisioterapeuta', 'Médico fisioterapeuta'),
+('recepcionista', 'Recepcionista de la clínica'),
 ('paciente', 'Paciente de la clínica')
 ON CONFLICT DO NOTHING;
 
@@ -157,3 +229,43 @@ INSERT INTO servicios (nombre_servicio, descripcion, precio) VALUES
 ('Terapia manual', 'Técnicas manuales especializadas', 45.00),
 ('Rehabilitación deportiva', 'Tratamiento especializado para deportistas', 55.00)
 ON CONFLICT DO NOTHING;
+
+-- Comentarios para antecedentes clínicos
+COMMENT ON TABLE antecedentes_clinicos IS 'Registro completo de antecedentes clínicos del paciente';
+COMMENT ON COLUMN antecedentes_clinicos.id_paciente IS 'ID del paciente (relación uno a uno)';
+COMMENT ON COLUMN antecedentes_clinicos.historial_medico IS 'Historial médico general del paciente';
+COMMENT ON COLUMN antecedentes_clinicos.condiciones_preexistentes IS 'Condiciones médicas preexistentes';
+COMMENT ON COLUMN antecedentes_clinicos.alergias_medicamentos IS 'Alergias a medicamentos específicos';
+COMMENT ON COLUMN antecedentes_clinicos.alergias_alimentos IS 'Alergias alimentarias';
+COMMENT ON COLUMN antecedentes_clinicos.alergias_ambientales IS 'Alergias ambientales (polen, polvo, etc.)';
+COMMENT ON COLUMN antecedentes_clinicos.alergias_otras IS 'Otras alergias (latex, contrastes, etc.)';
+COMMENT ON COLUMN antecedentes_clinicos.medicamentos_actuales IS 'Medicamentos que toma actualmente';
+COMMENT ON COLUMN antecedentes_clinicos.medicamentos_previos IS 'Medicamentos que tomó anteriormente';
+COMMENT ON COLUMN antecedentes_clinicos.cirugias_previas IS 'Cirugías previas con tipo, fecha y hospital';
+COMMENT ON COLUMN antecedentes_clinicos.procedimientos_medicos IS 'Otros procedimientos médicos realizados';
+COMMENT ON COLUMN antecedentes_clinicos.hospitalizaciones_previas IS 'Hospitalizaciones anteriores';
+COMMENT ON COLUMN antecedentes_clinicos.antecedentes_familiares IS 'Historial médico familiar';
+COMMENT ON COLUMN antecedentes_clinicos.habitos_toxicos IS 'Consumo de alcohol, tabaco, drogas';
+COMMENT ON COLUMN antecedentes_clinicos.urgencias_medicas IS 'Información de urgencias médicas del paciente';
+COMMENT ON COLUMN antecedentes_clinicos.contacto_emergencia_nombre IS 'Nombre del contacto de emergencia';
+COMMENT ON COLUMN antecedentes_clinicos.contacto_emergencia_telefono IS 'Teléfono del contacto de emergencia';
+COMMENT ON COLUMN antecedentes_clinicos.contacto_emergencia_relacion IS 'Relación con el paciente (familiar, amigo, etc.)';
+COMMENT ON COLUMN antecedentes_clinicos.fecha_creacion IS 'Fecha y hora de creación del registro';
+COMMENT ON COLUMN antecedentes_clinicos.fecha_actualizacion IS 'Fecha y hora de la última actualización';
+COMMENT ON COLUMN antecedentes_clinicos.id_medico_registro IS 'ID del médico que registró los antecedentes';
+COMMENT ON COLUMN antecedentes_clinicos.notas_adicionales IS 'Observaciones adicionales del médico';
+
+-- Comentarios para auditoría de antecedentes
+COMMENT ON TABLE auditoria_antecedentes IS 'Registro de auditoría para operaciones de antecedentes clínicos';
+COMMENT ON COLUMN auditoria_antecedentes.accion IS 'Acción realizada (CREAR, ACTUALIZAR, CONSULTAR, ELIMINAR)';
+COMMENT ON COLUMN auditoria_antecedentes.recurso IS 'Recurso afectado (ANTECEDENTES_CLINICOS)';
+COMMENT ON COLUMN auditoria_antecedentes.recurso_id IS 'ID del recurso afectado (ID del paciente)';
+COMMENT ON COLUMN auditoria_antecedentes.metodo IS 'Método HTTP utilizado (GET, POST, PUT, DELETE)';
+COMMENT ON COLUMN auditoria_antecedentes.url IS 'URL completa de la operación';
+COMMENT ON COLUMN auditoria_antecedentes.status_code IS 'Código de respuesta HTTP';
+COMMENT ON COLUMN auditoria_antecedentes.usuario_id IS 'ID del usuario que realizó la acción';
+COMMENT ON COLUMN auditoria_antecedentes.usuario_info IS 'Información del usuario de Clerk (JSON)';
+COMMENT ON COLUMN auditoria_antecedentes.ip_address IS 'Dirección IP del cliente';
+COMMENT ON COLUMN auditoria_antecedentes.user_agent IS 'User Agent del navegador/cliente';
+COMMENT ON COLUMN auditoria_antecedentes.timestamp IS 'Fecha y hora de la operación';
+COMMENT ON COLUMN auditoria_antecedentes.detalles IS 'Detalles de la operación (request/response sanitizados)';

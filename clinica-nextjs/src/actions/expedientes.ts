@@ -9,7 +9,9 @@ const ExpedienteSchema = z.object({
 
 	cedula: z
 		.string()
-		.regex(/^\d{9}$/, 'La cédula debe tener exactamente 9 dígitos y sin guiones'),
+		.regex(/^[A-Za-z0-9-]+$/, 'La cédula solo puede contener letras, números y guiones')
+		.min(5, 'La cédula debe tener al menos 5 caracteres')
+		.max(50, 'La cédula no puede exceder 50 caracteres'),
 	descripcion: z.string().optional().nullable(),
 
 	idDoctor: z
@@ -99,18 +101,54 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 
 		// Create expediente with validated data
 		const validatedData = validationResult.data
+		
+		// Transform idDoctor to idMedico for the API
+		const apiData = {
+			...validatedData,
+			idMedico: validatedData.idDoctor,
+			idDoctor: undefined
+		};
+		delete apiData.idDoctor;
 
 		// fetch
-		await fetch(`${baseUrl}/expedientes`, {
+		const response = await fetch(`${baseUrl}/expedientes`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 
 				authorization: `Bearer ${await user.getToken()}`,
 			},
-			body: JSON.stringify(validatedData),
+			body: JSON.stringify(apiData),
 		})
 
+		// Check if the response is not ok
+		if (!response.ok) {
+			const errorData = await response.json()
+			
+			// Handle specific error cases
+			if (errorData.error === 'El paciente ya tiene un expediente activo') {
+				return {
+					success: false,
+					message: errorData.message || 'El paciente ya tiene un expediente activo',
+					error: 'Expediente duplicado',
+				}
+			}
+			
+			if (errorData.error === 'Ya existe un expediente con esta cédula') {
+				return {
+					success: false,
+					message: errorData.error || 'Ya existe un expediente con esta cédula',
+					error: 'Cédula duplicada',
+				}
+			}
+			
+			// Handle other API errors
+			return {
+				success: false,
+				message: errorData.error || 'Error del servidor',
+				error: 'Error del servidor',
+			}
+		}
 
 		return { success: true, message: 'Expediente creado con exito' }
 	} catch (error) {
@@ -140,11 +178,22 @@ export async function updateExpediente(
 			}
 		}
 
-		// Allow partial validation for updates
-		const UpdateExpedienteSchema = ExpedienteSchema.partial()
+		// Allow partial validation for updates with more flexible schema
+		const UpdateExpedienteSchema = ExpedienteSchema.partial().extend({
+			cedula: z.string()
+				.regex(/^[A-Za-z0-9-]+$/, 'La cédula solo puede contener letras, números y guiones')
+				.min(5, 'La cédula debe tener al menos 5 caracteres')
+				.max(50, 'La cédula no puede exceder 50 caracteres')
+				.optional(),
+		})
 		const validationResult = UpdateExpedienteSchema.safeParse(data)
 
 		if (!validationResult.success) {
+			console.log('Frontend validation failed:', {
+				data,
+				errors: validationResult.error.flatten().fieldErrors,
+				issues: validationResult.error.issues
+			});
 			return {
 				success: false,
 				message: 'Validation failed',
@@ -165,10 +214,10 @@ export async function updateExpediente(
 		if (validatedData.descripcion !== undefined)
 			updateData.descripcion = validatedData.descripcion
 		if (validatedData.idDoctor !== undefined)
-			updateData.idDoctor = validatedData.idDoctor
+			updateData.idMedico = validatedData.idDoctor
 
 		// Update issue
-		await fetch(`${baseUrl}/expedientes/${id}`, {
+		const response = await fetch(`${baseUrl}/expedientes/${id}`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
@@ -177,6 +226,36 @@ export async function updateExpediente(
 			},
 			body: JSON.stringify(updateData),
 		})
+
+		// Check if the response is not ok
+		if (!response.ok) {
+			const errorData = await response.json()
+			
+			// Handle specific error cases
+			if (errorData.error === 'El paciente ya tiene un expediente activo') {
+				return {
+					success: false,
+					message: errorData.message || 'El paciente ya tiene un expediente activo',
+					error: 'Expediente duplicado',
+				}
+			}
+			
+			if (errorData.error === 'Ya existe un expediente con esta cédula') {
+				return {
+					success: false,
+					message: errorData.error || 'Ya existe un expediente con esta cédula',
+					error: 'Cédula duplicada',
+				}
+			}
+			
+			// Handle other API errors
+			return {
+				success: false,
+				message: errorData.error || 'Error del servidor',
+				error: 'Error del servidor',
+			}
+		}
+
 		return { success: true, message: 'Se actualizo correctamente' }
 	} catch (error) {
 		console.error('Error actualizando el expediente:', error)

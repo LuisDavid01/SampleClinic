@@ -204,7 +204,8 @@ async function determineUserRole(clerkUser) {
     const roleMapping = {
       'admin': 1,      // admin
       'medico': 2,     // medico
-      'paciente': 3    // paciente
+      'recepcionista': 3, // recepcionista
+      'paciente': 4    // paciente
     };
 
     // Buscar el primer rol válido
@@ -220,7 +221,7 @@ async function determineUserRole(clerkUser) {
     } else if (clerkUser.email?.includes('@medico.')) {
       return 2; // medico
     } else {
-      return 3; // paciente por defecto
+      return 4; // paciente por defecto
     }
   } catch (error) {
     console.error('Error determinando rol de usuario:', error);

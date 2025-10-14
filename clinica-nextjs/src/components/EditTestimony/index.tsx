@@ -10,7 +10,7 @@ import {
   FormTextarea,
   FormSelect,
   FormError,
-} from '@/components/ui/Form'
+} from '@/components/ui/form'
 import { Testimony, TESTIMONY_STATUS } from '@/types/Testimony'
 import { formatDateForInput } from '@/lib/utils'
 import { Star } from 'lucide-react'
@@ -91,7 +91,7 @@ export default function EditTestimony ({testimony,
     value,
   }))
     return (
-    <Form>
+    <form>
       {state?.message && (
         <FormError
           className={`mb-4 ${
@@ -222,6 +222,6 @@ export default function EditTestimony ({testimony,
             Confirmar cambios
         </Button>
       </div>
-    </Form>
+    </form>
   )
 }

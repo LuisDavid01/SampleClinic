@@ -4,6 +4,10 @@ import { body, param, query, validationResult } from 'express-validator';
 const handleValidationErrors = (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
+		console.log('=== VALIDATION ERRORS ===');
+		console.log('Request body:', req.body);
+		console.log('Validation errors:', errors.array());
+		console.log('========================');
 		return res.status(400).json({
 			error: 'Datos de entrada inválidos',
 			message: 'Por favor, revise los datos enviados',
@@ -309,11 +313,157 @@ const validateExpedienteUpdate = [
 	handleValidationErrors
 ];
 
+// Validaciones para diagnósticos (crear)
+const validateDiagnostico = [
+	body('idPaciente')
+		.isInt({ min: 1 })
+		.withMessage('El ID del paciente debe ser un número entero positivo'),
+
+	body('idDoctor')
+		.optional()
+		.isInt({ min: 1 })
+		.withMessage('El ID del doctor debe ser un número entero positivo'),
+
+	body('diagnostico')
+		.notEmpty()
+		.withMessage('El diagnóstico es requerido')
+		.isLength({ min: 10, max: 5000 })
+		.withMessage('El diagnóstico debe tener entre 10 y 5000 caracteres'),
+
+	body('idExpediente')
+		.optional()
+		.isInt({ min: 1 })
+		.withMessage('El ID del expediente debe ser un número entero positivo'),
+
+	body('fecha')
+		.notEmpty()
+		.withMessage('La fecha es requerida')
+		.matches(/^\d{4}-\d{2}-\d{2}$/)
+		.withMessage('La fecha debe tener el formato YYYY-MM-DD'),
+
+	handleValidationErrors
+];
+
+// Validaciones para diagnósticos (actualizar)
+const validateDiagnosticoUpdate = [
+	body('diagnostico')
+		.optional()
+		.isLength({ min: 10, max: 5000 })
+		.withMessage('El diagnóstico debe tener entre 10 y 5000 caracteres'),
+
+	body('idDoctor')
+		.optional()
+		.isInt({ min: 1 })
+		.withMessage('El ID del doctor debe ser un número entero positivo'),
+
+	body('idExpediente')
+		.optional()
+		.isInt({ min: 1 })
+		.withMessage('El ID del expediente debe ser un número entero positivo'),
+
+	handleValidationErrors
+];
+
 // Validaciones para parámetros de ID
 const validateId = [
 	param('id')
 		.isInt({ min: 1 })
 		.withMessage('El ID debe ser un número entero positivo'),
+
+	handleValidationErrors
+];
+
+// Validaciones para antecedentes clínicos (crear)
+const validateAntecedentes = [
+	body('historialMedico')
+		.optional()
+		.isLength({ max: 2000 })
+		.withMessage('El historial médico no puede exceder 2000 caracteres'),
+
+	body('condicionesPreexistentes')
+		.optional()
+		.isLength({ max: 2000 })
+		.withMessage('Las condiciones preexistentes no pueden exceder 2000 caracteres'),
+
+	body('alergiasMedicamentos')
+		.optional()
+		.isLength({ max: 1000 })
+		.withMessage('Las alergias a medicamentos no pueden exceder 1000 caracteres'),
+
+	body('alergiasAlimentos')
+		.optional()
+		.isLength({ max: 1000 })
+		.withMessage('Las alergias alimentarias no pueden exceder 1000 caracteres'),
+
+	body('alergiasAmbientales')
+		.optional()
+		.isLength({ max: 1000 })
+		.withMessage('Las alergias ambientales no pueden exceder 1000 caracteres'),
+
+	body('alergiasOtras')
+		.optional()
+		.isLength({ max: 1000 })
+		.withMessage('Otras alergias no pueden exceder 1000 caracteres'),
+
+	body('medicamentosActuales')
+		.optional()
+		.isLength({ max: 2000 })
+		.withMessage('Los medicamentos actuales no pueden exceder 2000 caracteres'),
+
+	body('medicamentosPrevios')
+		.optional()
+		.isLength({ max: 2000 })
+		.withMessage('Los medicamentos previos no pueden exceder 2000 caracteres'),
+
+	body('cirugiasPrevias')
+		.optional()
+		.isLength({ max: 2000 })
+		.withMessage('Las cirugías previas no pueden exceder 2000 caracteres'),
+
+	body('procedimientosMedicos')
+		.optional()
+		.isLength({ max: 2000 })
+		.withMessage('Los procedimientos médicos no pueden exceder 2000 caracteres'),
+
+	body('hospitalizacionesPrevias')
+		.optional()
+		.isLength({ max: 2000 })
+		.withMessage('Las hospitalizaciones previas no pueden exceder 2000 caracteres'),
+
+	body('antecedentesFamiliares')
+		.optional()
+		.isLength({ max: 2000 })
+		.withMessage('Los antecedentes familiares no pueden exceder 2000 caracteres'),
+
+	body('habitosToxicos')
+		.optional()
+		.isLength({ max: 1000 })
+		.withMessage('Los hábitos tóxicos no pueden exceder 1000 caracteres'),
+
+	body('urgenciasMedicas')
+		.optional()
+		.isLength({ max: 1000 })
+		.withMessage('Las urgencias médicas no pueden exceder 1000 caracteres'),
+
+	body('contactoEmergenciaNombre')
+		.optional()
+		.isLength({ max: 100 })
+		.withMessage('El nombre del contacto de emergencia no puede exceder 100 caracteres'),
+
+	body('contactoEmergenciaTelefono')
+		.optional()
+		.isLength({ max: 20 })
+		.withMessage('El teléfono del contacto de emergencia no puede exceder 20 caracteres'),
+
+	body('contactoEmergenciaRelacion')
+		.optional()
+		.isLength({ max: 50 })
+		.withMessage('La relación del contacto de emergencia no puede exceder 50 caracteres'),
+
+	body('notasAdicionales')
+		.optional()
+		.isLength({ max: 2000 })
+		.withMessage('Las notas adicionales no pueden exceder 2000 caracteres'),
 
 	handleValidationErrors
 ];
@@ -328,6 +478,9 @@ export {
 	validateHistoriaExito,
 	validateExpediente,
 	validateExpedienteUpdate,
+	validateDiagnostico,
+	validateDiagnosticoUpdate,
+	validateAntecedentes,
 	validateId
 };
 

@@ -10,7 +10,7 @@ import {
   FormTextarea,
   FormSelect,
   FormError,
-} from '@/components/ui/Form'
+} from '@/components/ui/form'
 import { Diagnostico} from '@/types/Diagnostico'
 import { formatDateForInput } from '@/lib/utils'
 
@@ -90,7 +90,7 @@ export default function DiagnosisForm({
 
 
      return (
-    <Form>
+    <form>
       {state?.message && (
         <FormError
           className={`mb-4 ${
@@ -219,6 +219,6 @@ export default function DiagnosisForm({
           {isEditing ? 'Confirmar cambios' : 'Crear diagnostico'}
         </Button>
       </div>
-    </Form>
+    </form>
   )
 }

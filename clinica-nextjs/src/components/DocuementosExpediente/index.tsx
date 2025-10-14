@@ -319,39 +319,39 @@ export default function DocumentosExpediente() {
 
       {/* Zona de carga */}
       <Card>
-        <CardContent className="p-0">
-          <div
-            {...getRootProps()}
-            className={clsx(
-              'border-2 border-dashed rounded-[var(--radius)] p-8 text-center cursor-pointer transition-all duration-200',
-              isDragActive
-                ? 'border-primary bg-accent scale-[1.02]'
-                : 'border-muted bg-card hover:border-accent/50 hover:bg-primary/5'
-            )}
-          >
-            <input {...getInputProps()} />
-            <Upload 
+          <CardContent className="p-0">
+            <div
+              {...getRootProps()}
               className={clsx(
-                'mx-auto mb-3 transition-colors',
-                isDragActive ? 'text-primary' : 'text-muted-foreground'
-              )} 
-              size={40} 
-            />
-            <p className="text-sm font-medium text-text-primary mb-1">
-              {isDragActive 
-                ? 'Suelta los archivos aquí' 
-                : 'Arrastra y suelta archivos aquí o haz clic para seleccionar'
-              }
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Tamaño máximo: 5MB por archivo
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Formatos: PDF, JPG, PNG, DOC, DOCX
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+                'border-2 border-dashed rounded-[var(--radius)] p-8 text-center cursor-pointer transition-all duration-200',
+                isDragActive
+                  ? 'border-primary bg-accent scale-[1.02]'
+                  : 'border-muted bg-card hover:border-accent/50 hover:bg-primary/5'
+              )}
+            >
+              <input {...getInputProps()} />
+              <Upload 
+                className={clsx(
+                  'mx-auto mb-3 transition-colors',
+                  isDragActive ? 'text-primary' : 'text-muted-foreground'
+                )} 
+                size={40} 
+              />
+              <p className="text-sm font-medium text-text-primary mb-1">
+                {isDragActive 
+                  ? 'Suelta los archivos aquí' 
+                  : 'Arrastra y suelta archivos aquí o haz clic para seleccionar'
+                }
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Tamaño máximo: 5MB por archivo
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Formatos: PDF, JPG, PNG, DOC, DOCX
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
       {/* Errores de archivos rechazados */}
       {fileRejections.length > 0 && (

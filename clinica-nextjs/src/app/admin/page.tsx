@@ -85,11 +85,6 @@ export default function AdminDashboard() {
                   userData: profileResult.dbUser
                 });
                 
-                console.log("👤 Usuario admin en base de datos:");
-                console.log("  - ID:", profileResult.dbUser.idUsuario);
-                console.log("  - Nombre:", profileResult.dbUser.nombre);
-                console.log("  - Email:", profileResult.dbUser.correoElectronico);
-                console.log("  - Rol:", profileResult.dbUser.rol?.nombreRol);
               }
             } catch (apiError) {
               console.error("❌ Error en validación de admin:", apiError);

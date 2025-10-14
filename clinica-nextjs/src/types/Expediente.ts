@@ -35,7 +35,7 @@ interface Documento {
 }
 
 // Definición del tipo para un Diagnóstico
-interface Diagnostico {
+export interface Diagnostico {
 	idDiagnostico: number;
 	idPaciente: number;
 	fecha: string; // formato: YYYY-MM-DD

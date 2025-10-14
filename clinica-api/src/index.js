@@ -17,7 +17,11 @@ import servicioRoutes from './routes/servicios.js';
 import perfilRoutes from './routes/perfiles.js';
 import historiaExitoRoutes from './routes/historias-exito.js';
 import expedienteRoutes from './routes/expedientes.js';
+import diagnosticoRoutes from './routes/diagnosticos.js';
 import clerkProfileRoutes from './routes/clerkProfile.js';
+import userRoleRoutes from './routes/userRole.js';
+import antecedentesRoutes from './routes/antecedentes.js';
+import auditoriaRoutes from './routes/auditoria.js';
 
 const app = express();
 
@@ -83,7 +87,11 @@ app.use('/api/servicios', servicioRoutes);
 app.use('/api/perfiles', perfilRoutes);
 app.use('/api/historias-exito', historiaExitoRoutes);
 app.use('/api/expedientes', expedienteRoutes);
+app.use('/api/diagnosticos', diagnosticoRoutes);
 app.use('/api/clerk', clerkProfileRoutes);
+app.use('/api/user-role', userRoleRoutes);
+app.use('/api/pacientes', antecedentesRoutes);
+app.use('/api/auditoria', auditoriaRoutes);
 
 /**
  * @swagger

@@ -12,11 +12,17 @@ import {
 import DocumentosExpediente from '@/components/DocuementosExpediente'
 import ConsentManagement from '@/components/ConsentManagment'
 import DiagnosticoTable from '@/components/DiagnosticoTable'
+import AntecedentesManager from '@/components/AntecedentesManager'
 
 import { ExpedienteByID } from '@/components/ExpedienteByID'
+import { getExpedienteByID } from '@/actions/expedientes'
 
 export default async function EditFilePage({ params }) {
 	const { id } = await params
+	
+	// Obtener información del expediente para extraer el ID del paciente
+	const expediente = await getExpedienteByID(Number(id))
+	const pacienteId = expediente?.idPaciente
 	return (
 		<div className="space-y-6 p-6 bg-background min-h-screen">
 			<Link
@@ -65,7 +71,7 @@ export default async function EditFilePage({ params }) {
 					</CardHeader>
 					<CardContent>
 						<Suspense fallback={<div>loading...</div>}>
-							<DiagnosticoTable />
+							<DiagnosticoTable expedienteId={Number(id)} />
 						</Suspense>
 					</CardContent>
 				</Card>
@@ -92,6 +98,34 @@ export default async function EditFilePage({ params }) {
 					</CardContent>
 				</Card>
 			</div>
+
+			{/* Antecedentes Clínicos */}
+			<Card className="bg-card/50 shadow-sm">
+				<CardHeader className="pb-4">
+					<CardTitle>
+						<div className="flex items-center gap-2">
+							<FileSignatureIcon className="w-5 h-5 text-text-primary" />
+							<h2 className="text-lg font-semibold text-text-primary">
+								Antecedentes Clínicos
+							</h2>
+						</div>
+					</CardTitle>
+					<CardDescription>Historial médico completo del paciente</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<Suspense fallback={<div>Cargando antecedentes...</div>}>
+						{pacienteId ? (
+							<AntecedentesManager 
+								pacienteId={pacienteId} 
+								expedienteId={Number(id)}
+								canEdit={true}
+							/>
+						) : (
+							<div>No se pudo obtener la información del paciente</div>
+						)}
+					</Suspense>
+				</CardContent>
+			</Card>
 
 			{/* Documentos del Expediente */}
 			<Card className="bg-card/50 shadow-sm">

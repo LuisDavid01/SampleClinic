@@ -10,7 +10,7 @@ import {
   FormTextarea,
   FormSelect,
   FormError,
-} from '@/components/ui/Form'
+} from '@/components/ui/form'
 import { Consent} from '@/types/Consent'
 import { formatDateForInput } from '@/lib/utils'
 
@@ -90,7 +90,7 @@ export default function NewConsent({
 
 
      return (
-    <Form>
+    <form>
       {state?.message && (
         <FormError
           className={`mb-4 ${
@@ -218,6 +218,6 @@ export default function NewConsent({
           {isEditing ? 'Confirmar cambios' : 'Crear acta de consentimiento'}
         </Button>
       </div>
-    </Form>
+    </form>
   )
 }
