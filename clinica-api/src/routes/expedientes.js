@@ -91,52 +91,28 @@ router.get('/', clerkAuth, async (req, res) => {
       include: { rol: true }
     });
 
-    console.log('Expedientes - User info:', {
-      userRole,
-      userId: req.user.id,
-      metadata: req.user.metadata,
-      usuario: usuario ? {
-        idUsuario: usuario.idUsuario,
-        rol: usuario.rol?.idRol,
-        nombre: usuario.nombre
-      } : null
-    });
-
     // Aplicar restricciones basadas en el rol de la base de datos (más confiable)
     const dbRole = usuario?.rol?.idRol;
-    console.log('Rol de la base de datos:', dbRole);
     
     if (dbRole === 4) { // PACIENTE
       // Pacientes solo pueden ver sus propios expedientes
       if (usuario) {
         where.idPaciente = usuario.idUsuario;
-        console.log('Filtro aplicado para paciente (BD):', { idPaciente: usuario.idUsuario });
       }
     } else if (dbRole === 2) { // FISIOTERAPEUTA
       // Fisioterapeutas solo pueden ver expedientes asignados a ellos
       if (usuario) {
         where.idMedico = usuario.idUsuario;
-        console.log('Filtro aplicado para fisioterapeuta (BD):', { 
-          idMedico: usuario.idUsuario,
-          usuarioId: usuario.idUsuario,
-          dbRole: dbRole
-        });
       }
     } else if (dbRole === 1) { // ADMINISTRADOR
-      console.log('Usuario administrador (BD) - sin restricciones');
       // Los administradores pueden ver todos los expedientes
     } else {
-      console.log('Rol no reconocido en BD:', dbRole);
       // Si no se reconoce el rol, aplicar restricción por defecto
       if (usuario) {
         where.idMedico = usuario.idUsuario;
-        console.log('Aplicando filtro por defecto para rol no reconocido:', { idMedico: usuario.idUsuario });
       }
     }
 
-    console.log('Where clause final:', where);
-
-    console.log('Ejecutando consulta con where:', where);
     
     const [expedientes, total] = await Promise.all([
       prisma.expediente.findMany({
@@ -181,18 +157,6 @@ router.get('/', clerkAuth, async (req, res) => {
       prisma.expediente.count({ where })
     ]);
     
-    console.log('Consulta ejecutada - expedientes encontrados:', expedientes.map(e => ({
-      idExpediente: e.idExpediente,
-      idMedico: e.idMedico,
-      idPaciente: e.idPaciente
-    })));
-
-    console.log('Expedientes devueltos:', {
-      count: expedientes.length,
-      total,
-      where,
-      userRole
-    });
 
     res.json({
       expedientes,
@@ -288,13 +252,6 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
       return res.status(404).json({ error: 'Expediente no encontrado' });
     }
 
-    // Debug: Log the expediente data
-    console.log('Expediente by ID:', {
-      idExpediente: expediente.idExpediente,
-      idMedico: expediente.idMedico,
-      medico: expediente.medico,
-      hasMedico: !!expediente.medico
-    });
 
     // Verificar permisos basados en el rol
     const userRole = req.user.metadata?.role;
