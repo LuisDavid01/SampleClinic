@@ -6,11 +6,6 @@ const nextConfig: NextConfig = {
 		// your project has ESLint errors.
 		ignoreDuringBuilds: true,
 	},
-};
-
-export default nextConfig;
-
-module.exports = {
 	async rewrites() {
 		return [
 			{
@@ -22,10 +17,8 @@ module.exports = {
 				destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/:path*`,
 				//destination: 'http://localhost:3001/:path*',
 			},
-
 		];
 	},
-
 	images: {
 		remotePatterns: [
 			{
@@ -42,6 +35,7 @@ module.exports = {
 			},
 		],
 	},
-
 };
+
+export default nextConfig;
 

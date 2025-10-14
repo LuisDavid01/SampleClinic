@@ -21,19 +21,25 @@ interface AntecedentesFormProps {
 // Definir las secciones y campos del formulario
 const antecedenteSections: AntecedenteSection[] = [
   {
+    id: 'historial-medico',
     title: 'Historial Médico',
+    description: 'Información sobre el historial médico del paciente',
     fields: [
       { name: 'historialMedico', label: 'Historial Médico', type: 'textarea', placeholder: 'Describa el historial médico del paciente...' }
     ]
   },
   {
+    id: 'condiciones-preexistentes',
     title: 'Condiciones Preexistentes',
+    description: 'Condiciones médicas preexistentes del paciente',
     fields: [
       { name: 'condicionesPreexistentes', label: 'Condiciones Preexistentes', type: 'textarea', placeholder: 'Describa las condiciones preexistentes...' }
     ]
   },
   {
+    id: 'alergias',
     title: 'Alergias',
+    description: 'Información sobre alergias del paciente',
     fields: [
       { name: 'alergiasMedicamentos', label: 'Alergias a Medicamentos', type: 'textarea', placeholder: 'Describa las alergias a medicamentos...' },
       { name: 'alergiasAlimentos', label: 'Alergias Alimentarias', type: 'textarea', placeholder: 'Describa las alergias alimentarias...' },
@@ -42,14 +48,18 @@ const antecedenteSections: AntecedenteSection[] = [
     ]
   },
   {
+    id: 'medicamentos',
     title: 'Medicamentos',
+    description: 'Medicamentos actuales y previos del paciente',
     fields: [
       { name: 'medicamentosActuales', label: 'Medicamentos Actuales', type: 'textarea', placeholder: 'Describa los medicamentos actuales...' },
       { name: 'medicamentosPrevios', label: 'Medicamentos Previos', type: 'textarea', placeholder: 'Describa los medicamentos previos...' }
     ]
   },
   {
+    id: 'cirugias-procedimientos',
     title: 'Procedimientos Quirúrgicos',
+    description: 'Historial de cirugías y procedimientos médicos',
     fields: [
       { name: 'cirugiasPrevias', label: 'Cirugías Previas', type: 'textarea', placeholder: 'Describa las cirugías previas...' },
       { name: 'procedimientosMedicos', label: 'Procedimientos Médicos', type: 'textarea', placeholder: 'Describa los procedimientos médicos...' },
@@ -57,19 +67,25 @@ const antecedenteSections: AntecedenteSection[] = [
     ]
   },
   {
+    id: 'antecedentes-familiares',
     title: 'Antecedentes Familiares',
+    description: 'Historial médico familiar del paciente',
     fields: [
       { name: 'antecedentesFamiliares', label: 'Antecedentes Familiares', type: 'textarea', placeholder: 'Describa los antecedentes familiares...' }
     ]
   },
   {
+    id: 'habitos-toxicos',
     title: 'Hábitos',
+    description: 'Información sobre hábitos tóxicos del paciente',
     fields: [
       { name: 'habitosToxicos', label: 'Hábitos Tóxicos', type: 'textarea', placeholder: 'Describa los hábitos tóxicos...' }
     ]
   },
   {
+    id: 'contacto-emergencia',
     title: 'Información de Emergencia',
+    description: 'Información de contacto para emergencias médicas',
     fields: [
       { name: 'urgenciasMedicas', label: 'Urgencias Médicas', type: 'textarea', placeholder: 'Describa las urgencias médicas...' },
       { name: 'contactoEmergenciaNombre', label: 'Nombre del Contacto de Emergencia', type: 'text', placeholder: 'Nombre completo del contacto...' },
@@ -78,7 +94,9 @@ const antecedenteSections: AntecedenteSection[] = [
     ]
   },
   {
+    id: 'notas-adicionales',
     title: 'Notas Adicionales',
+    description: 'Información adicional relevante',
     fields: [
       { name: 'notasAdicionales', label: 'Notas Adicionales', type: 'textarea', placeholder: 'Cualquier información adicional relevante...' }
     ]
