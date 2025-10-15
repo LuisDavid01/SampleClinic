@@ -10,7 +10,7 @@ import {
   FormTextarea,
   FormSelect,
   FormError,
-} from '@/components/ui/form'
+} from '../ui/form'
 import { Testimony, TESTIMONY_STATUS } from '@/types/Testimony'
 import { formatDateForInput } from '@/lib/utils'
 import { Star } from 'lucide-react'

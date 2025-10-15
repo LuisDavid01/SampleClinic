@@ -10,7 +10,7 @@ import {
   FormTextarea,
   FormSelect,
   FormError,
-} from '@/components/ui/form'
+} from '../ui/form'
 import { Appointment, APPOINTMENT_STATUS } from '@/types/Appointment'
 import { formatDateForInput } from '@/lib/utils'
 interface ExpedienteFormProps {
