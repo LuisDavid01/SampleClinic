@@ -3,7 +3,6 @@ import { useActionState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import {
-  Form,
   FormGroup,
   FormLabel,
   FormInput,
@@ -79,7 +78,7 @@ export default function ServicioForm({
   }))
 
   return (
-    <Form action={formAction}>
+    <form action={formAction}>
       {state?.message && (
         <div
           className={cn(
@@ -190,6 +189,6 @@ export default function ServicioForm({
           {isEditing ? 'Confirmar cambios' : 'Crear servicio'}
         </Button>
       </div>
-    </Form>
+    </form>
   )
 }
