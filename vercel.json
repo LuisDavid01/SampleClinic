@@ -1,5 +1,0 @@
-{
-  "buildCommand": "cd clinica-nextjs && pnpm run build",
-  "installCommand": "pnpm install",
-  "framework": "nextjs"
-}
