@@ -9,7 +9,7 @@ import {
   FormInput,
   FormTextarea,
   FormSelect,
-} from '@/components/ui/Form'
+} from '../ui/form'
 import { SERVICE_STATUS, Servicio } from '@/types/Service'
 import { createServicio, updateServicio } from '@/actions/servicios'
 import { useQueryClient } from '@tanstack/react-query'
