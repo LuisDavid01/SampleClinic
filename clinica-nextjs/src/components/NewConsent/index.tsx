@@ -10,7 +10,7 @@ import {
   FormTextarea,
   FormSelect,
   FormError,
-} from '../ui/form'
+} from '@/components/ui/form'
 import { Consent} from '@/types/Consent'
 import { formatDateForInput } from '@/lib/utils'
 

@@ -10,7 +10,7 @@ import {
   FormTextarea,
   FormSelect,
   FormError,
-} from '../ui/form'
+} from '@/components/ui/form'
 import { Team, TEAM_STATUS } from '@/types/Team'
 import { formatDateForInput } from '@/lib/utils'
 interface ExpedienteFormProps {
