@@ -1,6 +1,6 @@
 {
   "buildCommand": "cd clinica-nextjs && pnpm run build",
   "installCommand": "cd clinica-nextjs && pnpm install",
-  "framework": "nextjs"
-  // "rootDirectory": "clinica-nextjs"
+  "framework": "nextjs",
+  "rootDirectory": "clinica-nextjs"
 }
