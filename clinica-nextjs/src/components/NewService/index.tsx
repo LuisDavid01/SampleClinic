@@ -45,7 +45,7 @@ export default function ServicioForm({
         nombre: (formData.get('nombre') as string) ?? '',
         detalle: (formData.get('detalle') as string) ?? '',
         precio: Number(formData.get('precio')),
-        estado: (formData.get('status') as string) || 'Activo',
+        estado: (formData.get('status') as string).toLowerCase() as 'activo' | 'inactivo',
       }
 
       try {
