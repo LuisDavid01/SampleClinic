@@ -102,7 +102,7 @@ export default function SupportChat() {
 			}).then((data) => {
 				return data.otp;
 			})
-			wsRef.current = new WebSocket(`ws://localhost:8081/ws?otp=` + otp);
+			wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8080/ws"}?otp=` + otp);
 
 			wsRef.current.onerror = (error) => {
 				console.log("WebSocket error:", error);
@@ -405,7 +405,7 @@ export default function SupportChat() {
 															</div>
 
 															{chat.lastMessage && (
-																<p className="text-xs truncate">
+																<p className="text-xs text-muted-foreground line-clamp-2 ">
 																	{chat.lastMessage}
 																</p>
 															)}
@@ -453,7 +453,10 @@ export default function SupportChat() {
 															? 'bg-blue-500 text-white'
 															: 'bg-card'
 															}`}>
-															<p>{msg.text}</p>
+															<p className="break-words whitespace-pre-wrap">
+
+																{msg.text}
+															</p>
 															<div className="flex items-center gap-1 mt-1">
 																<Clock className="h-3 w-3 opacity-70" />
 																<span className="text-xs opacity-70">{msg.timestamp}</span>

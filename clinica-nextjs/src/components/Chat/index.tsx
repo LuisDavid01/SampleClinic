@@ -309,7 +309,9 @@ export default function FloatingChat() {
 													? 'bg-card text-text-primary'
 													: 'bg-blue-500 text-white'
 													}`}>
-													<p>{msg.text}</p>
+													<p className="break-words whitespace-pre-wrap">
+														{msg.text}
+													</p>
 													<div className="flex items-center gap-1 mt-1">
 														<Clock className="h-3 w-3 opacity-70" />
 														<span className="text-xs opacity-70">{msg.timestamp}</span>

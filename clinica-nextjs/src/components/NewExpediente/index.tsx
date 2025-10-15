@@ -206,11 +206,8 @@ export default function ExpedienteForm({
 					router.push('/admin/files')
 
 				}
-				// En caso de editar invalidar el cache
-				if (expediente?.idExpediente) {
-					await queryClient.invalidateQueries({ queryKey: ['expediente', String(expediente.idExpediente)] });
-				}
-				router.refresh()
+				await queryClient.invalidateQueries({ queryKey: ['expediente'] });
+				router.refresh();
 			}
 
 			return result
