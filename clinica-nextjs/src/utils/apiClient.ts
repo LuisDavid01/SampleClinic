@@ -135,6 +135,7 @@ export function useApiClient() {
 	return new ApiClient('http://localhost:3001/api', getToken);
 }
 
+
 /**
  * Funciones específicas de la API
  */

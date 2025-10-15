@@ -4,7 +4,12 @@ import { useQuery } from '@tanstack/react-query'
 import { Expediente } from '../../types/Expediente'
 import { getExpedienteByID } from '../../actions/expedientes'
 import NewExpediente from '../NewExpediente'
-export const ExpedienteByID = ({ id }) => {
+interface ExpedienteByIDProps {
+	id: string | number;
+	isReadOnly?: boolean;
+}
+
+export const ExpedienteByID = ({ id, isReadOnly = false }: ExpedienteByIDProps) => {
 	const { isLoading, data } = useQuery<Expediente>({
 		queryKey: [`expediente`, id],
 		queryFn: async () => {
@@ -15,13 +20,10 @@ export const ExpedienteByID = ({ id }) => {
 		staleTime: 0,
 	})
 
-
 	if (isLoading) return (<div> Cargando...</div >)
 	if (data) {
-		return <NewExpediente expediente={data} isEditing />
+		return <NewExpediente expediente={data} isEditing={!isReadOnly} isReadOnly={isReadOnly} />
 	}
 
 	return <div>No encontre el expediente</div>
-
-
 }

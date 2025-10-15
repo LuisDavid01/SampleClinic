@@ -10,7 +10,7 @@ import {
   FormTextarea,
   FormSelect,
   FormError,
-} from '@/components/ui/Form'
+} from '../ui/form'
 import { Appointment, APPOINTMENT_STATUS } from '@/types/Appointment'
 import { formatDateForInput } from '@/lib/utils'
 interface ExpedienteFormProps {
@@ -86,7 +86,7 @@ export default function EditAppointment ({appointment,
     value,
   }))
     return (
-    <Form>
+    <form>
       {state?.message && (
         <FormError
           className={`mb-4 ${
@@ -217,6 +217,6 @@ export default function EditAppointment ({appointment,
             Confirmar cambios
         </Button>
       </div>
-    </Form>
+    </form>
   )
 }

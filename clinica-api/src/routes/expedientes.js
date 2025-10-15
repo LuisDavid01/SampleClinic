@@ -84,19 +84,36 @@ router.get('/', clerkAuth, async (req, res) => {
       where.idMedico = parseInt(idMedico);
     }
 
-    // Si es paciente, solo puede ver sus propios expedientes
-    // Obtener el rol del usuario desde los metadata de Clerk
+    // Aplicar restricciones de acceso basadas en el rol
     const userRole = req.user.metadata?.role;
-    if (userRole === 'paciente') {
-      // Para pacientes, necesitamos obtener su ID de usuario desde la base de datos
-      const usuario = await prisma.usuario.findFirst({
-        where: { clerkId: req.user.id }
-      });
+    const usuario = await prisma.usuario.findFirst({
+      where: { clerkId: req.user.id },
+      include: { rol: true }
+    });
+
+    // Aplicar restricciones basadas en el rol de la base de datos (más confiable)
+    const dbRole = usuario?.rol?.idRol;
+    
+    if (dbRole === 4) { // PACIENTE
+      // Pacientes solo pueden ver sus propios expedientes
       if (usuario) {
         where.idPaciente = usuario.idUsuario;
       }
+    } else if (dbRole === 2) { // FISIOTERAPEUTA
+      // Fisioterapeutas solo pueden ver expedientes asignados a ellos
+      if (usuario) {
+        where.idMedico = usuario.idUsuario;
+      }
+    } else if (dbRole === 1) { // ADMINISTRADOR
+      // Los administradores pueden ver todos los expedientes
+    } else {
+      // Si no se reconoce el rol, aplicar restricción por defecto
+      if (usuario) {
+        where.idMedico = usuario.idUsuario;
+      }
     }
 
+    
     const [expedientes, total] = await Promise.all([
       prisma.expediente.findMany({
         where,
@@ -139,6 +156,7 @@ router.get('/', clerkAuth, async (req, res) => {
       }),
       prisma.expediente.count({ where })
     ]);
+    
 
     res.json({
       expedientes,
@@ -234,17 +252,26 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
       return res.status(404).json({ error: 'Expediente no encontrado' });
     }
 
-    // Verificar permisos: pacientes solo pueden ver sus propios expedientes
+
+    // Verificar permisos basados en el rol
     const userRole = req.user.metadata?.role;
+    const usuario = await prisma.usuario.findFirst({
+      where: { clerkId: req.user.id },
+      include: { rol: true }
+    });
+
     if (userRole === 'paciente') {
-      // Para pacientes, necesitamos obtener su ID de usuario desde la base de datos
-      const usuario = await prisma.usuario.findFirst({
-        where: { clerkId: req.user.id }
-      });
+      // Pacientes solo pueden ver sus propios expedientes
       if (usuario && expediente.idPaciente !== usuario.idUsuario) {
         return res.status(403).json({ error: 'No tienes permisos para ver este expediente' });
       }
+    } else if (userRole === 'fisioterapeuta') {
+      // Fisioterapeutas solo pueden ver expedientes asignados a ellos
+      if (usuario && expediente.idMedico !== usuario.idUsuario) {
+        return res.status(403).json({ error: 'No tienes permisos para ver este expediente' });
+      }
     }
+    // Los administradores pueden ver cualquier expediente (sin restricciones)
 
     res.json(expediente);
   } catch (error) {
@@ -344,12 +371,35 @@ router.post('/', clerkAuth, requireClerkRole(['admin', 'medico']), validateExped
       return res.status(400).json({ error: 'Ya existe un expediente con esta cédula' });
     }
 
+    // Verificar que el paciente no tenga un expediente activo
+    const expedienteActivoPaciente = await prisma.expediente.findFirst({
+      where: { 
+        idPaciente: parseInt(idPaciente),
+        estado: {
+          in: ['activo', 'en_proceso', 'pendiente'] // Estados que consideramos "activos"
+        }
+      }
+    });
+
+    if (expedienteActivoPaciente) {
+      return res.status(400).json({ 
+        error: 'El paciente ya tiene un expediente activo',
+        message: `El paciente ya tiene un expediente en estado "${expedienteActivoPaciente.estado}" con ID ${expedienteActivoPaciente.idExpediente}`,
+        expedienteExistente: {
+          id: expedienteActivoPaciente.idExpediente,
+          estado: expedienteActivoPaciente.estado,
+          cedula: expedienteActivoPaciente.cedula,
+          fechaCreacion: expedienteActivoPaciente.fechaCreacion
+        }
+      });
+    }
+
     const expediente = await prisma.expediente.create({
       data: {
         idPaciente: parseInt(idPaciente),
         cedula,
         estado,
-        idMedico: idMedico ? parseInt(idMedico) : null,
+        idMedico: idMedico !== null && idMedico !== '' ? parseInt(idMedico) : null,
         descripcion
       },
       include: {
@@ -438,6 +488,19 @@ router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico']), validateId,
   try {
     const { id } = req.params;
     const { cedula, estado, idMedico, descripcion } = req.body;
+    
+    // Debug: Log the received data
+    console.log('Backend received data:', {
+      id,
+      cedula,
+      estado,
+      idMedico,
+      descripcion,
+      idMedicoType: typeof idMedico,
+      idMedicoValue: idMedico
+    });
+    
+    console.log('Validation passed for expediente update');
 
     // Verificar que el expediente existe
     const expedienteExistente = await prisma.expediente.findUnique({
@@ -475,7 +538,7 @@ router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico']), validateId,
       data: {
         ...(cedula && { cedula }),
         ...(estado && { estado }),
-        ...(idMedico !== undefined && { idMedico: idMedico ? parseInt(idMedico) : null }),
+        ...(idMedico !== undefined && { idMedico: idMedico !== null && idMedico !== '' ? parseInt(idMedico) : null }),
         ...(descripcion !== undefined && { descripcion })
       },
       include: {
@@ -511,6 +574,13 @@ router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico']), validateId,
           }
         }
       }
+    });
+
+    // Debug: Log the updated expediente
+    console.log('Updated expediente:', {
+      idExpediente: expediente.idExpediente,
+      idMedico: expediente.idMedico,
+      medico: expediente.medico
     });
 
     res.json(expediente);

@@ -10,7 +10,7 @@ import {
   FormTextarea,
   FormSelect,
   FormError,
-} from '@/components/ui/Form'
+} from '../ui/form'
 import { Team, TEAM_STATUS } from '@/types/Team'
 import { formatDateForInput } from '@/lib/utils'
 interface ExpedienteFormProps {
@@ -83,7 +83,7 @@ export default function NewTeam({member,
     value,
   }))
     return (
-    <Form>
+    <form>
       {state?.message && (
         <FormError
           className={`mb-4 ${
@@ -287,6 +287,6 @@ export default function NewTeam({member,
             Confirmar cambios
         </Button>
       </div>
-    </Form>
+    </form>
   )
 }

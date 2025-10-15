@@ -24,9 +24,10 @@ import {
 } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils"
 import { Expediente } from "@/types/Expediente"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { deleteExpediente, getExpedientes } from "@/actions/expedientes"
 import { useState } from "react"
+import { useExpedientesRefresh } from "@/hooks/useExpedientesRefresh"
 import { useNotification } from "../UseNotification";
 // Mock data
 
@@ -52,6 +53,8 @@ export const ExpedientesList = () => {
 	const [page, setPage] = useState(1);
 	const [limit, setLimit] = useState(10);
 	const [search, setSearch] = useState("");
+	const queryClient = useQueryClient();
+	const { refreshExpedientes } = useExpedientesRefresh();
 
 	// se trae los datos del backend
 	const { isLoading, data = [], refetch } = useQuery<Expediente[]>({
@@ -64,14 +67,27 @@ export const ExpedientesList = () => {
 		staleTime: 1 * 60 * 1000,
 
 	})
+
+	// El hook useExpedientesRefresh maneja automáticamente la invalidación
 	return (
 		<>
 			{/* Filters */}
 			<Card>
 				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<Filter className="w-5 h-5" />
-						Filtros y Búsqueda
+					<CardTitle className="flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							<Filter className="w-5 h-5" />
+							Filtros y Búsqueda
+						</div>
+						<Button 
+							variant="outline" 
+							size="sm"
+							onClick={refreshExpedientes}
+							className="flex items-center gap-2"
+						>
+							<RefreshCw className="w-4 h-4" />
+							Actualizar
+						</Button>
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
@@ -178,30 +194,26 @@ export const ExpedientesList = () => {
 														{formatRelativeTime(file.fechaCreacion)}
 													</TableCell>
 													<TableCell>
-														<Link href={`files/${file.idExpediente}/edit`}>
-															<Button variant="outline" size="sm" className="mr-3">
-																Ver
+														<div className="flex gap-2">
+															<Link href={`files/${file.idExpediente}/view`}>
+																<Button variant="outline" size="sm">
+																	Ver
+																</Button>
+															</Link>
+															<Link href={`files/${file.idExpediente}/edit`}>
+																<Button variant="default" size="sm">
+																	Editar
+																</Button>
+															</Link>
+															<Button variant="destructive" size="sm"
+																onClick={() => {
+																	deleteExpediente(file.idExpediente);
+																	refetch();
+																}}
+															>
+																Eliminar
 															</Button>
-														</Link>
-
-
-														<Button variant="destructive" size="sm" className="mr-3"
-															onClick={async () => {
-																deleteExpediente(file.idExpediente);
-																await refetch();
-																showNotification(
-																	{
-																		title: "Expediente eliminado",
-																		message: `El expediente fue eliminado`,
-																		type: "success",
-
-																	}
-
-																)
-															}}
-														>
-															Eliminar
-														</Button>
+														</div>
 													</TableCell>
 												</TableRow>
 											)
@@ -264,17 +276,9 @@ export const ExpedientesList = () => {
 												</Link>
 												<Button variant="destructive" size="sm" className="w-full mb-3"
 													onClick={async () => {
-														deleteExpediente(file.idExpediente);
-														await refetch();
-														showNotification(
-															{
-																title: "Expediente eliminado",
-																message: `El expediente fue eliminado`,
-																type: "success",
-
-															}
-
-														)
+														await deleteExpediente(file.idExpediente);
+														// Usar la función de refresh del hook
+														refreshExpedientes();
 													}}
 
 												>

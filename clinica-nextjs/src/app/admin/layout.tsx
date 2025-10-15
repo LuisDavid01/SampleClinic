@@ -24,15 +24,20 @@ export default async function dasboardLayout({
 }: {
 	children: React.ReactNode;
 }) {
-	// ahora validamos las rutas de admin por el layout
+	// Validar que sea admin o fisioterapeuta
 	const isAdmin = await checkRole("admin");
-	if (!isAdmin) {
+	const isFisioterapeuta = await checkRole("fisioterapeuta");
+	
+	if (!isAdmin && !isFisioterapeuta) {
 		redirect("/");
 	}
 
+	// Función para verificar si el usuario puede ver ciertos elementos
+	const canSeeAdminFeatures = isAdmin;
+
 	return (
 		<div className="flex min-h-screen flex-col">
-			<DasboardHeader />
+			<DasboardHeader canSeeAdminFeatures={canSeeAdminFeatures} />
 
 			{/* Contenedor principal debajo del header */}
 			<div className="flex">
@@ -135,16 +140,6 @@ export default async function dasboardLayout({
 							</Link>
 						</Button>
 
-						<Button
-							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
-							asChild
-						>
-							<Link href={"/admin/audit"}>
-								<Shield className="w-4 h-4 mr-3" />
-								<span>Auditoria</span>
-							</Link>
-						</Button>
 
 
 

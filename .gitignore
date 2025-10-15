@@ -365,3 +365,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 *.exe
+.vercel

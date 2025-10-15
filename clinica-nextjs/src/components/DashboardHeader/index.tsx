@@ -17,7 +17,12 @@ import {
   Folder,
   CalendarDays
 } from "lucide-react";
-export const DasboardHeader = async () => {
+
+interface DasboardHeaderProps {
+  canSeeAdminFeatures?: boolean;
+}
+
+export const DasboardHeader = async ({ canSeeAdminFeatures = true }: DasboardHeaderProps) => {
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
      <div className="flex items-center gap-3">
@@ -71,6 +76,17 @@ export const DasboardHeader = async () => {
               className="w-full justify-start text-text-primary hover:bg-gray-800"
               asChild
             >
+              <Link href={"/admin/pacientes"}>
+                <User className="w-4 h-4 mr-3" />
+                <span>Pacientes</span>
+              </Link>
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-text-primary hover:bg-gray-800"
+              asChild
+            >
               <Link href={"/admin/appointments"}>
                 <CalendarDays className="w-4 h-4 mr-3" />
                 <span>Citas</span>
@@ -108,16 +124,6 @@ export const DasboardHeader = async () => {
               </Link>
             </Button>
 
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-text-primary hover:bg-gray-800"
-              asChild
-            >
-              <Link href={"/admin/audit"}>
-                <Shield className="w-4 h-4 mr-3" />
-                <span>Auditoria</span>
-              </Link>
-            </Button>
 
             
 

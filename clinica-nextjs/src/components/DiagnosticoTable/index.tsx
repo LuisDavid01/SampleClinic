@@ -1,3 +1,5 @@
+'use client'
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +12,14 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table"
-
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { 
   User,
@@ -21,221 +30,264 @@ import {
    ChevronsLeft,
    ChevronsRight,
    LucideBookUser,
-   PlusIcon
+   PlusIcon,
+   Edit,
+   Trash2
 } from "lucide-react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { getDiagnosticosByExpediente, deleteDiagnostico } from "@/actions/diagnosticos"
+import { getExpedienteByID } from "@/actions/expedientes"
+import { Diagnostico } from "@/types/Expediente"
+import { useUser } from "@clerk/nextjs"
+import { useState } from "react"
+import DiagnosticoForm from "../DiagnosticoForm"
 
-export default function DiagnosticoTable(){
-    // Mock data
-const diagnosticos = [
-  {id: 1, expediente: "EXP-001", paciente: "Luis Miguel", fecha: new Date(2025, 5, 2), doctor: "Dra. María García", diagnostico: "Dislocación severa"},
-  {id: 2, expediente: "EXP-001", paciente: "Luis Miguel", fecha: new Date(2025, 4, 6), doctor: "Dr. Carlos Rodríguez", diagnostico: "calambres irreguales"},
-]
-const doctores = [
-  { nombre: "Dr. Carlos Mendoza", especialidad: "Cirujano General" },
-  { nombre: "Dra. Ana Vargas", especialidad: "Odontología" },
-  { nombre: "Dr. Luis Ramírez", especialidad: "Anestesiología" },
-  { nombre: "Dra. Patricia Solís", especialidad: "Oncología" },
-  { nombre: "Dr. Roberto Castro", especialidad: "Cardiología" }
-]
-    return (
-        <div className="space-y-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-             <Link href="/admin/diagnosis/new">
-            <Button className="cursor-pointer w-full">
-              <PlusIcon className="w-4 h-4 mr-2" />
-              Nuevo diagnostico
-            </Button>
-          </Link>
-        </div>
-        {/* Filters and Search */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="w-5 h-5" />
-              Filtros y Búsqueda
-            </CardTitle>
-          </CardHeader>
+interface DiagnosticoTableProps {
+	expedienteId: number
+}
 
-          <CardContent className="p-6">
-            <div className="flex flex-wrap gap-4">
-              {/* Buscador */}
-              <div className="w-full sm:flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground w-4 h-4" />
-                  <Input
-                    placeholder="Buscar por paciente, cédula o tratamiento..."
-                    className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-background border border-muted rounded-lg text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200"
-                  />
-                </div>
-              </div>
+export default function DiagnosticoTable({ expedienteId }: DiagnosticoTableProps) {
+	const { user } = useUser()
+	const queryClient = useQueryClient()
+	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+	const [editingDiagnostico, setEditingDiagnostico] = useState<Diagnostico | null>(null)
 
-              {/* Selects */}
-              <div className="flex gap-2 flex-wrap w-full sm:w-auto">
-                <Select defaultValue="todos">
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos los doctores</SelectItem>
-                    {doctores.map((doctor) => (
-                      <SelectItem key={doctor.nombre} value={doctor.nombre}>
-                        <div>
-                          <p className="font-medium">{doctor.nombre}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {doctor.especialidad}
-                          </p>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+	// Obtener expediente
+	const { data: expediente } = useQuery({
+		queryKey: ['expediente', expedienteId],
+		queryFn: async () => {
+			return await getExpedienteByID(expedienteId)
+		},
+		staleTime: 10 * 60 * 1000,
+	})
 
-        {/* Desktop Table */}
-        <Card className="hidden lg:block">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Paciente</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Doctor</TableHead>
-                    <TableHead>Diagnostico</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {diagnosticos.map((diagnostico) => {
-                    
-                    return (
-                      <TableRow key={diagnostico.id} className="hover:bg-muted/50">
-                         <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            {diagnostico.paciente}
-                          </div>
-                        </TableCell>
+	// Obtener diagnósticos del expediente
+	const { isLoading, data: diagnosticos = [] } = useQuery<Diagnostico[]>({
+		queryKey: ['diagnosticos', expedienteId],
+		queryFn: async () => {
+			const res = await getDiagnosticosByExpediente(expedienteId)
+			return res.diagnosticos || []
+		},
+		staleTime: 2 * 60 * 1000,
+	})
 
-                        <TableCell className="font-mono text-sm">
-                          {diagnostico.fecha.toDateString()}
-                        </TableCell>
-                         
-                        
-                         <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            {diagnostico.doctor}
-                          </div>
-                        </TableCell>
-                         <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            {diagnostico.diagnostico}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Link href={`/admin/diagnosis/edit/${diagnostico.id}`}>
-                            <Button variant="outline" size="sm">
-                              Ver
-                            </Button>
-                          </Link>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+	// Verificar permisos - solo fisioterapeutas y administradores pueden gestionar diagnósticos
+	const canManageDiagnosticos = user?.publicMetadata?.role === 'fisioterapeuta' || user?.publicMetadata?.role === 'admin'
 
-        {/* Mobile Cards */}
-        <div className="lg:hidden space-y-4 ">
-          {diagnosticos.map((diagnostico) => {
-            
-            return (
-              <Card key={diagnostico.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium">{diagnostico.expediente}</h3>
-                        <p className="text-sm text-muted-foreground">{diagnostico.doctor}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">Actualizado</p>
-                      <p className="text-sm font-medium">{diagnostico.fecha.toDateString()}</p>
-                    </div>
-                    
-                    <div className="flex gap-2 pt-2">
-                      <Link href={`diagnosticos/${diagnostico.id}/edit`} className="flex-1">
-                        <Button variant="outline" className="w-full">
-                          Ver expediente
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
+	const handleDelete = async (diagnosticoId: number) => {
+		if (confirm('¿Estás seguro de que quieres eliminar este diagnóstico?')) {
+			await deleteDiagnostico(diagnosticoId)
+			queryClient.invalidateQueries({ queryKey: ['diagnosticos', expedienteId] })
+		}
+	}
 
-        {/* Pagination */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                
-                {/* Selector de cantidad */}
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-sm">
-                  <span className="text-muted-foreground">Mostrar</span>
-                  <Select defaultValue="10">
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                      <SelectItem value="100">100</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span className="text-muted-foreground">
-                    de {2} registros
-                  </span>
-                </div>
+	const formatDate = (dateString: string) => {
+		return new Date(dateString).toLocaleDateString('es-ES', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		})
+	}
+	return (
+		<div className="space-y-6">
+			{/* Header con botón de crear */}
+			<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+				{canManageDiagnosticos ? (
+					<Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+						<DialogTrigger asChild>
+							<Button className="cursor-pointer w-full">
+								<PlusIcon className="w-4 h-4 mr-2" />
+								Nuevo diagnóstico
+							</Button>
+						</DialogTrigger>
+						<DialogContent className="max-w-2xl">
+							<DialogHeader>
+								<DialogTitle>Nuevo Diagnóstico</DialogTitle>
+								<DialogDescription>
+									Crear un nuevo diagnóstico para este expediente.
+								</DialogDescription>
+							</DialogHeader>
+							<DiagnosticoForm 
+								expedienteId={expedienteId}
+								expediente={expediente}
+								onSuccess={() => {
+									setIsCreateDialogOpen(false)
+									queryClient.invalidateQueries({ queryKey: ['diagnosticos', expedienteId] })
+								}}
+							/>
+						</DialogContent>
+					</Dialog>
+				) : (
+					<div className="text-sm text-muted-foreground">
+						Solo fisioterapeutas y administradores pueden crear diagnósticos
+					</div>
+				)}
+			</div>
+			{/* Loading state */}
+			{isLoading && (
+				<div className="text-center py-8">
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+					<p className="mt-2 text-muted-foreground">Cargando diagnósticos...</p>
+				</div>
+			)}
 
-                {/* Controles de paginación */}
-                <div className="flex items-center justify-center gap-1 sm:gap-2">
-                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-                    <ChevronsLeft className="w-4 h-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
+			{/* No data state */}
+			{!isLoading && diagnosticos.length === 0 && (
+				<Card>
+					<CardContent className="p-8 text-center">
+						<LucideBookUser className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+						<h3 className="text-lg font-medium mb-2">No hay diagnósticos</h3>
+						<p className="text-muted-foreground mb-4">
+							{canManageDiagnosticos 
+								? 'Este expediente no tiene diagnósticos registrados. Crea el primero.'
+								: 'Este expediente no tiene diagnósticos registrados.'
+							}
+						</p>
+					</CardContent>
+				</Card>
+			)}
 
-                  <span className="text-sm px-2 sm:px-4">
-                    Página 1 de 2
-                  </span>
+			{/* Desktop Table */}
+			{!isLoading && diagnosticos.length > 0 && (
+				<Card className="hidden lg:block">
+					<CardContent className="p-0">
+						<div className="overflow-x-auto">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Fecha</TableHead>
+										<TableHead>Doctor</TableHead>
+										<TableHead>Diagnóstico</TableHead>
+										<TableHead>Acciones</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{diagnosticos.map((diagnostico) => (
+										<TableRow key={diagnostico.idDiagnostico} className="hover:bg-muted/50">
+											<TableCell className="font-mono text-sm">
+												{formatDate(diagnostico.fecha)}
+											</TableCell>
+											<TableCell className="font-medium">
+												<div className="flex items-center gap-2">
+													{diagnostico.doctor?.nombre} {diagnostico.doctor?.apellido1}
+												</div>
+											</TableCell>
+											<TableCell className="max-w-xs">
+												<div className="truncate" title={diagnostico.diagnostico}>
+													{diagnostico.diagnostico}
+												</div>
+											</TableCell>
+											<TableCell>
+												<div className="flex gap-2">
+													{canManageDiagnosticos && (
+														<>
+															<Button 
+																variant="outline" 
+																size="sm"
+																onClick={() => setEditingDiagnostico(diagnostico)}
+															>
+																<Edit className="w-4 h-4" />
+															</Button>
+															<Button 
+																variant="destructive" 
+																size="sm"
+																onClick={() => handleDelete(diagnostico.idDiagnostico)}
+															>
+																<Trash2 className="w-4 h-4" />
+															</Button>
+														</>
+													)}
+												</div>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</div>
+					</CardContent>
+				</Card>
+			)}
 
-                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-                    <ChevronsRight className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-    )
+			{/* Mobile Cards */}
+			{!isLoading && diagnosticos.length > 0 && (
+				<div className="lg:hidden space-y-4">
+					{diagnosticos.map((diagnostico) => (
+						<Card key={diagnostico.idDiagnostico}>
+							<CardContent className="p-4">
+								<div className="flex items-start justify-between mb-3">
+									<div className="flex items-center gap-2">
+										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+											<User className="h-4 w-4 text-muted-foreground" />
+										</div>
+										<div>
+											<h3 className="font-medium">
+												{diagnostico.doctor?.nombre} {diagnostico.doctor?.apellido1}
+											</h3>
+											<p className="text-sm text-muted-foreground">
+												{formatDate(diagnostico.fecha)}
+											</p>
+										</div>
+									</div>
+								</div>
+								
+								<div className="space-y-2">
+									<div className="text-sm">
+										<p className="text-muted-foreground mb-1">Diagnóstico:</p>
+										<p className="font-medium">{diagnostico.diagnostico}</p>
+									</div>
+									
+									{canManageDiagnosticos && (
+										<div className="flex gap-2 pt-2">
+											<Button 
+												variant="outline" 
+												size="sm"
+												onClick={() => setEditingDiagnostico(diagnostico)}
+												className="flex-1"
+											>
+												<Edit className="w-4 h-4 mr-2" />
+												Editar
+											</Button>
+											<Button 
+												variant="destructive" 
+												size="sm"
+												onClick={() => handleDelete(diagnostico.idDiagnostico)}
+												className="flex-1"
+											>
+												<Trash2 className="w-4 h-4 mr-2" />
+												Eliminar
+											</Button>
+										</div>
+									)}
+								</div>
+							</CardContent>
+						</Card>
+					))}
+				</div>
+			)}
+
+			{/* Dialog para editar diagnóstico */}
+			{editingDiagnostico && (
+				<Dialog open={!!editingDiagnostico} onOpenChange={() => setEditingDiagnostico(null)}>
+					<DialogContent className="max-w-2xl">
+						<DialogHeader>
+							<DialogTitle>Editar Diagnóstico</DialogTitle>
+							<DialogDescription>
+								Modificar la información del diagnóstico seleccionado.
+							</DialogDescription>
+						</DialogHeader>
+						<DiagnosticoForm 
+							expedienteId={expedienteId}
+							expediente={expediente}
+							diagnostico={editingDiagnostico}
+							isEditing={true}
+							onSuccess={() => {
+								setEditingDiagnostico(null)
+								queryClient.invalidateQueries({ queryKey: ['diagnosticos', expedienteId] })
+							}}
+						/>
+					</DialogContent>
+				</Dialog>
+			)}
+		</div>
+	)
 }

@@ -429,12 +429,12 @@ export default function ConsentManagement() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
          
           <Dialog open={isNewConsentDialogOpen} onOpenChange={setIsNewConsentDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-primary hover:bg-primary/90 cursor-pointer">
-                <Plus className="w-4 h-4 mr-2" />
-                Nuevo Consentimiento
-              </Button>
-            </DialogTrigger>
+              <DialogTrigger asChild>
+                <Button className="bg-primary hover:bg-primary/90 cursor-pointer">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nuevo Consentimiento
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Crear Nuevo Consentimiento</DialogTitle>
