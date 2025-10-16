@@ -22,6 +22,7 @@ import clerkProfileRoutes from './routes/clerkProfile.js';
 import userRoleRoutes from './routes/userRole.js';
 import antecedentesRoutes from './routes/antecedentes.js';
 import auditoriaRoutes from './routes/auditoria.js';
+import encuestaRoutes from './routes/encuestas.js';
 
 const app = express();
 
@@ -92,6 +93,7 @@ app.use('/api/clerk', clerkProfileRoutes);
 app.use('/api/user-role', userRoleRoutes);
 app.use('/api/pacientes', antecedentesRoutes);
 app.use('/api/auditoria', auditoriaRoutes);
+app.use('/api/encuestas', encuestaRoutes);
 
 /**
  * @swagger

@@ -260,16 +260,47 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
       include: { rol: true }
     });
 
-    if (userRole === 'paciente') {
+    console.log('🔍 Debug permisos expediente:', {
+      expedienteId: id,
+      expedienteIdPaciente: expediente.idPaciente,
+      expedienteIdMedico: expediente.idMedico,
+      userRole,
+      usuarioId: usuario?.idUsuario,
+      usuarioRol: usuario?.rol?.idRol,
+      usuarioRolNombre: usuario?.rol?.nombreRol,
+      clerkId: req.user.id
+    });
+
+    // Usar el rol de la base de datos en lugar del rol de Clerk (más confiable)
+    const dbRole = usuario?.rol?.idRol;
+    
+    if (dbRole === 4) { // PACIENTE
       // Pacientes solo pueden ver sus propios expedientes
       if (usuario && expediente.idPaciente !== usuario.idUsuario) {
+        console.log('❌ Acceso denegado - Paciente:', {
+          expedienteIdPaciente: expediente.idPaciente,
+          usuarioId: usuario.idUsuario,
+          sonIguales: expediente.idPaciente === usuario.idUsuario
+        });
         return res.status(403).json({ error: 'No tienes permisos para ver este expediente' });
       }
-    } else if (userRole === 'fisioterapeuta') {
+    } else if (dbRole === 2) { // FISIOTERAPEUTA
       // Fisioterapeutas solo pueden ver expedientes asignados a ellos
       if (usuario && expediente.idMedico !== usuario.idUsuario) {
+        console.log('❌ Acceso denegado - Fisioterapeuta:', {
+          expedienteIdMedico: expediente.idMedico,
+          usuarioId: usuario.idUsuario,
+          sonIguales: expediente.idMedico === usuario.idUsuario
+        });
         return res.status(403).json({ error: 'No tienes permisos para ver este expediente' });
       }
+    } else if (dbRole === 1) { // ADMINISTRADOR
+      // Los administradores pueden ver cualquier expediente (sin restricciones)
+      console.log('✅ Acceso permitido - Administrador');
+    } else {
+      // Si no se reconoce el rol, denegar acceso
+      console.log('❌ Acceso denegado - Rol no reconocido:', dbRole);
+      return res.status(403).json({ error: 'No tienes permisos para ver este expediente' });
     }
     // Los administradores pueden ver cualquier expediente (sin restricciones)
 

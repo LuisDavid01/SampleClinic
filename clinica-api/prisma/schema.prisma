@@ -182,12 +182,14 @@ model Sesion {
 
 model Encuesta {
   idEncuesta      Int      @id @default(autoincrement()) @map("id_encuesta")
-  calificacion    Int
-  idRecepcionista Int?     @map("id_recepcionista")
-  comentario      String?
+  calificacion    Int      @db.SmallInt
+  comentario      String?  @db.Text
+  idUsuario       Int      @map("id_usuario")
   fechaRegistro   DateTime @default(now()) @map("fecha_registro")
-  recepcionista   Usuario? @relation(fields: [idRecepcionista], references: [idUsuario])
+  usuario         Usuario  @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
 
+  @@index([idUsuario])
+  @@index([fechaRegistro])
   @@map("encuestas")
 }
 

@@ -112,11 +112,11 @@ CREATE TABLE IF NOT EXISTS historias_exito (
 );
 
 -- 12. Tabla Encuestas
-CREATE TABLE encuestas (
+CREATE TABLE IF NOT EXISTS encuestas (
     id_encuesta SERIAL PRIMARY KEY,
-    calificacion INT CHECK (calificacion BETWEEN 1 AND 5),
-    id_recepcionista INT REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE SET NULL,
+    calificacion SMALLINT NOT NULL CHECK (calificacion BETWEEN 1 AND 5),
     comentario TEXT,
+    id_usuario INT NOT NULL REFERENCES usuarios(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -236,6 +236,8 @@ CREATE INDEX IF NOT EXISTS idx_citas_medico ON citas(id_medico);
 CREATE INDEX IF NOT EXISTS idx_citas_estado ON citas(estado_cita);
 CREATE INDEX IF NOT EXISTS idx_historias_publicado ON historias_exito(publicado);
 CREATE INDEX IF NOT EXISTS idx_servicios_activo ON servicios(activo);
+CREATE INDEX IF NOT EXISTS idx_encuestas_usuario ON encuestas(id_usuario);
+CREATE INDEX IF NOT EXISTS idx_encuestas_fecha ON encuestas(fecha_registro);
 
 -- 18. Tabla Auditoría Antecedentes
 CREATE TABLE IF NOT EXISTS auditoria_antecedentes (
@@ -344,3 +346,11 @@ COMMENT ON COLUMN auditoria_antecedentes.ip_address IS 'Dirección IP del client
 COMMENT ON COLUMN auditoria_antecedentes.user_agent IS 'User Agent del navegador/cliente';
 COMMENT ON COLUMN auditoria_antecedentes.timestamp IS 'Fecha y hora de la operación';
 COMMENT ON COLUMN auditoria_antecedentes.detalles IS 'Detalles de la operación (request/response sanitizados)';
+
+-- Comentarios para tabla de encuestas
+COMMENT ON TABLE encuestas IS 'Tabla para almacenar encuestas de satisfacción de usuarios';
+COMMENT ON COLUMN encuestas.id_encuesta IS 'Identificador único de la encuesta';
+COMMENT ON COLUMN encuestas.calificacion IS 'Calificación del 1 al 5 (1=malo, 5=excelente)';
+COMMENT ON COLUMN encuestas.comentario IS 'Comentario opcional del usuario sobre la experiencia';
+COMMENT ON COLUMN encuestas.id_usuario IS 'ID del usuario que completó la encuesta';
+COMMENT ON COLUMN encuestas.fecha_registro IS 'Fecha y hora de registro de la encuesta';
