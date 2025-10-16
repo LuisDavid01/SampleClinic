@@ -27,6 +27,7 @@ export function PacienteRouteGuard({ children, fallback }: PacienteRouteGuardPro
 		);
 	}
 
+
 	if (!isAuthenticated) {
 		return (
 			<div className="flex items-center justify-center min-h-screen">
