@@ -25,6 +25,7 @@ export default [
 			quotes: "off",
 			"react/no-unescaped-entities": "off",
 			"@typescript-eslint/no-unused-vars": "off",
+			'import/no-relative-parent-imports': 'off',
 		},
 	},
 ];
