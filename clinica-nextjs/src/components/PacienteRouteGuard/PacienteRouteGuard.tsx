@@ -74,7 +74,6 @@ export function PacienteRouteGuard({ children, fallback }: PacienteRouteGuardPro
 						<div className="flex gap-1">
 							<Button variant={'outline'} className="flex-1"
 								onClick={() => {
-									setRole('paciente')
 									router.push('/')
 								}}>
 
