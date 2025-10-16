@@ -10,7 +10,8 @@ import { EmployeeRoles } from './types/roles';
  */
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isPacienteRoute = createRouteMatcher(["/pacientes(.*)"]);
-
+const isProtectedAdminRoute = createRouteMatcher(["/admin/ManageUsers(.*)",
+	"/admin/team(.*)", "/admin/services(.*)"]);
 
 //estas rutas estan protegidas independiente del rol.
 const isProtectedRoute = createRouteMatcher([
@@ -35,6 +36,12 @@ export default clerkMiddleware(async (auth, req) => {
 		if (!userRole || !EmployeeRoles.includes(userRole as any)) {
 			const url = new URL("/", req.url);
 			return NextResponse.redirect(url);
+		}
+	}
+	if (isProtectedAdminRoute(req)) {
+		if (!userRole || (userRole !== "admin" && userRole !== "recepcionista")) {
+			const url = new URL("/", req.url);
+			return NextResponse.redirect(url)
 		}
 	}
 
