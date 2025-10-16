@@ -1,6 +1,7 @@
-export default function onBoardPage() {
-	return (
-		<>
-		</>
+export default async function onBoardPage() {
+
+	<>
+
+	</>
 	);
 }

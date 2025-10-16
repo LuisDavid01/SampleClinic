@@ -1,6 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from "next/server";
 import { EmployeeRoles } from './types/roles';
+import { setRoleWithoutForm } from './actions/_actions';
 
 /*
  * Las rutas separadas por RouteMatcher deben tener logica de proteccion.
@@ -52,6 +53,7 @@ export default clerkMiddleware(async (auth, req) => {
 		// Si el usuario no tiene rol específico, se considera paciente por defecto
 		// Solo bloquear si tiene un rol explícito diferente a "paciente" y "admin"
 		if (!userRole) {
+			await setRoleWithoutForm(authData.userId!, 'paciente');
 			const url = new URL("/", req.url);
 			return NextResponse.redirect(url);
 		}

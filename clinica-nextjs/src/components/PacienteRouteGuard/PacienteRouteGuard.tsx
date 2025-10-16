@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Shield, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from 'next/navigation'
+import { setRole } from "@/actions/_actions";
 interface PacienteRouteGuardProps {
 	children: ReactNode;
 	fallback?: ReactNode;
@@ -73,6 +74,7 @@ export function PacienteRouteGuard({ children, fallback }: PacienteRouteGuardPro
 						<div className="flex gap-1">
 							<Button variant={'outline'} className="flex-1"
 								onClick={() => {
+									setRole('paciente')
 									router.push('/')
 								}}>
 
