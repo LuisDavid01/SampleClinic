@@ -14,12 +14,16 @@ import MobileMenu from "../MobileMenu/index";
 import ThemeToggle from "../ThemeToggle";
 import { LogOut, LogIn } from "lucide-react";
 import { smoothScrollTo } from "@/lib/utils";
+import { EmployeeRoles } from "@/types/roles";
+import { useRouter } from "next/navigation";
 
 
 
 export const LandingPageHeader: React.FC = () => {
+	const router = useRouter();
 	const { user } = useUser();
-	const isAdmin = user?.publicMetadata?.role === "admin";
+	const rol = user?.publicMetadata?.role;
+	const isAllowed = EmployeeRoles.includes(rol as any);
 
 	return (
 		<header className="bg-background shadow-sm sticky z-60">
@@ -94,21 +98,20 @@ export const LandingPageHeader: React.FC = () => {
 
 							<SignedOut>
 								<li>
-									<SignInButton>
-										<Button
-											variant="link"
-											className="w-full justify-start text-text-primary px-2"
-										>
-											Acceder
-										</Button>
-									</SignInButton>
+									<Button
+										variant="link"
+										className="w-full justify-start text-text-primary px-2"
+										onClick={() => router.push("/sign-in")}
+									>
+										Acceder
+									</Button>
 								</li>
 
 
 							</SignedOut>
 
 							<SignedIn>
-								{isAdmin ? (
+								{isAllowed ? (
 									<li>
 										<Button
 											variant="link"
@@ -224,7 +227,7 @@ export const LandingPageHeader: React.FC = () => {
 							</SignedOut>
 
 							<SignedIn>
-								{isAdmin ? (
+								{isAllowed ? (
 									<li>
 										<Button
 											variant="link"

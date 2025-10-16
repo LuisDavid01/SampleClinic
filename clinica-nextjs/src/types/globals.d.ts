@@ -5,20 +5,20 @@ export type Roles = "paciente" | "admin" | "moderator" | "fisioterapeuta" | "rec
 
 
 declare global {
-  interface CustomJwtSessionClaims {
-    metadata: {
-      role?: Roles;
-    };
-  }
+	interface CustomJwtSessionClaims {
+		metadata: {
+			role?: Roles;
+		};
+	}
 
-  // tipo generico para las respuestas de los formularios
+	// tipo generico para las respuestas de los formularios
 
-export type ActionResponse = {
-  success: boolean
-  message: string
-  errors?: Record<string, string[]>
-  error?: string
-}
+	export type ActionResponse = {
+		success: boolean
+		message: string
+		errors?: Record<string, string[]>
+		error?: string
+	}
 }
 
 
