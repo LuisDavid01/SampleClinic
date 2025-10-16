@@ -15,12 +15,14 @@ import { OfflineChat } from "../OfflineChat";
 import { chatEvent, errorMessageEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
 import { useAuth } from "@clerk/nextjs";
 import { useNotification } from "../UseNotification";
+import { SurveyForm } from "../SurveyForm";
 
 
 export default function FloatingChat() {
 	const { showNotification } = useNotification()
 	const [isOpen, setIsOpen] = useState(false);
-	const [connectionStatus, setConnectionStatus] = useState<'connected' | 'error' | null>(null);
+	const [connectionStatus, setConnectionStatus] = useState<'connected' | 'error' | 'survey' | null>(null);
+	const [isSurveyActive, setIsSurveyActive] = useState(false);
 	const wsRef = useRef<WebSocket | null>(null);
 	const { getToken } = useAuth();
 	const [messages, setMessages] = useState<Array<{
@@ -117,8 +119,9 @@ export default function FloatingChat() {
 			wsRef.current.onclose = (event) => {
 				console.log("WebSocket disconnected");
 				if (event.code === 1000) {
-					setConnectionStatus('error');
+					console.log("ws closed normally")
 				} else {
+
 					setConnectionStatus('error');
 					showNotification({
 						type: "error",
@@ -223,7 +226,7 @@ export default function FloatingChat() {
 
 	}
 	const toggleChat = () => {
-		if (!wsRef.current && !isOpen) {
+		if (!wsRef.current && !isOpen && isSurveyActive === false) {
 			console.log("Intentando reconectar...");
 			initializeWebSocket();
 		}
@@ -232,12 +235,15 @@ export default function FloatingChat() {
 
 	const handleExitChat = () => {
 		if (wsRef.current) {
-			console.log("Cerrando la conexion")
 			wsRef.current.close(1000, "User closed chat");
+			setMessages([]);
+			wsRef.current = null;
+			setIsSurveyActive(true);
 		}
-		setMessages([]);
-		wsRef.current = null;
+	};
+	const handleExitForm = () => {
 		setIsOpen(false);
+		setIsSurveyActive(false)
 	};
 
 	return (
@@ -275,6 +281,13 @@ export default function FloatingChat() {
 				>
 					{connectionStatus === 'error' ? (
 						<OfflineChat />
+					) : isSurveyActive ? (
+						<>
+
+							<SurveyForm handleExitForm={handleExitForm} />
+
+
+						</>
 					) :
 						<>
 							<CardHeader className="">
@@ -292,7 +305,7 @@ export default function FloatingChat() {
 										variant="ghost"
 										size="sm"
 										onClick={handleExitChat}
-										className="flex items-center gap-1 text-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
+										className="flex items-center gap-1 "
 									>
 										<span>Salir</span>
 										<LogOut className="h-4 w-4" />
@@ -305,8 +318,8 @@ export default function FloatingChat() {
 									<div className="space-y-3">
 										{messages.map(msg => (
 											<div key={msg.id} className={`flex ${msg.role === 'Pacient' ? 'justify-end' : 'justify-start'}`}>
-												<div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'Pacient'
-													? 'bg-card text-text-primary'
+												<div className={`max-w-[80%] p-3 rounded-lg text-sm  ${msg.role === 'Pacient'
+													? 'bg-card '
 													: 'bg-blue-500 text-white'
 													}`}>
 													<p className="break-words whitespace-pre-wrap">
