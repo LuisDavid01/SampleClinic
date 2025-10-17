@@ -15,31 +15,21 @@ import {
 	Stethoscope
 } from "lucide-react";
 import Link from "next/link";
-import { checkRole } from "@/utils/roles";
-import { redirect } from "next/navigation";
+
 import UserButtonClient from "@/components/UserButtonClient";
+import { checkRoles } from "@/utils/roles";
 
 export default async function dasboardLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	// Validar que sea admin o fisioterapeuta
-	const isAdmin = await checkRole("admin");
-	const isFisioterapeuta = await checkRole("fisioterapeuta");
-	
-	if (!isAdmin && !isFisioterapeuta) {
-		redirect("/");
-	}
 
-	// Función para verificar si el usuario puede ver ciertos elementos
-	const canSeeAdminFeatures = isAdmin;
 
 	return (
 		<div className="flex min-h-screen flex-col">
-			<DasboardHeader canSeeAdminFeatures={canSeeAdminFeatures} />
+			<DasboardHeader />
 
-			{/* Contenedor principal debajo del header */}
 			<div className="flex">
 				{/* Aside sticky */}
 				<aside
@@ -65,29 +55,30 @@ export default async function dasboardLayout({
 								Vista general
 							</Link>
 						</Button>
+						{await checkRoles(['admin', 'recepcionista']) &&
+							<>
+								<Button
+									variant="ghost"
+									className="w-full justify-start  hover:bg-gray-800"
+									asChild
+								>
+									<Link href={"/admin/ManageUsers"}>
+										<User className="w-4 h-4 mr-3" />
+										<span>Gestionar usuarios</span>
+									</Link>
+								</Button>
 
-						<Button
-							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
-							asChild
-						>
-							<Link href={"/admin/ManageUsers"}>
-								<User className="w-4 h-4 mr-3" />
-								<span>Gestionar usuarios</span>
-							</Link>
-						</Button>
-
-						<Button
-							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
-							asChild
-						>
-							<Link href={"/admin/pacientes"}>
-								<UserPlus className="w-4 h-4 mr-3" />
-								<span>Pacientes</span>
-							</Link>
-						</Button>
-
+								<Button
+									variant="ghost"
+									className="w-full justify-start  hover:bg-gray-800"
+									asChild
+								>
+									<Link href={"/admin/pacientes"}>
+										<UserPlus className="w-4 h-4 mr-3" />
+										<span>Pacientes</span>
+									</Link>
+								</Button>
+							</>}
 						<Button
 							variant="ghost"
 							className="w-full justify-start  hover:bg-gray-800"
@@ -120,14 +111,14 @@ export default async function dasboardLayout({
 							</Link>
 						</Button>
 						<Button
- 							 variant="ghost"
-  							 className="w-full justify-start hover:bg-gray-800"
-  							 asChild
->
- 							 <Link href={"/admin/services"}>
-   							 <Stethoscope className="w-4 h-4 mr-3" />
-    						<span>Servicios</span>
- 							 </Link>
+							variant="ghost"
+							className="w-full justify-start hover:bg-gray-800"
+							asChild
+						>
+							<Link href={"/admin/services"}>
+								<Stethoscope className="w-4 h-4 mr-3" />
+								<span>Servicios</span>
+							</Link>
 						</Button>
 						<Button
 							variant="ghost"

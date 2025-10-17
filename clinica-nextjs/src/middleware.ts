@@ -1,5 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from "next/server";
+import { EmployeeRoles } from './types/roles';
+import { setRoleWithoutForm } from './actions/_actions';
+
 /*
  * Las rutas separadas por RouteMatcher deben tener logica de proteccion.
  *
@@ -8,7 +11,8 @@ import { NextResponse } from "next/server";
  */
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isPacienteRoute = createRouteMatcher(["/pacientes(.*)"]);
-
+const isProtectedAdminRoute = createRouteMatcher(["/admin/ManageUsers(.*)",
+	"/admin/team(.*)", "/admin/services(.*)"]);
 
 //estas rutas estan protegidas independiente del rol.
 const isProtectedRoute = createRouteMatcher([
@@ -18,6 +22,7 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 export default clerkMiddleware(async (auth, req) => {
 	const authData = await auth();
+	const userRole = authData.sessionClaims?.metadata?.role as string | undefined;
 
 	if (isProtectedRoute(req)) {
 		if (!authData.userId) {
@@ -28,23 +33,28 @@ export default clerkMiddleware(async (auth, req) => {
 	const isAdmin = isAdminRoute(req);
 	if (isAdmin) {
 
-		const userRole = authData.sessionClaims?.metadata?.role;
 		// Solo administradores pueden acceder a rutas de admin
-		if (userRole !== "admin") {
+		if (!userRole || !EmployeeRoles.includes(userRole as any)) {
 			const url = new URL("/", req.url);
 			return NextResponse.redirect(url);
+		}
+	}
+	if (isProtectedAdminRoute(req)) {
+		if (!userRole || (userRole !== "admin" && userRole !== "recepcionista")) {
+			const url = new URL("/", req.url);
+			return NextResponse.redirect(url)
 		}
 	}
 
 	// Para rutas de pacientes: usar la misma lógica que checkRole
 	//const isPacienteRoute = req.url.includes('/pacientes');
 	if (isPacienteRoute(req)) {
-		const userRole = authData.sessionClaims?.metadata?.role;
 
 		// Si el usuario no tiene rol específico, se considera paciente por defecto
 		// Solo bloquear si tiene un rol explícito diferente a "paciente" y "admin"
-		if (userRole && userRole !== "paciente" && userRole !== "admin") {
-			const url = new URL("/dashboard", req.url);
+		if (!userRole) {
+			await setRoleWithoutForm(authData.userId!, 'paciente');
+			const url = new URL("/", req.url);
 			return NextResponse.redirect(url);
 		}
 	}
