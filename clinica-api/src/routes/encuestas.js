@@ -3,11 +3,11 @@ import { clerkAuth, requireClerkRole } from '../middleware/clerkAuth.js';
 import { validateEncuesta, validateId } from '../middleware/validation.js';
 import { ROLES } from '../constants/roles.js';
 import {
-  getEncuestas,
-  getEncuestaById,
-  createEncuesta,
-  getEncuestasByUsuario,
-  getEstadisticasEncuestas
+	getEncuestas,
+	getEncuestaById,
+	createEncuesta,
+	getEncuestasByUsuario,
+	getEstadisticasEncuestas
 } from '../controllers/encuestas.js';
 
 const router = express.Router();
@@ -216,7 +216,7 @@ const router = express.Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/',  getEncuestas);
+router.get('/', getEncuestas);
 
 /**
  * @swagger
@@ -257,7 +257,7 @@ router.get('/',  getEncuestas);
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/estadisticas', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA]), getEstadisticasEncuestas);
+router.get('/estadisticas', clerkAuth, requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA]), getEstadisticasEncuestas);
 
 /**
  * @swagger
@@ -294,7 +294,7 @@ router.get('/estadisticas', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIO
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/:id', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA]), validateId, getEncuestaById);
+router.get('/:id', clerkAuth, requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA]), validateId, getEncuestaById);
 
 /**
  * @swagger
@@ -334,7 +334,10 @@ router.get('/:id', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA, ROLES.PACIENTE]), validateEncuesta, createEncuesta);
+
+
+// agregar verificacion con captcha no necesitamos autorzacion para esta accion
+router.post('/', validateEncuesta, createEncuesta);
 
 /**
  * @swagger
@@ -399,6 +402,6 @@ router.post('/', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, 
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/usuario/:idUsuario',clerkAuth, requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA]), validateId, getEncuestasByUsuario);
+router.get('/usuario/:idUsuario', clerkAuth, requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA]), validateId, getEncuestasByUsuario);
 
 export default router;

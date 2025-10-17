@@ -28,11 +28,9 @@ export const SurveyForm = ({ handleExitForm }) => {
 	>(async (prevState: ActionResponse, formData: FormData) => {
 		// Extract data from form
 		const data = {
-			idRecepcionista: Number(formData.get('idRecepcionista')) || null,
-			nombrePaciente: formData.get('idPaciente')?.toString() || 'anonimo',
-			rating: Number(formData.get('rating')),
+			idUsuario: Number(formData.get('idUsuario')),
+			calificacion: Number(formData.get('calificacion')),
 			comentario: formData.get('comentario')?.toString(),
-			fecha: new Date().toISOString(),
 		}
 
 		try {
@@ -96,18 +94,12 @@ export const SurveyForm = ({ handleExitForm }) => {
 							</FormError>
 						)}
 
-						<FormInput
-							id="nombrePaciente"
-							name="nombrePaciente"
-							value={"anonimo"}
-							type='hidden'
-							required
-						/>
+
 						<FormInput
 
-							id="idRecepcionista"
-							name="idRecepcionista"
-							value={"anonimo"}
+							id="idUsuario"
+							name="idUsuario"
+							value={"1"}
 							type='hidden'
 							required
 						/>
@@ -134,10 +126,10 @@ export const SurveyForm = ({ handleExitForm }) => {
 
 						<div className="grid grid-cols-1 md:grid-cols-1 gap-4">
 							<FormGroup>
-								<FormLabel htmlFor="ranking">Como fue tu experiencia</FormLabel>
+								<FormLabel htmlFor="calificacion">Como fue tu experiencia</FormLabel>
 								<FormSelect
-									id="ranking"
-									name="ranking"
+									id="calificacion"
+									name="calificacion"
 									defaultValue={'regular'}
 									options={rankingOptions}
 									disabled={isPending}

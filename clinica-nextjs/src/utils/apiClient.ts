@@ -132,7 +132,7 @@ export class ApiClient {
 export function useApiClient() {
 	const { getToken } = useAuth();
 
-	return new ApiClient('http://localhost:3001/api', getToken);
+	return new ApiClient(process.env.NEXT_PUBLIC_API_BASE_URL ?? 'localhost:3001', getToken);
 }
 
 

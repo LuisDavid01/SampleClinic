@@ -1,10 +1,8 @@
 import { z } from "zod";
 const SurveySchema = z.object({
-	idRecepcionista: z.number('Invalido').optional().nullable(),
-	nombrePaciente: z.string(),
-	rating: z.number().min(1).max(5),
+	idUsuario: z.number('Invalido'),
+	calificacion: z.number().min(1).max(5),
 	comentario: z.string().max(300).optional().nullable(),
-	fecha: z.string().refine((date) => !isNaN(Date.parse(date))),
 })
 
 export type SurveyData = z.infer<typeof SurveySchema>
@@ -12,8 +10,8 @@ export type SurveyData = z.infer<typeof SurveySchema>
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
 export const submitSurvey = async (data: SurveyData) => {
-
-	const res = await fetch(`${baseUrl}/encuesta`, {
+	console.log(data.idUsuario, data.calificacion, data.comentario)
+	const res = await fetch(`${baseUrl}/encuestas`, {
 		method: 'POST',
 		headers: {
 			"content-type": 'application/json',
