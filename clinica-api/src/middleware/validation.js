@@ -468,6 +468,28 @@ const validateAntecedentes = [
 	handleValidationErrors
 ];
 
+// Validaciones para encuestas
+const validateEncuesta = [
+	body('calificacion')
+		.notEmpty()
+		.withMessage('La calificación es requerida')
+		.isInt({ min: 1, max: 5 })
+		.withMessage('La calificación debe ser un número entero entre 1 y 5'),
+
+	body('comentario')
+		.optional()
+		.isLength({ max: 2000 })
+		.withMessage('El comentario no puede exceder 2000 caracteres'),
+
+	body('idUsuario')
+		.notEmpty()
+		.withMessage('El ID del usuario es requerido')
+		.isInt({ min: 1 })
+		.withMessage('El ID del usuario debe ser un número entero positivo'),
+
+	handleValidationErrors
+];
+
 export {
 	handleValidationErrors,
 	validateUsuario,
@@ -481,6 +503,7 @@ export {
 	validateDiagnostico,
 	validateDiagnosticoUpdate,
 	validateAntecedentes,
+	validateEncuesta,
 	validateId
 };
 
