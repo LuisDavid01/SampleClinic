@@ -54,7 +54,7 @@ export const Header = async () => {
 											asChild
 										>
 											<Link
-												href="/dashboard"
+												href="/pacientes"
 												className="text-text-primary font-medium"
 											>
 												Dashboard
