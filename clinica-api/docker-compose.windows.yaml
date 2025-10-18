@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: fisio_postgres_windows
+    environment:
+      POSTGRES_DB: salena_fisio
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: CHANGE_ME_DB_PASSWORD
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_windows:/var/lib/postgresql/data
+      - ./scripts/docker-init-mejorado.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fisio_network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.windows
+    container_name: fisio_api_windows
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:CHANGE_ME_DB_PASSWORD@postgres:5432/salena_fisio?schema=public
+      - JWT_SECRET=CHANGE_ME
+      - CLERK_SECRET_KEY=tu_clerk_secret_key_aqui
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    networks:
+      - fisio_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data_windows:
+
+networks:
+  fisio_network:
+    driver: bridge

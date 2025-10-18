@@ -23,6 +23,7 @@ import userRoleRoutes from './routes/userRole.js';
 import antecedentesRoutes from './routes/antecedentes.js';
 import auditoriaRoutes from './routes/auditoria.js';
 import encuestaRoutes from './routes/encuestas.js';
+import archivoRoutes from './routes/archivos.js';
 
 const app = express();
 
@@ -94,6 +95,7 @@ app.use('/api/user-role', userRoleRoutes);
 app.use('/api/pacientes', antecedentesRoutes);
 app.use('/api/auditoria', auditoriaRoutes);
 app.use('/api/encuestas', encuestaRoutes);
+app.use('/api/files', archivoRoutes);
 
 /**
  * @swagger

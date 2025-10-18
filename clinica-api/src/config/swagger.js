@@ -21,11 +21,11 @@ const options = {
     },
     servers: [
       {
-        url: `http://localhost:${config.port}/api`,
+        url: `http://localhost:${config.port}`,
         description: 'Servidor de desarrollo'
       },
       {
-        url: 'https://api.stackkub.com/api',
+        url: 'https://api.stackkub.com',
         description: 'Servidor de producción'
       }
     ],
@@ -443,6 +443,78 @@ const options = {
             }
           }
         },
+        Archivo: {
+          type: 'object',
+          required: ['nombreOriginal', 'tipoMime', 'tamanoArchivo'],
+          properties: {
+            idArchivo: {
+              type: 'integer',
+              description: 'ID único del archivo'
+            },
+            nombreOriginal: {
+              type: 'string',
+              description: 'Nombre original del archivo'
+            },
+            nombreArchivo: {
+              type: 'string',
+              description: 'Nombre del archivo en el servidor'
+            },
+            rutaArchivo: {
+              type: 'string',
+              description: 'Ruta relativa del archivo'
+            },
+            tipoMime: {
+              type: 'string',
+              description: 'Tipo MIME del archivo'
+            },
+            tamanoArchivo: {
+              type: 'integer',
+              description: 'Tamaño del archivo en bytes'
+            },
+            extension: {
+              type: 'string',
+              description: 'Extensión del archivo'
+            },
+            descripcion: {
+              type: 'string',
+              description: 'Descripción del archivo'
+            },
+            categoria: {
+              type: 'string',
+              description: 'Categoría del archivo'
+            },
+            etiquetas: {
+              type: 'string',
+              description: 'Etiquetas del archivo'
+            },
+            esPublico: {
+              type: 'boolean',
+              description: 'Si el archivo es público'
+            },
+            fechaSubida: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha de subida'
+            },
+            fechaModificacion: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Fecha de última modificación'
+            },
+            idUsuario: {
+              type: 'integer',
+              description: 'ID del usuario propietario (se asigna automáticamente)'
+            },
+            idExpediente: {
+              type: 'integer',
+              description: 'ID del expediente asociado (opcional)'
+            },
+            activo: {
+              type: 'boolean',
+              description: 'Estado del archivo'
+            }
+          }
+        },
         Expediente: {
           type: 'object',
           required: ['idPaciente', 'cedula', 'estado'],
@@ -670,6 +742,10 @@ const options = {
       {
         name: 'Clerk',
         description: 'Endpoints de autenticación con Clerk'
+      },
+      {
+        name: 'Archivos',
+        description: 'Gestión de archivos del sistema'
       }
     ]
   },

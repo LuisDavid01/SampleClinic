@@ -1,6 +1,6 @@
 import express from 'express';
 import prisma from '../config/database.js';
-import { requireOwnershipOrAdmin } from '../middleware/auth.js';
+import { requireOwnershipOrAdmin, authenticateToken } from '../middleware/auth.js';
 import { clerkAuth, requireClerkRole } from '../middleware/clerkAuth.js';
 import { ROLES } from '../constants/roles.js';
 import { validateUsuario, validateUsuarioUpdate, validateId } from '../middleware/validation.js';
@@ -13,9 +13,8 @@ const router = express.Router();
  * /usuarios:
  *   get:
  *     summary: Obtener todos los usuarios
+ *     description: Obtiene la lista de usuarios con paginación y filtros. No requiere autenticación.
  *     tags: [Usuarios]
- *     security:
- *       - clerkAuth: []
  *     parameters:
  *       - in: query
  *         name: page
@@ -79,23 +78,13 @@ const router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 
-// GET /api/usuarios - Obtener usuarios (admin puede ver todos, fisioterapeutas con restricciones)
-router.get('/', clerkAuth, async (req, res) => {
+// GET /api/usuarios - Obtener usuarios (sin autenticación)
+router.get('/', async (req, res) => {
   try {
     const { page = 1, limit = 10, search, rol, activo } = req.query;
     const skip = (page - 1) * limit;
     
     console.log('🔍 Parámetros de consulta:', { page, limit, search, rol, activo });
-
-    // Verificar permisos del usuario
-    const userRole = req.user.metadata?.role;
-    const usuario = await prisma.usuario.findFirst({
-      where: { clerkId: req.user.id },
-      include: { rol: true }
-    });
-
-    const dbRole = usuario?.rol?.idRol;
-    console.log('🔍 Usuario solicitando usuarios:', { userRole, dbRole, usuarioId: usuario?.idUsuario });
 
     // Construir filtros
     const where = {};
@@ -128,24 +117,6 @@ router.get('/', clerkAuth, async (req, res) => {
     if (activo !== undefined) {
       where.activo = activo === 'true';
     }
-
-    // Aplicar restricciones basadas en el rol
-    if (dbRole === 2) { // FISIOTERAPEUTA
-      // Los fisioterapeutas solo pueden ver pacientes y su propio perfil
-      if (rol === 'paciente') {
-        // Permitir ver pacientes
-      } else if (rol === 'fisioterapeuta') {
-        // Solo puede ver su propio perfil
-        where.idUsuario = usuario.idUsuario;
-      } else {
-        // Para otros roles, no mostrar nada
-        where.idUsuario = -1; // ID que no existe
-      }
-    } else if (dbRole === 4) { // PACIENTE
-      // Los pacientes no pueden ver otros usuarios
-      return res.status(403).json({ error: 'No tienes permisos para ver usuarios' });
-    }
-    // Los administradores (dbRole === 1) pueden ver todos los usuarios sin restricciones
 
     console.log('🔍 Filtros aplicados:', where);
 
@@ -438,12 +409,12 @@ router.post('/', clerkAuth, requireClerkRole(['admin']), validateUsuario, async 
  */
 
 // GET /api/usuarios/:id - Obtener usuario por ID
-router.get('/:id', clerkAuth, requireOwnershipOrAdmin, validateId, async (req, res) => {
+router.get('/:clerkId', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { clerkId } = req.params;
 
     const usuario = await prisma.usuario.findUnique({
-      where: { idUsuario: parseInt(id) },
+      where: { clerkId: clerkId },
       include: { 
         rol: true,
         perfil: {

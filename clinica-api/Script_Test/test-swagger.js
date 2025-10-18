@@ -1,6 +1,6 @@
 // Script de prueba para verificar que Swagger funciona correctamente
 const express = require('express');
-const { specs, swaggerUi } = require('./src/config/swagger');
+const { specs, swaggerUi } = require('../src/config/swagger');
 
 const app = express();
 

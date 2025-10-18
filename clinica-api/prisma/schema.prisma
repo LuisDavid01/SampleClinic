@@ -46,6 +46,7 @@ model Usuario {
   historiasExitoComoPaciente HistoriaExito[]      @relation("HistoriaPaciente")
   perfil                     Perfil?
   sesiones                   Sesion[]
+  archivos                   Archivo[]
   rol                        Rol?                 @relation(fields: [idRol], references: [idRol])
 
   @@map("usuarios")
@@ -184,11 +185,11 @@ model Encuesta {
   idEncuesta      Int      @id @default(autoincrement()) @map("id_encuesta")
   calificacion    Int      @db.SmallInt
   comentario      String?  @db.Text
-  idUsuario       Int      @map("id_usuario")
+  clerkId         String   @map("clerk_id") @db.VarChar(100)
   fechaRegistro   DateTime @default(now()) @map("fecha_registro")
-  usuario         Usuario  @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+  usuario         Usuario  @relation(fields: [clerkId], references: [clerkId], onDelete: Cascade)
 
-  @@index([idUsuario])
+  @@index([clerkId])
   @@index([fechaRegistro])
   @@map("encuestas")
 }
@@ -213,6 +214,7 @@ model Expediente {
   fechaCreacion DateTime      @default(now()) @map("fecha_creacion")
   diagnosticos  Diagnostico[]
   documentos    Documento[]
+  archivos      Archivo[]
   medico        Usuario?      @relation("ExpedienteMedico", fields: [idMedico], references: [idUsuario])
   paciente      Usuario       @relation("ExpedientePaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
 
@@ -302,4 +304,32 @@ model AuditoriaAntecedentes {
   @@index([usuarioId])
   @@index([timestamp])
   @@map("auditoria_antecedentes")
+}
+
+model Archivo {
+  idArchivo        Int      @id @default(autoincrement()) @map("id_archivo")
+  nombreOriginal   String   @map("nombre_original") @db.VarChar(255)
+  nombreArchivo    String   @map("nombre_archivo") @db.VarChar(255)
+  rutaArchivo      String   @map("ruta_archivo") @db.VarChar(500)
+  tipoMime         String   @map("tipo_mime") @db.VarChar(100)
+  tamanoArchivo    Int      @map("tamano_archivo")
+  extension        String   @db.VarChar(10)
+  descripcion      String?  @db.VarChar(500)
+  categoria        String?  @db.VarChar(100)
+  etiquetas        String?  @db.VarChar(500)
+  esPublico        Boolean  @default(false) @map("es_publico")
+  fechaSubida      DateTime @default(now()) @map("fecha_subida")
+  fechaModificacion DateTime @updatedAt @map("fecha_modificacion")
+  idUsuario        Int      @map("id_usuario")
+  idExpediente     Int?     @map("id_expediente")
+  activo           Boolean  @default(true)
+  
+  usuario          Usuario   @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+  expediente       Expediente? @relation(fields: [idExpediente], references: [idExpediente], onDelete: SetNull)
+  
+  @@index([idUsuario])
+  @@index([idExpediente])
+  @@index([categoria])
+  @@index([fechaSubida])
+  @@map("archivos")
 }

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const config = require('./src/config/env');
-const { ROLES, ROLE_NAMES } = require('./src/constants/roles');
+const config = require('../src/config/env');
+const { ROLES, ROLE_NAMES } = require('../src/constants/roles');
 
 // Crear token para administrador
 const createAdminToken = () => {

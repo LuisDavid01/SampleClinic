@@ -1,7 +1,7 @@
 // Script de prueba simple para Swagger
 const express = require('express');
 const cors = require('cors');
-const { specs, swaggerUi } = require('./src/config/swagger');
+const { specs, swaggerUi } = require('../src/config/swagger');
 
 const app = express();
 

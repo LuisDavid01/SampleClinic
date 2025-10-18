@@ -17,7 +17,10 @@
     "test:performance": "node run-tests.js performance",
     "test:tokens": "node run-tests.js tokens",
     "test:menu": "node run-tests.js menu",
-    "test:populate": "node scripts/populate-essential-data.js"
+    "test:populate": "node scripts/populate-essential-data.js",
+    "test:files": "node test-files-api.js",
+    "test:files-clerk": "node test-files-clerk.js",
+    "test:blob-upload": "node test-blob-upload.js"
   },
   "keywords": [
     "api",
@@ -37,9 +40,12 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
+    "form-data": "^4.0.4",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0"
   },
