@@ -17,6 +17,7 @@ type OTP struct {
 	Created  time.Time
 	Rol      string
 	Username string
+	UserID   string
 }
 type RetentionMap map[string]OTP
 
@@ -27,13 +28,14 @@ func NewRetentionMap(ctx context.Context, retentionPeriod time.Duration) Retenti
 
 }
 
-func (rm RetentionMap) NewOTP(username string, rol string) OTP {
+func (rm RetentionMap) NewOTP(username, rol, userID string) OTP {
 
 	o := OTP{
 		Key:      uuid.NewString(),
 		Created:  time.Now(),
 		Rol:      rol,
 		Username: username,
+		UserID:   userID,
 	}
 
 	rm[o.Key] = o

@@ -1,11 +1,10 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import {
 	Form,
 	FormGroup,
 	FormLabel,
-	FormInput,
 	FormTextarea,
 	FormSelect,
 	FormError,
@@ -20,21 +19,29 @@ const initialState: ActionResponse = {
 	errors: undefined,
 }
 
-export const SurveyForm = ({ handleExitForm }) => {
+export const SurveyForm = ({ handleExitForm, recepcionist }) => {
+	useEffect(() => {
+		console.log('Receptionist cambió:', recepcionist)
+		if (recepcionist) {
+		}
+	}, [recepcionist])
+
+
+
 	const [aswered, setAnswered] = useState(false);
 	const [state, formAction, isPending] = useActionState<
 		ActionResponse,
 		FormData
 	>(async (prevState: ActionResponse, formData: FormData) => {
 		// Extract data from form
-		const data = {
-			idUsuario: Number(formData.get('idUsuario')),
+		const surveyData = {
+			idUsuario: recepcionist?.userid,
 			calificacion: Number(formData.get('calificacion')),
 			comentario: formData.get('comentario')?.toString(),
 		}
 
 		try {
-			const result = await submitSurvey(data)
+			const result = await submitSurvey(surveyData)
 
 			// Handle successful submission
 			if (result.success) {
@@ -63,15 +70,41 @@ export const SurveyForm = ({ handleExitForm }) => {
 	const handleClose = () => {
 		handleExitForm();
 	};
+
+	if (!recepcionist) {
+		return (
+			<div className='flex flex-col h-full text-center'>
+				<p className='text-lg lg:text-xl  text-muted-foreground'>
+					Encuesta no disponible en este momento.
+				</p>
+
+				<div className="p-4">
+					<Button
+						variant="link"
+						onClick={handleClose}
+						className="mt-4 "
+					>
+						salir
+					</Button>
+				</div>
+			</div>
+
+		);
+	}
+
+
 	return (
 		<div className="flex flex-col  h-full px-6  text-center justify-around">
 			{aswered ? (
 				<>
-					<p className='text-lg lg:text-xl bg-green-100 text-foreground '>
+					<p className='text-lg lg:text-xl bg-green-100 text-foreground'>
 						Gracias por contestar la encuesta! 😊
 					</p>
+					{/* Mostrar info del receptionist si es necesario */}
+					{recepcionist && (
+						<p>Atendido por: {recepcionist.username}</p>
+					)}
 					<div className="p-4">
-
 						<Button
 							variant="outline"
 							onClick={handleClose}
@@ -95,14 +128,7 @@ export const SurveyForm = ({ handleExitForm }) => {
 						)}
 
 
-						<FormInput
 
-							id="idUsuario"
-							name="idUsuario"
-							value={"1"}
-							type='hidden'
-							required
-						/>
 
 						<FormGroup>
 							<FormLabel htmlFor="comentario">Comentario</FormLabel>
