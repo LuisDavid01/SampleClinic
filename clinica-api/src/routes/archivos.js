@@ -536,9 +536,9 @@ router.get('/:idUsuario/:id/download', clerkAuth, validarIdArchivo, descargarArc
  *       - in: header
  *         name: Range
  *         required: false
+ *         description: Rango de bytes para streaming
  *         schema:
  *           type: string
- *         description: Rango de bytes para streaming (ej: "bytes=0-1023")
  *         example: "bytes=0-1023"
  *     responses:
  *       200:
@@ -553,19 +553,19 @@ router.get('/:idUsuario/:id/download', clerkAuth, validarIdArchivo, descargarArc
  *             description: Tipo MIME del archivo
  *             schema:
  *               type: string
- *             examples:
- *               image:
- *                 summary: Imagen
- *                 value: "image/jpeg"
- *               pdf:
- *                 summary: PDF
- *                 value: "application/pdf"
- *               video:
- *                 summary: Video
- *                 value: "video/mp4"
- *               text:
- *                 summary: Texto
- *                 value: "text/plain"
+ *               examples:
+ *                 image:
+ *                   summary: Imagen
+ *                   value: "image/jpeg"
+ *                 pdf:
+ *                   summary: PDF
+ *                   value: "application/pdf"
+ *                 video:
+ *                   summary: Video
+ *                   value: "video/mp4"
+ *                 text:
+ *                   summary: Texto
+ *                   value: "text/plain"
  *           Content-Disposition:
  *             description: Indica visualización inline
  *             schema:

@@ -1,0 +1,38 @@
+# Dockerfile optimizado para Windows
+# Usar Node.js 18 como imagen base con Debian para mejor compatibilidad con Prisma
+FROM node:18-slim
+
+# Instalar dependencias del sistema necesarias para Prisma y healthcheck
+RUN apt-get update && apt-get install -y openssl wget postgresql-client && rm -rf /var/lib/apt/lists/*
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos de dependencias
+COPY package*.json ./
+
+# Instalar dependencias (incluyendo devDependencies para Prisma)
+RUN npm ci
+
+# Copiar el código fuente
+COPY . .
+
+# Generar el cliente de Prisma
+RUN npx prisma generate
+
+# Hacer ejecutables los scripts
+RUN chmod +x scripts/start.sh scripts/init-prisma.sh
+
+# Crear usuario no-root para seguridad
+RUN groupadd -g 1001 nodejs
+RUN useradd -r -u 1001 -g nodejs nodejs
+
+# Cambiar la propiedad de los archivos al usuario nodejs
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# Exponer el puerto
+EXPOSE 3001
+
+# Comando para Windows - usar bash explícitamente para evitar problemas de shebang
+CMD ["bash", "./scripts/init-prisma.sh"]

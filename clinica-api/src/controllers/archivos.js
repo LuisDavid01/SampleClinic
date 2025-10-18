@@ -9,6 +9,21 @@ const __dirname = path.dirname(__filename);
 const prisma = new PrismaClient();
 
 /**
+ * Escapar caracteres especiales para headers HTTP
+ */
+const escapeHeaderValue = (value) => {
+  // Reemplazar caracteres problemáticos con caracteres seguros
+  return value
+    .replace(/[^\x20-\x7E]/g, '_') // Reemplazar caracteres no ASCII
+    .replace(/[\\"]/g, '_') // Reemplazar backslash y comillas
+    .replace(/[()]/g, '_') // Reemplazar paréntesis
+    .replace(/[{}[\]]/g, '_') // Reemplazar llaves y corchetes
+    .replace(/[;:,]/g, '_') // Reemplazar punto y coma, dos puntos, comas
+    .replace(/\s+/g, '_') // Reemplazar espacios múltiples con un guión bajo
+    .substring(0, 100); // Limitar longitud
+};
+
+/**
  * Listar archivos del usuario con paginación
  * GET /api/files/:idUsuario
  */
@@ -173,7 +188,7 @@ export const descargarArchivo = async (req, res) => {
     }
     
     // Configurar headers para descarga
-    res.setHeader('Content-Disposition', `attachment; filename="${archivo.nombreOriginal}"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${escapeHeaderValue(archivo.nombreOriginal)}"`);
     res.setHeader('Content-Type', archivo.tipoMime);
     res.setHeader('Content-Length', archivo.tamanoArchivo);
     
@@ -437,7 +452,7 @@ export const servirArchivo = async (req, res) => {
         'Accept-Ranges': 'bytes',
         'Content-Length': chunksize,
         'Content-Type': archivo.tipoMime,
-        'Content-Disposition': `inline; filename="${archivo.nombreOriginal}"`
+        'Content-Disposition': `inline; filename="${escapeHeaderValue(archivo.nombreOriginal)}"`
       };
       res.writeHead(206, head);
       file.pipe(res);
@@ -446,7 +461,7 @@ export const servirArchivo = async (req, res) => {
       const head = {
         'Content-Length': fileSize,
         'Content-Type': archivo.tipoMime,
-        'Content-Disposition': `inline; filename="${archivo.nombreOriginal}"`,
+        'Content-Disposition': `inline; filename="${escapeHeaderValue(archivo.nombreOriginal)}"`,
         'Cache-Control': 'public, max-age=3600' // Cache por 1 hora
       };
       res.writeHead(200, head);

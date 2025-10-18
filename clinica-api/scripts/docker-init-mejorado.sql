@@ -186,13 +186,13 @@ CREATE TABLE IF NOT EXISTS encuestas (
     id_encuesta SERIAL PRIMARY KEY,
     calificacion SMALLINT NOT NULL CHECK (calificacion BETWEEN 1 AND 5),
     comentario TEXT,
-    id_usuario INTEGER NOT NULL,
+    clerk_id VARCHAR(100) NOT NULL,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Agregar foreign key después de crear la tabla
 ALTER TABLE encuestas ADD CONSTRAINT fk_encuestas_usuario 
-FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE;
+FOREIGN KEY (clerk_id) REFERENCES usuarios(clerk_id) ON DELETE CASCADE;
 
 -- 14. Tabla Antecedentes Clínicos (DEPENDE DE USUARIOS)
 CREATE TABLE IF NOT EXISTS antecedentes_clinicos (
@@ -355,7 +355,7 @@ CREATE INDEX IF NOT EXISTS idx_sesiones_actividad ON sesiones(ultima_actividad);
 CREATE INDEX IF NOT EXISTS idx_sesiones_activa ON sesiones(activa);
 
 -- Índices para encuestas
-CREATE INDEX IF NOT EXISTS idx_encuestas_usuario ON encuestas(id_usuario);
+CREATE INDEX IF NOT EXISTS idx_encuestas_clerk_id ON encuestas(clerk_id);
 CREATE INDEX IF NOT EXISTS idx_encuestas_fecha ON encuestas(fecha_registro);
 
 -- Índices para antecedentes clínicos

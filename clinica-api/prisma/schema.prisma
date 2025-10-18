@@ -185,11 +185,11 @@ model Encuesta {
   idEncuesta      Int      @id @default(autoincrement()) @map("id_encuesta")
   calificacion    Int      @db.SmallInt
   comentario      String?  @db.Text
-  idUsuario       Int      @map("id_usuario")
+  clerkId         String   @map("clerk_id") @db.VarChar(100)
   fechaRegistro   DateTime @default(now()) @map("fecha_registro")
-  usuario         Usuario  @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+  usuario         Usuario  @relation(fields: [clerkId], references: [clerkId], onDelete: Cascade)
 
-  @@index([idUsuario])
+  @@index([clerkId])
   @@index([fechaRegistro])
   @@map("encuestas")
 }

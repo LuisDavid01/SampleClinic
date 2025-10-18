@@ -180,12 +180,12 @@ export const getEncuestaById = async (req, res) => {
  */
 export const createEncuesta = async (req, res) => {
   try {
-    const { calificacion, comentario, idUsuario } = req.body;
+    const { calificacion, comentario, ClerkId } = req.body;
 
     // Validar que el usuario existe
     const usuario = await prisma.usuario.findUnique({
       where: {
-        idUsuario: parseInt(idUsuario)
+        clerkId: ClerkId
       }
     });
 
@@ -201,7 +201,8 @@ export const createEncuesta = async (req, res) => {
       data: {
         calificacion: parseInt(calificacion),
         comentario: comentario || null,
-        idUsuario: parseInt(idUsuario)
+        clerkId: ClerkId
+
       },
       include: {
         usuario: {
