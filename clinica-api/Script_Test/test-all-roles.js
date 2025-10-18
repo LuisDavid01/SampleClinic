@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const config = require('./src/config/env');
-const { ROLES, ROLE_NAMES, ROLE_DESCRIPTIONS } = require('./src/constants/roles');
+const config = require('../src/config/env');
+const { ROLES, ROLE_NAMES, ROLE_DESCRIPTIONS } = require('../src/constants/roles');
 
 // Simular usuarios con diferentes roles
 const usuarios = [

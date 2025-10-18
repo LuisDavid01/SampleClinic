@@ -1,0 +1,304 @@
+{
+  "info": {
+    "name": "API Archivos - Clínica Fisioterapéutica",
+    "description": "Colección de Postman para probar el sistema de archivos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Archivos",
+      "item": [
+        {
+          "name": "1. Listar archivos del usuario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerk_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{user_id}}"]
+            },
+            "description": "Obtiene la lista de archivos del usuario especificado"
+          }
+        },
+        {
+          "name": "2. Obtener categorías del usuario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerk_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/{{user_id}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{user_id}}", "categories"]
+            },
+            "description": "Obtiene las categorías de archivos del usuario"
+          }
+        },
+        {
+          "name": "3. Subir archivo simple",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerk_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [],
+                  "description": "Seleccionar archivo para subir"
+                },
+                {
+                  "key": "categoria",
+                  "value": "documento",
+                  "type": "text",
+                  "description": "Categoría del archivo"
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Archivo subido desde Postman",
+                  "type": "text",
+                  "description": "Descripción del archivo"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/files/{{user_id}}/upload",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{user_id}}", "upload"]
+            },
+            "description": "Sube un archivo simple al sistema"
+          }
+        },
+        {
+          "name": "4. Subir múltiples archivos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerk_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [],
+                  "description": "Primer archivo"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [],
+                  "description": "Segundo archivo"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [],
+                  "description": "Tercer archivo"
+                },
+                {
+                  "key": "categoria",
+                  "value": "multiple",
+                  "type": "text"
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Múltiples archivos desde Postman",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/files/{{user_id}}/upload",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{user_id}}", "upload"]
+            },
+            "description": "Sube múltiples archivos en una sola solicitud"
+          }
+        },
+        {
+          "name": "5. Subir archivo con expediente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerk_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [],
+                  "description": "Archivo médico"
+                },
+                {
+                  "key": "categoria",
+                  "value": "medico",
+                  "type": "text"
+                },
+                {
+                  "key": "descripcion",
+                  "value": "Documento médico del paciente",
+                  "type": "text"
+                },
+                {
+                  "key": "expedienteId",
+                  "value": "1",
+                  "type": "text",
+                  "description": "ID del expediente médico"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/files/{{user_id}}/upload",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{user_id}}", "upload"]
+            },
+            "description": "Sube un archivo asociado a un expediente médico"
+          }
+        },
+        {
+          "name": "6. Obtener información de archivo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerk_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/{{user_id}}/{{file_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{user_id}}", "{{file_id}}"]
+            },
+            "description": "Obtiene la información de un archivo específico"
+          }
+        },
+        {
+          "name": "7. Descargar archivo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerk_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/{{user_id}}/{{file_id}}/download",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{user_id}}", "{{file_id}}", "download"]
+            },
+            "description": "Descarga un archivo específico"
+          }
+        },
+        {
+          "name": "8. Actualizar metadata de archivo",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerk_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Nueva descripción del archivo\",\n  \"categoria\": \"actualizada\",\n  \"etiquetas\": \"postman,test,actualizado\",\n  \"esPublico\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/files/{{user_id}}/{{file_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{user_id}}", "{{file_id}}"]
+            },
+            "description": "Actualiza los metadatos de un archivo"
+          }
+        },
+        {
+          "name": "9. Eliminar archivo",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clerk_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/files/{{user_id}}/{{file_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["files", "{{user_id}}", "{{file_id}}"]
+            },
+            "description": "Elimina un archivo del sistema"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3001/api",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "file_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "clerk_token",
+      "value": "tu_clerk_token_aqui",
+      "type": "string"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const config = require('./src/config/env');
-const { ROLES, ROLE_NAMES, isAdministrador, isFisioterapeuta, isRecepcionista, isPaciente } = require('./src/constants/roles');
+const config = require('../src/config/env');
+const { ROLES, ROLE_NAMES, isAdministrador, isFisioterapeuta, isRecepcionista, isPaciente } = require('../src/constants/roles');
 
 // Crear tokens para diferentes roles
 const createToken = (usuario) => {

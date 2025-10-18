@@ -1,6 +1,6 @@
 // Script de prueba para JWT
 const jwt = require('jsonwebtoken');
-const config = require('./src/config/env');
+const config = require('../src/config/env');
 
 console.log('🔍 JWT Secret:', config.jwtSecret ? 'Presente' : 'Ausente');
 console.log('🔍 JWT Secret length:', config.jwtSecret ? config.jwtSecret.length : 0);

@@ -257,7 +257,7 @@ router.get('/',  getEncuestas);
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/estadisticas', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA]), getEstadisticasEncuestas);
+router.get('/estadisticas', getEstadisticasEncuestas);
 
 /**
  * @swagger
@@ -294,7 +294,7 @@ router.get('/estadisticas', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIO
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/:id', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA]), validateId, getEncuestaById);
+router.get('/:id',  validateId, getEncuestaById);
 
 /**
  * @swagger
@@ -334,7 +334,7 @@ router.get('/:id', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA, ROLES.PACIENTE]), validateEncuesta, createEncuesta);
+router.post('/', validateEncuesta, createEncuesta);
 
 /**
  * @swagger
@@ -399,6 +399,6 @@ router.post('/', clerkAuth,requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, 
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/usuario/:idUsuario',clerkAuth, requireClerkRole([ROLES.ADMIN, ROLES.FISIOTERAPEUTA, ROLES.RECEPCIONISTA]), validateId, getEncuestasByUsuario);
+router.get('/usuario/:idUsuario', validateId, getEncuestasByUsuario);
 
 export default router;

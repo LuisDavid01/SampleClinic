@@ -2,7 +2,8 @@
 
 /**
  * Script para llenar la base de datos con datos esenciales
- * Incluye: roles, usuarios, servicios, y datos de prueba
+ * Incluye: roles, usuarios, servicios, expedientes, citas, diagnósticos, 
+ * antecedentes clínicos, y archivos de ejemplo
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -130,6 +131,80 @@ const essentialData = {
       estadoCita: 'programada'
       // idServicio se asignará después de crear los servicios
     }
+  ],
+  
+  diagnosticos: [
+    {
+      idPaciente: 4,
+      fecha: new Date('2024-01-15'),
+      idDoctor: 2,
+      diagnostico: 'Dolor lumbar crónico por postura incorrecta en el trabajo',
+      idExpediente: null // Se asignará después de crear expedientes
+    },
+    {
+      idPaciente: 4,
+      fecha: new Date('2024-01-20'),
+      idDoctor: 2,
+      diagnostico: 'Mejora significativa en la movilidad lumbar tras tratamiento',
+      idExpediente: null // Se asignará después de crear expedientes
+    }
+  ],
+  
+  antecedentesClinicos: [
+    {
+      idPaciente: 4,
+      historialMedico: 'Paciente de 35 años con antecedentes de dolor lumbar recurrente',
+      condicionesPreexistentes: 'Ninguna condición médica preexistente',
+      alergiasMedicamentos: 'Ninguna alergia conocida a medicamentos',
+      alergiasAlimentos: 'Intolerancia leve a la lactosa',
+      alergiasAmbientales: 'Alergia estacional al polen',
+      medicamentosActuales: 'Ibuprofeno 400mg según necesidad',
+      medicamentosPrevios: 'Paracetamol (descontinuado)',
+      cirugiasPrevias: 'Ninguna cirugía previa',
+      procedimientosMedicos: 'Radiografías lumbares (2023)',
+      hospitalizacionesPrevias: 'Ninguna hospitalización previa',
+      antecedentesFamiliares: 'Madre con artritis reumatoide',
+      habitosToxicos: 'No fuma, consumo ocasional de alcohol',
+      urgenciasMedicas: 'Contacto de emergencia: María Rodríguez (esposa) - 555-0123',
+      contactoEmergenciaNombre: 'María Rodríguez',
+      contactoEmergenciaTelefono: '555-0123',
+      contactoEmergenciaRelacion: 'Esposa',
+      idMedicoRegistro: 2,
+      notasAdicionales: 'Paciente colaborador, buena adherencia al tratamiento'
+    }
+  ],
+  
+  archivosEjemplo: [
+    {
+      nombreOriginal: 'radiografia_lumbar_2024.pdf',
+      nombreArchivo: 'radiografia_lumbar_2024-1234567890.pdf',
+      rutaArchivo: 'user_4/radiografia_lumbar_2024-1234567890.pdf',
+      tipoMime: 'application/pdf',
+      tamanoArchivo: 1024000,
+      extension: '.pdf',
+      descripcion: 'Radiografía lumbar del paciente Carlos Rodríguez',
+      categoria: 'Imágenes Médicas',
+      etiquetas: 'radiografía,lumbar,columna',
+      esPublico: false,
+      idUsuario: 4,
+      idExpediente: null, // Se asignará después de crear expedientes
+      activo: true
+    },
+    {
+      nombreOriginal: 'consentimiento_informado.pdf',
+      nombreArchivo: 'consentimiento_informado-1234567891.pdf',
+      rutaArchivo: 'user_4/consentimiento_informado-1234567891.pdf',
+      tipoMime: 'application/pdf',
+      tamanoArchivo: 512000,
+      extension: '.pdf',
+      descripcion: 'Consentimiento informado para tratamiento de fisioterapia',
+      categoria: 'Documentos Legales',
+      etiquetas: 'consentimiento,tratamiento,legal',
+      esPublico: false,
+      idUsuario: 4,
+      idExpediente: null, // Se asignará después de crear expedientes
+      activo: true
+    }
   ]
 };
 
@@ -252,6 +327,78 @@ const populateCitas = async () => {
   }
 };
 
+// Función para poblar diagnósticos
+const populateDiagnosticos = async () => {
+  console.log('🔄 Poblando diagnósticos...');
+  
+  // Obtener expedientes para asignar IDs correctos
+  const expedientes = await prisma.expediente.findMany();
+  
+  for (let i = 0; i < essentialData.diagnosticos.length; i++) {
+    const diagnostico = essentialData.diagnosticos[i];
+    try {
+      // Asignar el primer expediente disponible o null si no hay expedientes
+      const expedienteId = expedientes.length > 0 ? expedientes[0].idExpediente : null;
+      
+      const diagnosticoData = {
+        ...diagnostico,
+        idExpediente: expedienteId
+      };
+      
+      await prisma.diagnostico.create({
+        data: diagnosticoData
+      });
+      console.log(`✅ Diagnóstico creado: ${diagnostico.diagnostico.substring(0, 50)}...`);
+    } catch (error) {
+      console.error(`❌ Error creando diagnóstico:`, error.message);
+    }
+  }
+};
+
+// Función para poblar antecedentes clínicos
+const populateAntecedentesClinicos = async () => {
+  console.log('🔄 Poblando antecedentes clínicos...');
+  
+  for (const antecedente of essentialData.antecedentesClinicos) {
+    try {
+      await prisma.antecedenteClinico.create({
+        data: antecedente
+      });
+      console.log(`✅ Antecedentes clínicos creados para paciente ${antecedente.idPaciente}`);
+    } catch (error) {
+      console.error(`❌ Error creando antecedentes clínicos:`, error.message);
+    }
+  }
+};
+
+// Función para poblar archivos de ejemplo
+const populateArchivosEjemplo = async () => {
+  console.log('🔄 Poblando archivos de ejemplo...');
+  
+  // Obtener expedientes para asignar IDs correctos
+  const expedientes = await prisma.expediente.findMany();
+  
+  for (let i = 0; i < essentialData.archivosEjemplo.length; i++) {
+    const archivo = essentialData.archivosEjemplo[i];
+    try {
+      // Asignar el primer expediente disponible o null si no hay expedientes
+      const expedienteId = expedientes.length > 0 ? expedientes[0].idExpediente : null;
+      
+      const archivoData = {
+        ...archivo,
+        idExpediente: expedienteId
+      };
+      
+      await prisma.archivo.create({
+        data: archivoData
+      });
+      console.log(`✅ Archivo creado: ${archivo.nombreOriginal}`);
+    } catch (error) {
+      console.error(`❌ Error creando archivo ${archivo.nombreOriginal}:`, error.message);
+    }
+  }
+};
+
 // Función para verificar datos existentes
 const checkExistingData = async () => {
   console.log('🔍 Verificando datos existentes...');
@@ -261,6 +408,9 @@ const checkExistingData = async () => {
   const servicesCount = await prisma.servicio.count();
   const expedientesCount = await prisma.expediente.count();
   const citasCount = await prisma.cita.count();
+  const diagnosticosCount = await prisma.diagnostico.count();
+  const antecedentesCount = await prisma.antecedenteClinico.count();
+  const archivosCount = await prisma.archivo.count();
   
   console.log(`📊 Datos actuales:`);
   console.log(`   - Roles: ${rolesCount}`);
@@ -268,8 +418,20 @@ const checkExistingData = async () => {
   console.log(`   - Servicios: ${servicesCount}`);
   console.log(`   - Expedientes: ${expedientesCount}`);
   console.log(`   - Citas: ${citasCount}`);
+  console.log(`   - Diagnósticos: ${diagnosticosCount}`);
+  console.log(`   - Antecedentes: ${antecedentesCount}`);
+  console.log(`   - Archivos: ${archivosCount}`);
   
-  return { rolesCount, usersCount, servicesCount, expedientesCount, citasCount };
+  return { 
+    rolesCount, 
+    usersCount, 
+    servicesCount, 
+    expedientesCount, 
+    citasCount,
+    diagnosticosCount,
+    antecedentesCount,
+    archivosCount
+  };
 };
 
 // Función principal
@@ -296,6 +458,15 @@ const populateDatabase = async () => {
     await populateCitas();
     console.log('');
     
+    await populateDiagnosticos();
+    console.log('');
+    
+    await populateAntecedentesClinicos();
+    console.log('');
+    
+    await populateArchivosEjemplo();
+    console.log('');
+    
     // Verificar datos finales
     console.log('🔍 Verificando datos finales...');
     const finalData = await checkExistingData();
@@ -306,6 +477,9 @@ const populateDatabase = async () => {
     console.log(`✅ Servicios: ${finalData.servicesCount}`);
     console.log(`✅ Expedientes: ${finalData.expedientesCount}`);
     console.log(`✅ Citas: ${finalData.citasCount}`);
+    console.log(`✅ Diagnósticos: ${finalData.diagnosticosCount}`);
+    console.log(`✅ Antecedentes: ${finalData.antecedentesCount}`);
+    console.log(`✅ Archivos: ${finalData.archivosCount}`);
     
     console.log('\n🎉 ¡Base de datos poblada exitosamente con datos esenciales!');
     

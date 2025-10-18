@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
-const config = require('./src/config/env');
-const { ROLES, ROLE_NAMES } = require('./src/constants/roles');
-const sessionService = require('./src/services/sessionService');
+const config = require('../src/config/env');
+const { ROLES, ROLE_NAMES } = require('../src/constants/roles');
+const sessionService = require('../src/services/sessionService');
 
 // Función para probar endpoint
 const testEndpoint = async (method, url, token = null, body = null) => {
