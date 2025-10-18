@@ -304,7 +304,7 @@ export default function FloatingChat() {
 									<div className="flex-1">
 										<div className="flex items-center gap-2">
 											<User className="h-4 w-4" />
-											<span className="font-medium">Recepcionista</span>
+											<span className="font-medium">{receptionist?.username ?? 'Recepcionista'}</span>
 											<div className={`w-2 h-2 rounded-full bg-green-400`} />
 										</div>
 										<p className="text-xs text-gray-500">Consulta chat</p>
