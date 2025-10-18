@@ -366,3 +366,6 @@ FodyWeavers.xsd
 
 *.exe
 .vercel
+
+# Uploads from Clinica-api
+clinica-api/uploads/
