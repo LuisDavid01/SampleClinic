@@ -19,6 +19,7 @@ const (
 	EventGetRooms    = "get_chatrooms"
 	EventGetHistory  = "get_history"
 	EventError       = "error_message"
+	EventJoinRoom    = "join_room"
 )
 
 type RoomEvent struct {
@@ -53,4 +54,9 @@ type GetChatRoomsEvent struct {
 
 type GetHistoryEvent struct {
 	History []NewMessageEvent `json:"messages"`
+}
+
+type JoinRoomEvent struct {
+	UserID   string `json:"userid"`
+	Username string `json:"username"`
 }
