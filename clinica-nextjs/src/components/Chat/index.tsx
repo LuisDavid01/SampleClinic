@@ -12,7 +12,7 @@ import { MessageCircle, LogOut, Send, Clock, X, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
-import { chatEvent, errorMessageEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
+import { chatEvent, errorMessageEvent, joinRoomEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
 import { useAuth } from "@clerk/nextjs";
 import { useNotification } from "../UseNotification";
 import { SurveyForm } from "../SurveyForm";
@@ -31,6 +31,9 @@ export default function FloatingChat() {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
 	const isOpenRef = useRef(isOpen);
+	const [receptionist, setRecptionist] = useState<joinRoomEvent | null>(null);
+
+
 	useEffect(() => {
 		isOpenRef.current = isOpen;
 	}, [isOpen]);
@@ -188,6 +191,11 @@ export default function FloatingChat() {
 				})
 
 				break;
+			case "join_room":
+				console.log("join room");
+				const joinPayload = event.payload as joinRoomEvent;
+				setRecptionist(joinPayload)
+				break;
 			default:
 				alert("unsupported event type");
 				break;
@@ -284,7 +292,7 @@ export default function FloatingChat() {
 					) : isSurveyActive ? (
 						<>
 
-							<SurveyForm handleExitForm={handleExitForm} />
+							<SurveyForm handleExitForm={handleExitForm} recepcionist={receptionist} />
 
 
 						</>
@@ -296,7 +304,7 @@ export default function FloatingChat() {
 									<div className="flex-1">
 										<div className="flex items-center gap-2">
 											<User className="h-4 w-4" />
-											<span className="font-medium">Recepcionista</span>
+											<span className="font-medium">{receptionist?.username ?? 'Recepcionista'}</span>
 											<div className={`w-2 h-2 rounded-full bg-green-400`} />
 										</div>
 										<p className="text-xs text-gray-500">Consulta chat</p>

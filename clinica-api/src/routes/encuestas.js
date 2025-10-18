@@ -3,11 +3,11 @@ import { clerkAuth, requireClerkRole } from '../middleware/clerkAuth.js';
 import { validateEncuesta, validateId } from '../middleware/validation.js';
 import { ROLES } from '../constants/roles.js';
 import {
-  getEncuestas,
-  getEncuestaById,
-  createEncuesta,
-  getEncuestasByUsuario,
-  getEstadisticasEncuestas
+	getEncuestas,
+	getEncuestaById,
+	createEncuesta,
+	getEncuestasByUsuario,
+	getEstadisticasEncuestas
 } from '../controllers/encuestas.js';
 
 const router = express.Router();
@@ -216,7 +216,7 @@ const router = express.Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/',  getEncuestas);
+router.get('/', getEncuestas);
 
 /**
  * @swagger

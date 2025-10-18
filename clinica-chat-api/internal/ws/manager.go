@@ -97,18 +97,13 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	id, err := uuid.NewRandom()
-	if err != nil {
-		log.Printf("Error generating the id: %v", err)
-		return
-	}
 
-	client := NewClient(conn, m, id.String(), authUsr.Username, authUsr.Rol)
+	client := NewClient(conn, m, authUsr.UserID, authUsr.Username, authUsr.Rol)
 	m.AddClient(client)
 
 	if client.Rol == "Pacient" {
 		clientRoom := &Room{
-			ID:      strings.Trim(authUsr.Username, " ") + "-" + id.String()[:8],
+			ID:      strings.Trim(authUsr.Username, " ") + "-" + authUsr.UserID[:8],
 			Name:    authUsr.Username,
 			History: []NewMessageEvent{},
 		}
@@ -234,16 +229,37 @@ func chatRoomHandler(event Event, c *Client) error {
 		errorMessageHandler("Bad payload", time.Now(), c)
 		return fmt.Errorf("Bad payload in request: %v", err)
 	}
-	log.Println("changing to chatroom: ", changeChatRoomEvent.Name)
-	c.chatroom = changeChatRoomEvent.Name
 
 	// Si la sala es vacio, no enviamos historial
 	if changeChatRoomEvent.Name != "" {
-		room := c.Manager.getRoomByID(c.chatroom)
+
+		room := c.Manager.getRoomByID(changeChatRoomEvent.Name)
 		if room == nil {
 			errorMessageHandler("Room not found", time.Now(), c)
 			log.Println("Room not found")
 			return nil
+		}
+		log.Println("changing to chatroom: ", changeChatRoomEvent.Name)
+		c.chatroom = changeChatRoomEvent.Name
+		//enviamos la notificacion al paciente de que se unio un miembro de soporte
+		joinEvent := JoinRoomEvent{
+			UserID:   c.ID,
+			Username: c.Username,
+		}
+
+		joinData, err := json.Marshal(joinEvent)
+		if err != nil {
+			return fmt.Errorf("Couldnt parse the join event: %v", err)
+		}
+
+		joinOutGoingEvent := Event{
+			Type:    EventJoinRoom,
+			Payload: joinData,
+		}
+		for client := range c.Manager.Clients {
+			if client.chatroom == c.chatroom && client.Rol == "Pacient" {
+				client.egress <- joinOutGoingEvent
+			}
 		}
 
 		historyEvent := GetHistoryEvent{
@@ -367,6 +383,7 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 
 	var role = "Pacient"
 	var req UserLoginRequest
+	var clientID string
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -384,7 +401,7 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "could not fetch user", http.StatusInternalServerError)
 				return
 			}
-			log.Printf("Usuario obtenido: %+v", *usr.FirstName)
+			clientID = usr.ID
 			if usr.LastName == nil {
 				req.Username = *usr.FirstName
 			} else {
@@ -402,11 +419,14 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if clientID == "" {
+		clientID = "anon-" + uuid.New().String()
+	}
 	// eliminar en prod
-	log.Printf("Usuario loggeado: %+v , rol: %s", req, role)
+	log.Printf("Usuario loggeado: %+v , rol: %s, id: %s", req, role, clientID)
 
 	//generamos la respuesta
-	otp := m.opts.NewOTP(req.Username, role)
+	otp := m.opts.NewOTP(req.Username, role, clientID)
 
 	resp := Response{
 		OTP: otp.Key,

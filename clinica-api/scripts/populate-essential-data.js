@@ -210,121 +210,121 @@ const essentialData = {
 
 // Función para hashear contraseñas
 const hashPassword = async (password) => {
-  const saltRounds = 10;
-  return await bcrypt.hash(password, saltRounds);
+	const saltRounds = 10;
+	return await bcrypt.hash(password, saltRounds);
 };
 
 // Función para poblar roles
 const populateRoles = async () => {
-  console.log('🔄 Poblando roles...');
-  
-  for (const role of essentialData.roles) {
-    try {
-      await prisma.rol.upsert({
-        where: { idRol: role.idRol },
-        update: role,
-        create: role
-      });
-      console.log(`✅ Rol creado/actualizado: ${role.nombreRol}`);
-    } catch (error) {
-      console.error(`❌ Error creando rol ${role.nombreRol}:`, error.message);
-    }
-  }
+	console.log('🔄 Poblando roles...');
+
+	for (const role of essentialData.roles) {
+		try {
+			await prisma.rol.upsert({
+				where: { idRol: role.idRol },
+				update: role,
+				create: role
+			});
+			console.log(`✅ Rol creado/actualizado: ${role.nombreRol}`);
+		} catch (error) {
+			console.error(`❌ Error creando rol ${role.nombreRol}:`, error.message);
+		}
+	}
 };
 
 // Función para poblar usuarios
 const populateUsers = async () => {
-  console.log('🔄 Poblando usuarios...');
-  
-  for (const user of essentialData.usuarios) {
-    try {
-      const hashedPassword = await hashPassword(user.contrasena);
-      
-      await prisma.usuario.upsert({
-        where: { idUsuario: user.idUsuario },
-        update: {
-          ...user,
-          contrasena: hashedPassword
-        },
-        create: {
-          ...user,
-          contrasena: hashedPassword
-        }
-      });
-      console.log(`✅ Usuario creado/actualizado: ${user.nombre} ${user.apellido1}`);
-    } catch (error) {
-      console.error(`❌ Error creando usuario ${user.nombre}:`, error.message);
-    }
-  }
+	console.log('🔄 Poblando usuarios...');
+
+	for (const user of essentialData.usuarios) {
+		try {
+			const hashedPassword = await hashPassword(user.contrasena);
+
+			await prisma.usuario.upsert({
+				where: { idUsuario: user.idUsuario },
+				update: {
+					...user,
+					contrasena: hashedPassword
+				},
+				create: {
+					...user,
+					contrasena: hashedPassword
+				}
+			});
+			console.log(`✅ Usuario creado/actualizado: ${user.nombre} ${user.apellido1}`);
+		} catch (error) {
+			console.error(`❌ Error creando usuario ${user.nombre}:`, error.message);
+		}
+	}
 };
 
 // Función para poblar servicios
 const populateServices = async () => {
-  console.log('🔄 Poblando servicios...');
-  
-  for (const service of essentialData.servicios) {
-    try {
-      // Verificar si el servicio ya existe
-      const existingService = await prisma.servicio.findFirst({
-        where: { nombreServicio: service.nombreServicio }
-      });
-      
-      if (!existingService) {
-        await prisma.servicio.create({
-          data: service
-        });
-        console.log(`✅ Servicio creado: ${service.nombreServicio}`);
-      } else {
-        console.log(`⚠️ Servicio ya existe: ${service.nombreServicio}`);
-      }
-    } catch (error) {
-      console.error(`❌ Error creando servicio ${service.nombreServicio}:`, error.message);
-    }
-  }
+	console.log('🔄 Poblando servicios...');
+
+	for (const service of essentialData.servicios) {
+		try {
+			// Verificar si el servicio ya existe
+			const existingService = await prisma.servicio.findFirst({
+				where: { nombreServicio: service.nombreServicio }
+			});
+
+			if (!existingService) {
+				await prisma.servicio.create({
+					data: service
+				});
+				console.log(`✅ Servicio creado: ${service.nombreServicio}`);
+			} else {
+				console.log(`⚠️ Servicio ya existe: ${service.nombreServicio}`);
+			}
+		} catch (error) {
+			console.error(`❌ Error creando servicio ${service.nombreServicio}:`, error.message);
+		}
+	}
 };
 
 // Función para poblar expedientes
 const populateExpedientes = async () => {
-  console.log('🔄 Poblando expedientes...');
-  
-  for (const expediente of essentialData.expedientes) {
-    try {
-      await prisma.expediente.create({
-        data: expediente
-      });
-      console.log(`✅ Expediente creado: Cédula ${expediente.cedula}`);
-    } catch (error) {
-      console.error(`❌ Error creando expediente ${expediente.cedula}:`, error.message);
-    }
-  }
+	console.log('🔄 Poblando expedientes...');
+
+	for (const expediente of essentialData.expedientes) {
+		try {
+			await prisma.expediente.create({
+				data: expediente
+			});
+			console.log(`✅ Expediente creado: Cédula ${expediente.cedula}`);
+		} catch (error) {
+			console.error(`❌ Error creando expediente ${expediente.cedula}:`, error.message);
+		}
+	}
 };
 
 // Función para poblar citas
 const populateCitas = async () => {
-  console.log('🔄 Poblando citas...');
-  
-  // Obtener los servicios creados para asignar IDs correctos
-  const servicios = await prisma.servicio.findMany();
-  
-  for (let i = 0; i < essentialData.citas.length; i++) {
-    const cita = essentialData.citas[i];
-    try {
-      // Asignar el primer servicio disponible o null si no hay servicios
-      const servicioId = servicios.length > 0 ? servicios[0].idServicio : null;
-      
-      const citaData = {
-        ...cita,
-        idServicio: servicioId
-      };
-      
-      await prisma.cita.create({
-        data: citaData
-      });
-      console.log(`✅ Cita creada: ${cita.descripcion}`);
-    } catch (error) {
-      console.error(`❌ Error creando cita ${cita.descripcion}:`, error.message);
-    }
-  }
+	console.log('🔄 Poblando citas...');
+
+	// Obtener los servicios creados para asignar IDs correctos
+	const servicios = await prisma.servicio.findMany();
+
+	for (let i = 0; i < essentialData.citas.length; i++) {
+		const cita = essentialData.citas[i];
+		try {
+			// Asignar el primer servicio disponible o null si no hay servicios
+			const servicioId = servicios.length > 0 ? servicios[0].idServicio : null;
+
+			const citaData = {
+				...cita,
+				idServicio: servicioId
+			};
+
+			await prisma.cita.create({
+				data: citaData
+			});
+			console.log(`✅ Cita creada: ${cita.descripcion}`);
+		} catch (error) {
+			console.error(`❌ Error creando cita ${cita.descripcion}:`, error.message);
+		}
+	}
 };
 
 // Función para poblar diagnósticos
@@ -499,8 +499,6 @@ const populateDatabase = async () => {
 };
 
 // Ejecutar si el archivo se ejecuta directamente
-if (import.meta.url === `file://${process.argv[1]}`) {
-  populateDatabase().catch(console.error);
-}
+populateDatabase().catch(console.error);
 
 export { populateDatabase, essentialData };
