@@ -33,6 +33,7 @@ services:
       - DATABASE_URL=postgresql://postgres:CHANGE_ME_DB_PASSWORD@postgres:5432/salena_fisio?schema=public
       - JWT_SECRET=CHANGE_ME
       - CLERK_SECRET_KEY=tu_clerk_secret_key_aqui
+      - PRISMA_SKIP_POSTINSTALL_GENERATE=true
     depends_on:
       postgres:
         condition: service_healthy

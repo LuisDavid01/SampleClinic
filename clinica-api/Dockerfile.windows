@@ -20,8 +20,9 @@ COPY . .
 # Generar el cliente de Prisma
 RUN npx prisma generate
 
-# Hacer ejecutables los scripts
-RUN chmod +x scripts/start.sh scripts/init-prisma.sh
+# Hacer ejecutables los scripts y convertir terminadores de línea
+RUN chmod +x scripts/start.sh scripts/init-prisma.sh scripts/init-prisma-windows.sh
+RUN sed -i 's/\r$//' scripts/init-prisma.sh scripts/init-prisma-windows.sh
 
 # Crear usuario no-root para seguridad
 RUN groupadd -g 1001 nodejs
@@ -34,5 +35,5 @@ USER nodejs
 # Exponer el puerto
 EXPOSE 3001
 
-# Comando para Windows - usar bash explícitamente para evitar problemas de shebang
-CMD ["bash", "./scripts/init-prisma.sh"]
+# Comando para Windows - usar el script optimizado para Windows
+CMD ["bash", "./scripts/init-prisma-windows.sh"]

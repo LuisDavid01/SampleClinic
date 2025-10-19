@@ -43,11 +43,8 @@ wait_for_postgres
 # Generar el cliente de Prisma
 run_prisma_command "npx prisma generate" "Generando cliente de Prisma"
 
-# Aplicar migraciones
-run_prisma_command "npx prisma migrate deploy" "Aplicando migraciones de la base de datos"
-
-# Verificar que la BD esté sincronizada
-run_prisma_command "npx prisma db push --accept-data-loss" "Verificando sincronización de la base de datos"
+# Sincronizar la base de datos (más permisivo que migrate)
+run_prisma_command "npx prisma db push --accept-data-loss" "Sincronizando la base de datos"
 
 echo "✅ Base de datos inicializada correctamente"
 
