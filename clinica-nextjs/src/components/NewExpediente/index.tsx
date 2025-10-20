@@ -1,5 +1,5 @@
 'use client'
-import { useActionState, useMemo } from 'react'
+import { useActionState, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +13,8 @@ import { apiEndpoints, useApiClient } from '@/utils/apiClient'
 import { AdminPaciente } from '@/types/AdminPaciente'
 import { cn } from '@/lib/utils'
 import { useUser } from '@clerk/nextjs'
+import { expedienteSchema } from '@/lib/validations'
+import { validateFormData } from '@/lib/form-validation'
 
 
 
@@ -37,6 +39,7 @@ export default function ExpedienteForm({
 	const apiClient = useApiClient();
 	const queryClient = useQueryClient();
 	const { user } = useUser();
+	const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
 	/*
 		const { isLoading, data: pacients } = useQuery<AdminPaciente[]>({
 			queryKey: ['pacients'],
@@ -182,6 +185,20 @@ export default function ExpedienteForm({
 			})(),
 		}
 
+		// VALIDAR CON ZOD
+		const validation = validateFormData(expedienteSchema, data);
+		if (!validation.success) {
+			setValidationErrors(validation.errors || {});
+			return {
+				success: false,
+				message: 'Por favor corrige los errores en el formulario',
+				errors: validation.errors || undefined
+			};
+		}
+
+		// Limpiar errores de validación si la validación es exitosa
+		setValidationErrors({});
+
 		// Debug: Log the data being sent
 		console.log('Form data being sent:', {
 			...data,
@@ -193,18 +210,15 @@ export default function ExpedienteForm({
 
 		try {
 			// Call the appropriate action based on whether we're editing or creating
-
 			const result = isEditing
 				? await updateExpediente(Number(expediente!.idExpediente), data)
 				: await createExpediente(data)
-
 
 			// Handle successful submission
 			if (result.success) {
 				if (!isEditing) {
 					await queryClient.invalidateQueries({ queryKey: ['expedientes'] });
 					router.push('/admin/files')
-
 				}
 				await queryClient.invalidateQueries({ queryKey: ['expediente'] });
 				router.refresh();
@@ -269,22 +283,22 @@ export default function ExpedienteForm({
 					defaultValue={expediente?.idPaciente?.toString() || ''}
 					disabled={isLoading || isReadOnly}
 				>
-					<SelectTrigger className={`w-full bg-white border-2 ${state?.errors?.title ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
-						<SelectValue placeholder="Seleccionar paciente" />
-					</SelectTrigger>
-					<SelectContent>
-						{patientOptions.map((option) => (
-							<SelectItem key={option.value} value={option.value.toString()}>
-								{option.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				{state?.errors?.title && (
-					<p id="title-error" className="text-sm text-red-500">
-						{state.errors.title[0]}
-					</p>
-				)}
+				<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idPaciente || state?.errors?.title ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
+					<SelectValue placeholder="Seleccionar paciente" />
+				</SelectTrigger>
+				<SelectContent>
+					{patientOptions.map((option) => (
+						<SelectItem key={option.value} value={option.value.toString()}>
+							{option.label}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+			{(validationErrors.idPaciente || state?.errors?.title) && (
+				<p id="idPaciente-error" className="text-sm text-red-500">
+					{validationErrors.idPaciente?.[0] || state?.errors?.title?.[0]}
+				</p>
+			)}
 			</div>
 
 
@@ -300,11 +314,11 @@ export default function ExpedienteForm({
 					maxLength={12}
 					disabled={isPending || isReadOnly}
 					aria-describedby="cedula-error"
-					className={`w-full bg-white border-2 ${state?.errors?.cedula ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+					className={`w-full bg-white border-2 ${validationErrors.cedula || state?.errors?.cedula ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
 				/>
-				{state?.errors?.cedula && (
+				{(validationErrors.cedula || state?.errors?.cedula) && (
 					<p id="cedula-error" className="text-sm text-red-500">
-						{state.errors.cedula[0]}
+						{validationErrors.cedula?.[0] || state?.errors?.cedula?.[0]}
 					</p>
 				)}
 			</div>
@@ -321,11 +335,11 @@ export default function ExpedienteForm({
 					defaultValue={expediente?.descripcion || ''}
 					disabled={isPending || isReadOnly}
 					aria-describedby="description-error"
-					className={`w-full bg-white border-2 ${state?.errors?.description ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+					className={`w-full bg-white border-2 ${validationErrors.descripcion || state?.errors?.description ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
 				/>
-				{state?.errors?.description && (
-					<p id="description-error" className="text-sm text-red-500">
-						{state.errors.description[0]}
+				{(validationErrors.descripcion || state?.errors?.description) && (
+					<p id="descripcion-error" className="text-sm text-red-500">
+						{validationErrors.descripcion?.[0] || state?.errors?.description?.[0]}
 					</p>
 				)}
 			</div>
@@ -337,7 +351,7 @@ export default function ExpedienteForm({
 					defaultValue={defaultDoctorId?.toString() || ''}
 					disabled={isPending || (currentUser?.rol?.idRol === 2) || isReadOnly} // Deshabilitar si es fisioterapeuta o solo lectura
 				>
-					<SelectTrigger className={`w-full bg-white border-2 ${state?.errors?.idDoctor ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
+					<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idDoctor || state?.errors?.idDoctor ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
 						<SelectValue placeholder="Seleccionar doctor" />
 					</SelectTrigger>
 					<SelectContent>
@@ -364,9 +378,9 @@ export default function ExpedienteForm({
 						}
 					</p>
 				)}
-				{state?.errors?.idDoctor && (
-					<p id="doctor-error" className="text-sm text-red-500">
-						{state.errors.idDoctor[0]}
+				{(validationErrors.idDoctor || state?.errors?.idDoctor) && (
+					<p id="idDoctor-error" className="text-sm text-red-500">
+						{validationErrors.idDoctor?.[0] || state?.errors?.idDoctor?.[0]}
 					</p>
 				)}
 			</div>
@@ -379,7 +393,7 @@ export default function ExpedienteForm({
 						defaultValue={expediente?.estado || 'Activo'}
 						disabled={isPending || isReadOnly}
 					>
-						<SelectTrigger className={`w-full bg-white border-2 ${state?.errors?.status ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
+						<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.estado || state?.errors?.status ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
 							<SelectValue placeholder="Seleccionar status" />
 						</SelectTrigger>
 						<SelectContent>
@@ -390,9 +404,9 @@ export default function ExpedienteForm({
 							))}
 						</SelectContent>
 					</Select>
-					{state?.errors?.status && (
-						<p id="status-error" className="text-sm text-red-500">
-							{state.errors.status[0]}
+					{(validationErrors.estado || state?.errors?.status) && (
+						<p id="estado-error" className="text-sm text-red-500">
+							{validationErrors.estado?.[0] || state?.errors?.status?.[0]}
 						</p>
 					)}
 				</div>

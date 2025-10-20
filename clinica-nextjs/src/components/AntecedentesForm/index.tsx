@@ -9,6 +9,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import { AntecedenteFormData, AntecedenteClinico, AntecedenteSection, AntecedenteField } from '@/types/Antecedentes';
 import { createAntecedentes, updateAntecedentes } from '@/actions/antecedentes';
+import { antecedentesSchema } from '@/lib/validations';
+import { validateFormData } from '@/lib/form-validation';
 
 
 interface AntecedentesFormProps {
@@ -104,6 +106,8 @@ const antecedenteSections: AntecedenteSection[] = [
 ];
 
 export default function AntecedentesForm({ pacienteId, antecedente, onSuccess, onCancel }: AntecedentesFormProps) {
+  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+  
   // Use useActionState hook for the form submission action
   const [state, formAction, isPending] = useActionState<
     { success: boolean; error?: string; details?: string },
@@ -152,6 +156,19 @@ export default function AntecedentesForm({ pacienteId, antecedente, onSuccess, o
       data.notasAdicionales = notasElement.value;
     }
     
+    // VALIDAR CON ZOD
+    const validation = validateFormData(antecedentesSchema, data);
+    if (!validation.success) {
+      setValidationErrors(validation.errors || {});
+      return {
+        success: false,
+        error: 'Por favor corrige los errores en el formulario',
+        details: 'Errores de validación encontrados'
+      };
+    }
+
+    // Limpiar errores de validación si la validación es exitosa
+    setValidationErrors({});
 
     try {
       // Call the appropriate action based on whether we're editing or creating
@@ -194,6 +211,7 @@ export default function AntecedentesForm({ pacienteId, antecedente, onSuccess, o
   const renderField = (field: AntecedenteField) => {
     const fieldName = field.name as keyof AntecedenteFormData;
     const fieldValue = antecedente?.[fieldName] || '';
+    const fieldError = validationErrors[fieldName];
 
     return (
       <div key={fieldName} className="space-y-2">
@@ -206,7 +224,7 @@ export default function AntecedentesForm({ pacienteId, antecedente, onSuccess, o
             name={fieldName}
             placeholder={field.placeholder}
             defaultValue={fieldValue}
-            className="w-full bg-white border-2 border-gray-300 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            className={`w-full bg-white border-2 ${fieldError ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
             rows={4}
           />
         ) : (
@@ -216,8 +234,13 @@ export default function AntecedentesForm({ pacienteId, antecedente, onSuccess, o
             type={field.type}
             placeholder={field.placeholder}
             defaultValue={fieldValue}
-            className="w-full bg-white border-2 border-gray-300 hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            className={`w-full bg-white border-2 ${fieldError ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
           />
+        )}
+        {fieldError && (
+          <p className="text-sm text-red-500">
+            {fieldError[0]}
+          </p>
         )}
       </div>
     );
@@ -249,6 +272,16 @@ export default function AntecedentesForm({ pacienteId, antecedente, onSuccess, o
               </div>
             </div>
           ))}
+
+          {/* Error general de validación */}
+          {validationErrors.general && (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                {validationErrors.general[0]}
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Alertas de estado */}
           {submitStatus === 'success' && (
