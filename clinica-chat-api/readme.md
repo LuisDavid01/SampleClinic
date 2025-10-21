@@ -31,7 +31,7 @@ Microservicio  encargado de manejar alta carga de conexiones de forma eficiente 
     air
 ```
 ## Diagrama
-[!diagrama](diagrama-chat.png)
+![Diagrama del chat](./diagrama-chat.png)
 
 #### To do:
 
