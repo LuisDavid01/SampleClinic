@@ -13,6 +13,10 @@ if [ $? -eq 0 ]; then
     echo "🔧 Generando cliente de Prisma..."
     npx prisma generate
     
+    # Inicializar roles básicos si no existen
+    echo "🔄 Inicializando roles básicos..."
+    node scripts/init-roles.js
+    
     # Iniciar la aplicación
     echo "🚀 Iniciando servidor..."
     exec npm start

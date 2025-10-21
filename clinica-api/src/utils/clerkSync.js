@@ -2,6 +2,36 @@ import prisma from '../config/database.js';
 import { createClerkClient } from '@clerk/backend';
 
 /**
+ * Inicializa los roles básicos si no existen
+ */
+async function initializeRoles() {
+  try {
+    const rolesCount = await prisma.rol.count();
+    
+    if (rolesCount === 0) {
+      console.log('🔄 Inicializando roles básicos...');
+      
+      const basicRoles = [
+        { idRol: 1, nombreRol: 'Administrador', descripcion: 'Administrador del sistema' },
+        { idRol: 2, nombreRol: 'Fisioterapeuta', descripcion: 'Médico fisioterapeuta' },
+        { idRol: 3, nombreRol: 'Recepcionista', descripcion: 'Recepcionista de la clínica' },
+        { idRol: 4, nombreRol: 'Paciente', descripcion: 'Paciente de la clínica' }
+      ];
+      
+      for (const role of basicRoles) {
+        await prisma.rol.create({
+          data: role
+        });
+        console.log(`✅ Rol creado: ${role.nombreRol}`);
+      }
+    }
+  } catch (error) {
+    console.error('Error inicializando roles:', error);
+    throw error;
+  }
+}
+
+/**
  * Separa el apellido completo en apellido1 y apellido2
  * @param {string} lastName - Apellido completo del usuario
  * @returns {Object} Objeto con apellido1 y apellido2
@@ -48,7 +78,9 @@ async function getClerkUserData(clerkUserId) {
       lastName: clerkUser.lastName, // Mantener el apellido completo para referencia
       apellido1: apellido1,
       apellido2: apellido2,
-      metadata: clerkUser.publicMetadata || {}
+      metadata: clerkUser.publicMetadata || {},
+      publicMetadata: clerkUser.publicMetadata || {},
+      privateMetadata: clerkUser.privateMetadata || {}
     };
   } catch (error) {
     console.error('Error obteniendo datos de Clerk:', error);
@@ -68,6 +100,9 @@ async function getClerkUserData(clerkUserId) {
  */
 async function syncClerkUser(clerkUser) {
   try {
+    // Inicializar roles si no existen
+    await initializeRoles();
+    
     // Obtener datos completos del usuario desde Clerk
     console.log('🔄 Obteniendo datos completos de Clerk para usuario:', clerkUser.id);
     const fullClerkUser = await getClerkUserData(clerkUser.id);
@@ -164,7 +199,29 @@ async function syncClerkUser(clerkUser) {
       }
       
       // Determinar rol basado en metadatos o email
-      const rolId = await determineUserRole(fullClerkUser);
+      let rolId = await determineUserRole(fullClerkUser);
+      
+      // Validar que el rol existe en la base de datos
+      const rolExiste = await prisma.rol.findUnique({
+        where: { idRol: rolId }
+      });
+      
+      if (!rolExiste) {
+        console.error(`❌ El rol con ID ${rolId} no existe en la base de datos`);
+        // Usar rol de paciente (ID 4) como fallback
+        const rolPaciente = await prisma.rol.findUnique({
+          where: { idRol: 4 }
+        });
+        
+        if (!rolPaciente) {
+          throw new Error('No se pudo encontrar un rol válido para el usuario');
+        }
+        
+        console.log('🔄 Usando rol de paciente como fallback');
+        rolId = 4;
+      }
+      
+      console.log(`🎯 Creando usuario con rol ID: ${rolId}`);
       
       usuario = await prisma.usuario.create({
         data: {
@@ -197,35 +254,62 @@ async function syncClerkUser(clerkUser) {
  */
 async function determineUserRole(clerkUser) {
   try {
-    // Verificar si hay roles en los metadatos
-    const userRoles = clerkUser.metadata?.roles || [];
+    console.log('🔍 Analizando metadatos de Clerk para determinar rol:', {
+      metadata: clerkUser.metadata,
+      publicMetadata: clerkUser.publicMetadata,
+      privateMetadata: clerkUser.privateMetadata
+    });
+
+    // Obtener roles de los metadatos públicos
+    const publicRoles = clerkUser.publicMetadata?.roles || [];
+    const privateRoles = clerkUser.privateMetadata?.roles || [];
+    const metadataRole = clerkUser.publicMetadata?.role || clerkUser.privateMetadata?.role;
+    
+    // Combinar todos los roles posibles
+    const allRoles = [...publicRoles, ...privateRoles];
+    if (metadataRole) {
+      allRoles.push(metadataRole);
+    }
+    
+    console.log('🎯 Roles encontrados en metadatos:', {
+      publicRoles,
+      privateRoles,
+      metadataRole,
+      allRoles
+    });
     
     // Mapear roles de Clerk a roles de la base de datos
     const roleMapping = {
-      'admin': 1,      // admin
-      'medico': 2,     // medico
-      'recepcionista': 3, // recepcionista
-      'paciente': 4    // paciente
+      'admin': 1,                    // Administrador
+      'administrador': 1,            // Administrador (español)
+      'fisioterapeuta': 2,          // Fisioterapeuta
+      'medico': 2,                   // Fisioterapeuta (alias)
+      'doctor': 2,                   // Fisioterapeuta (alias)
+      'recepcionista': 3,           // Recepcionista
+      'receptionist': 3,             // Recepcionista (inglés)
+      'paciente': 4,                 // Paciente
+      'patient': 4,                  // Paciente (inglés)
+      'user': 4                      // Usuario genérico -> Paciente
     };
 
-    // Buscar el primer rol válido
-    for (const role of userRoles) {
-      if (roleMapping[role]) {
-        return roleMapping[role];
+    // Buscar el primer rol válido en los metadatos
+    for (const role of allRoles) {
+      const normalizedRole = role?.toLowerCase?.() || role;
+      if (roleMapping[normalizedRole]) {
+        console.log(`🎯 Rol encontrado en metadatos: ${role} -> ID: ${roleMapping[normalizedRole]}`);
+        return roleMapping[normalizedRole];
       }
     }
 
-    // Si no hay roles específicos, determinar por email o por defecto
-    if (clerkUser.email?.includes('@admin.')) {
-      return 1; // admin
-    } else if (clerkUser.email?.includes('@medico.')) {
-      return 2; // medico
-    } else {
-      return 4; // paciente por defecto
-    }
+    // Si no hay roles en metadatos, usar paciente por defecto
+    console.log('⚠️ No se encontraron roles en los metadatos de Clerk, usando paciente por defecto');
+    console.log('💡 Para configurar roles, ve al Dashboard de Clerk → Users → Metadata y agrega:');
+    console.log('   {"role": "admin"} o {"roles": ["fisioterapeuta"]}');
+    return 4; // paciente por defecto
   } catch (error) {
     console.error('Error determinando rol de usuario:', error);
-    return 3; // paciente por defecto en caso de error
+    console.log('🎯 Rol por defecto en caso de error (paciente): 4');
+    return 4; // paciente por defecto en caso de error
   }
 }
 
@@ -290,6 +374,7 @@ async function syncClerkUserMiddleware(req, res, next) {
     if (req.user) {
       const dbUser = await getOrCreateClerkUser(req);
       req.dbUser = dbUser; // Agregar usuario de la DB al request
+      console.log('🔍 Usuario sincronizado:', dbUser);
     }
     next();
   } catch (error) {
@@ -298,9 +383,46 @@ async function syncClerkUserMiddleware(req, res, next) {
   }
 }
 
+/**
+ * Función para mostrar información sobre cómo configurar roles en Clerk
+ */
+function showClerkRoleConfiguration() {
+  console.log(`
+🔧 CONFIGURACIÓN DE ROLES EN CLERK
+=====================================
+
+Para que los roles funcionen correctamente, debes configurar los metadatos del usuario en Clerk:
+
+1. En el Dashboard de Clerk, ve a "Users" → Selecciona un usuario
+2. En la sección "Metadata", agrega uno de estos campos:
+
+   OPCIÓN 1 - Campo 'role' (recomendado):
+   {
+     "role": "admin"           // o "fisioterapeuta", "recepcionista", "paciente"
+   }
+
+   OPCIÓN 2 - Campo 'roles' (array):
+   {
+     "roles": ["admin"]         // o ["fisioterapeuta"], ["recepcionista"], ["paciente"]
+   }
+
+3. Roles válidos:
+   - "admin" o "administrador" → Administrador (ID: 1)
+   - "fisioterapeuta", "medico", "doctor" → Fisioterapeuta (ID: 2)
+   - "recepcionista", "receptionist" → Recepcionista (ID: 3)
+   - "paciente", "patient", "user" → Paciente (ID: 4)
+
+4. Si no se especifica rol, se asignará automáticamente como "paciente"
+
+📝 NOTA: Los metadatos se pueden configurar tanto en publicMetadata como en privateMetadata
+`);
+}
+
 export {
   syncClerkUser,
   determineUserRole,
   getOrCreateClerkUser,
-  syncClerkUserMiddleware
+  syncClerkUserMiddleware,
+  initializeRoles,
+  showClerkRoleConfiguration
 };
