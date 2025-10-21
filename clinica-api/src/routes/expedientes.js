@@ -362,7 +362,7 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
  *       500:
  *         $ref: '#/components/responses/InternalServerError'
  */
-router.post('/', clerkAuth, requireClerkRole(['admin', 'medico']), validateExpediente, async (req, res) => {
+router.post('/', clerkAuth, requireClerkRole(['admin', 'medico','fisioterapeuta']), validateExpediente, async (req, res) => {
   try {
     const { idPaciente, cedula, estado, idMedico, descripcion } = req.body;
 
@@ -515,7 +515,7 @@ router.post('/', clerkAuth, requireClerkRole(['admin', 'medico']), validateExped
  *       500:
  *         $ref: '#/components/responses/InternalServerError'
  */
-router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico']), validateId, validateExpedienteUpdate, async (req, res) => {
+router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico','fisioterapeuta']), validateId, validateExpedienteUpdate, async (req, res) => {
   try {
     const { id } = req.params;
     const { cedula, estado, idMedico, descripcion } = req.body;
