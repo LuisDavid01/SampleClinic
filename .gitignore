@@ -369,3 +369,5 @@ FodyWeavers.xsd
 
 # Uploads from Clinica-api
 clinica-api/uploads/
+.chatApi
+.chatApi.exe

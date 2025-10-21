@@ -22,11 +22,16 @@ El repositorio está organizado como un monorepo con dos servicios principales:
 -   **Componentes de UI**: [Shadcn UI](https://ui.shadcn.com/)
 -   **Autenticación**: [Clerk](https://clerk.com/)
 
-### Backend (`clinica-chat-api`)
+### Backend chat (`clinica-chat-api`)
 
 -   **Lenguaje**: [Go](https://go.dev/)
--   **Framework Web**: [Gin](https://gin-gonic.com/)
+-   **Framework Backend**: [Gin](https://gin-gonic.com/)
 -   **Comunicación en Tiempo Real**: [Gorilla WebSocket](https://github.com/gorilla/websocket)
+
+### Backend de la clinica (`clinica-api`)
+-   **Lenguaje**: [javascript](https://www.javascript.com/)
+-   **Framework Backend**: [Express](https://expressjs.com/)
+-   **Autenticación**: [Clerk](https://clerk.com/)
 
 ### Contenerización
 
@@ -53,7 +58,7 @@ Esta es la forma más sencilla de poner en marcha toda la aplicación.
 
 Si prefieres ejecutar cada servicio manualmente, sigue estos pasos.
 
-#### Backend (`clinica-chat-api`)
+#### Backend del chat (`clinica-chat-api`)
 
 1.  **Navega al directorio**:
     ```bash
@@ -97,6 +102,39 @@ Si prefieres ejecutar cada servicio manualmente, sigue estos pasos.
     ```
 
     El frontend estará accesible en [http://localhost:3000](http://localhost:3000).
+
+#### Makefile
+
+Para facilitar el despliegue se creo un archivo `Makefile` que contiene comandos utiles.
+**Nota**: Debe ejecutarse en el directorio raiz del proyecto.
+
+**Variables de entorno**: Debe definir las variables de entorno en consola usando la terminal 
+de su preferencia, por ejemplo:
+```bash
+export BUILD_TAG=latest
+```
+
+-   `build-chat-windows`: Compila el backend del chat para Windows.\
+-   `build-chat`: Compila el backend del chat para Linux.\
+-   `run-chat-windows`: Ejecuta el backend del chat en Windows.\
+-   `run-chat`: Ejecuta el backend del chat en Linux.\
+-   `build-image-chat`: Construye la imagen del backend del chat.\
+-   `build-image-chat-promote`: Construye la imagen del backend del chat y la etiqueta la con la versión actual.\
+-   `down`: Detiene los contenedores de la aplicación.\
+-   `up`: Lanza los contenedores de la aplicación.
+
+ejemplo de uso:
+```bash
+make build-chat-windows
+```
+
+##### instrucciones para generar una imagen y promoverla
+usar latest para el deploy a producción
+```bash
+export BUILD_TAG=latest
+make build-image-chat
+make build-image-chat-promote
+```
 
 ## Cómo Contribuir
 
