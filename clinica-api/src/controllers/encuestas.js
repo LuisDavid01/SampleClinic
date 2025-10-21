@@ -179,48 +179,56 @@ export const getEncuestaById = async (req, res) => {
  * Crear nueva encuesta
  */
 export const createEncuesta = async (req, res) => {
-  try {
-    const { calificacion, comentario, ClerkId } = req.body;
+	try {
+		const { calificacion, comentario, ClerkId } = req.body;
 
-    // Validar que el usuario existe
-    const usuario = await prisma.usuario.findUnique({
-      where: {
-        clerkId: ClerkId
-      }
-    });
+		// Validar que el usuario existe
+		const usuario = await prisma.usuario.findUnique({
+			where: {
+				clerkId: ClerkId
+			}
+		});
 
-    if (!usuario) {
-      return res.status(404).json({
-        success: false,
-        message: 'Usuario no encontrado'
-      });
-    }
+		if (!usuario) {
+			return res.status(404).json({
+				success: false,
+				message: 'Usuario no encontrado'
+			});
+		}
 
-    // Crear la encuesta
-    const encuesta = await prisma.encuesta.create({
-      data: {
-        calificacion: parseInt(calificacion),
-        comentario: comentario || null,
-        clerkId: ClerkId
+		// Crear la encuesta
+		const encuesta = await prisma.encuesta.create({
+			data: {
+				calificacion: parseInt(calificacion),
+				comentario: comentario || null,
+				clerkId: ClerkId
 
-      },
-      include: {
-        usuario: {
-          select: {
-            idUsuario: true,
-            nombre: true,
-            apellido1: true,
-            apellido2: true,
-            correoElectronico: true,
-            rol: {
-              select: {
-                nombreRol: true
-              }
-            }
-          }
-        }
-      }
-    });
+			},
+			include: {
+				usuario: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true,
+						correoElectronico: true,
+						rol: {
+							select: {
+								nombreRol: true
+							}
+						}
+					}
+				}
+			}
+		});
+
+		res.status(201).json({
+			success: true,
+			message: 'Encuesta creada exitosamente',
+			data: encuesta
+		});
+	} catch (error) {
+		console.error('Error al crear encuesta:', error);
 
     res.status(201).json({
       success: true,
@@ -416,3 +424,4 @@ export const getEstadisticasEncuestas = async (req, res) => {
     });
   }
 };
+
