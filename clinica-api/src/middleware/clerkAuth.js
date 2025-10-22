@@ -43,20 +43,15 @@ const clerkAuth = async (req, res, next) => {
 
     const token = authHeader.substring(7); // Remover "Bearer " del inicio
 
-    console.log('🔍 Token recibido:', token);
-    console.log('🔍 Longitud del token:', token.length);
-    console.log('🔍 Partes del token:', token.split('.').length);
 
     // Verificar el token con Clerk
     let payload;
     try {
-      console.log('🔍 Verificando token con Clerk...');
       
       payload = await verifyToken(token, {
         secretKey: process.env.CLERK_SECRET_KEY
       });
       
-      console.log('✅ Token verificado exitosamente');
       
       if (!payload) {
         return res.status(401).json({
@@ -81,7 +76,7 @@ const clerkAuth = async (req, res, next) => {
         secretKey: process.env.CLERK_SECRET_KEY
       });
       const clerkUser = await clerk.users.getUser(payload.sub);
-      
+      console.log('🔍 Datos del usuario obtenidos:', clerkUser);
       // Separar el apellido en apellido1 y apellido2
       const { apellido1, apellido2 } = splitLastName(clerkUser.lastName);
       

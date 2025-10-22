@@ -43,28 +43,41 @@ app.use(helmet({
 	crossOriginEmbedderPolicy: false
 }));
 
-// Middleware de CORS
+// Middleware de CORS - Configuración permisiva
 app.use(cors({
-	origin: function(origin, callback) {
-		// Permitir requests sin origin (como Postman, Swagger UI, etc.)
-		if (!origin) return callback(null, true);
-
-		// Permitir localhost en cualquier puerto
-		if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-			return callback(null, true);
-		}
-
-		// Permitir el origin configurado
-		if (origin === corsOrigin) {
-			return callback(null, true);
-		}
-
-		callback(new Error('No permitido por CORS'));
-	},
+	origin: true, // Permitir cualquier origin
 	credentials: true,
-	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-	allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+	allowedHeaders: [
+		'Content-Type', 
+		'Authorization', 
+		'X-Requested-With', 
+		'Accept', 
+		'Origin',
+		'Access-Control-Request-Method',
+		'Access-Control-Request-Headers',
+		'Cache-Control',
+		'Pragma'
+	],
+	exposedHeaders: [
+		'Content-Length', 
+		'X-Foo', 
+		'X-Bar',
+		'Access-Control-Allow-Origin',
+		'Access-Control-Allow-Credentials'
+	],
+	optionsSuccessStatus: 200 // Para navegadores legacy
 }));
+
+// Middleware para manejar peticiones OPTIONS (preflight)
+app.options('*', (req, res) => {
+	res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+	res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
+	res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Cache-Control, Pragma');
+	res.header('Access-Control-Allow-Credentials', 'true');
+	res.header('Access-Control-Max-Age', '86400'); // 24 horas
+	res.sendStatus(200);
+});
 
 // Middleware de logging
 app.use(morgan('combined'));
@@ -395,6 +408,7 @@ app.get('/api/user/me', clerkAuth, (req, res) => {
 // Middleware de manejo de errores
 app.use((err, req, res, next) => {
 	console.error(err.stack);
+	
 	res.status(500).json({
 		error: 'Error interno del servidor',
 		message: nodeEnv === 'development' ? err.message : 'Algo salió mal'
