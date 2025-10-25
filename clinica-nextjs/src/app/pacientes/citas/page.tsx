@@ -36,7 +36,6 @@ const citasEjemplo: Cita[] = [
 		tipo: "consulta",
 		sintomas: "Dolor en la rodilla derecha",
 		diagnostico: "Tendinitis rotuliana",
-		tratamiento: "Terapia manual y ejercicios de fortalecimiento",
 		recomendaciones: "Aplicar hielo 3 veces al día, evitar actividades de alto impacto"
 	},
 	{
@@ -51,7 +50,6 @@ const citasEjemplo: Cita[] = [
 		tipo: "tratamiento",
 		sintomas: "Mejora del dolor, pero aún presente",
 		diagnostico: "Tendinitis rotuliana - Mejoría",
-		tratamiento: "Continuar con ejercicios de fortalecimiento, agregar estiramientos",
 		recomendaciones: "Mantener rutina de ejercicios, evitar escaleras"
 	},
 	{
@@ -66,7 +64,6 @@ const citasEjemplo: Cita[] = [
 		tipo: "seguimiento",
 		sintomas: "Dolor reducido significativamente",
 		diagnostico: "Tendinitis rotuliana - Recuperación avanzada",
-		tratamiento: "Evaluación de progreso y ajuste de tratamiento",
 		recomendaciones: "Continuar con ejercicios, programar próxima cita"
 	},
 	{
@@ -81,7 +78,6 @@ const citasEjemplo: Cita[] = [
 		tipo: "evaluacion",
 		sintomas: "Evaluación de progreso post-tratamiento",
 		diagnostico: "Evaluación de recuperación",
-		tratamiento: "Evaluación completa del estado actual",
 		recomendaciones: "Preparar preguntas para la evaluación"
 	}
 ];

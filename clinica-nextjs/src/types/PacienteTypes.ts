@@ -57,6 +57,7 @@ export interface Cita {
 }
 
 export interface Diagnostico {
+  diagnosticoPrincipal: any;
   id: string;
   citaId: string;
   pacienteId: string;
@@ -84,8 +85,8 @@ export interface Medicamento {
 }
 
 export interface Archivo {
-  id: string;
-  diagnosticoId: string;
+  id: number;
+  diagnosticoId?: number;
   nombre: string;
   tipo: 'imagen' | 'documento' | 'video' | 'audio';
   url: string;
