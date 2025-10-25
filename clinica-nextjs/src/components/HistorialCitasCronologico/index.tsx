@@ -54,6 +54,7 @@ const obtenerDatosDiagnostico = (cita: Cita): Diagnostico | null => {
     sintomas: cita.evaluacionCompleta.sintomasReportados || '',
     evaluacion: cita.evaluacionCompleta.evaluacionFisica || '',
     diagnostico: cita.evaluacionCompleta.diagnosticoPrincipal || '',
+    diagnosticoPrincipal: cita.evaluacionCompleta.diagnosticoPrincipal || '', // Agregar propiedad requerida
     planTratamiento: cita.evaluacionCompleta.planTratamiento || '',
     recomendaciones: cita.evaluacionCompleta.recomendaciones || '',
     medicamentos: [], // Se puede implementar más adelante
