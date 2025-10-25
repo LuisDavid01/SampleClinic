@@ -164,7 +164,7 @@ export function generatePDFContent(diagnostico: Diagnostico, pacienteNombre: str
 
       <div class="section">
         <div class="section-title">Diagnóstico</div>
-        <p>${diagnostico.diagnostico}</p>
+        <p>${diagnostico.diagnosticoPrincipal}</p>
       </div>
 
       <div class="section">

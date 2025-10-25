@@ -37,8 +37,8 @@ model Usuario {
   auditorias                 Auditoria[]
   citasComoMedico            Cita[]               @relation("CitaMedico")
   citasComoPaciente          Cita[]               @relation("CitaPaciente")
-  diagnosticosComoDoctor     Diagnostico[]        @relation("DiagnosticoDoctor")
-  diagnosticosComoPaciente   Diagnostico[]        @relation("DiagnosticoPaciente")
+  evaluacionesComoDoctor     EvaluacionDiagnostico[] @relation("EvaluacionDoctor")
+  evaluacionesComoPaciente   EvaluacionDiagnostico[] @relation("EvaluacionPaciente")
   encuestas                  Encuesta[]
   expedientesComoMedico      Expediente[]         @relation("ExpedienteMedico")
   expedientesComoPaciente    Expediente[]         @relation("ExpedientePaciente")
@@ -121,6 +121,7 @@ model Cita {
   servicio    Servicio?       @relation(fields: [idServicio], references: [idServicio])
   notas       NotaCita[]
   resultados  ResultadoCita[]
+  evaluaciones EvaluacionDiagnostico[]
 
   @@map("citas")
 }
@@ -212,7 +213,7 @@ model Expediente {
   idMedico      Int?          @map("id_medico")
   descripcion   String?
   fechaCreacion DateTime      @default(now()) @map("fecha_creacion")
-  diagnosticos  Diagnostico[]
+  evaluaciones  EvaluacionDiagnostico[]
   documentos    Documento[]
   archivos      Archivo[]
   medico        Usuario?      @relation("ExpedienteMedico", fields: [idMedico], references: [idUsuario])
@@ -232,18 +233,24 @@ model Documento {
   @@map("documentos")
 }
 
-model Diagnostico {
-  idDiagnostico Int         @id @default(autoincrement()) @map("id_diagnostico")
-  idPaciente    Int         @map("id_paciente")
-  fecha         DateTime    @default(now()) @db.Date
-  idDoctor      Int?        @map("id_doctor")
-  diagnostico   String
-  idExpediente  Int?        @map("id_expediente")
-  doctor        Usuario?    @relation("DiagnosticoDoctor", fields: [idDoctor], references: [idUsuario])
-  expediente    Expediente? @relation(fields: [idExpediente], references: [idExpediente])
-  paciente      Usuario     @relation("DiagnosticoPaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
+model EvaluacionDiagnostico {
+  idEvaluacion        Int         @id @default(autoincrement()) @map("id_evaluacion")
+  idPaciente          Int         @map("id_paciente")
+  idCita              Int?        @map("id_cita")
+  fecha               DateTime    @default(now()) @db.Date
+  idDoctor            Int?        @map("id_doctor")
+  diagnosticoPrincipal String     @map("diagnostico_principal")
+  sintomasReportados  String?     @map("sintomas_reportados")
+  evaluacionFisica    String?     @map("evaluacion_fisica")
+  planTratamiento     String?     @map("plan_tratamiento")
+  recomendaciones     String?     @map("recomendaciones")
+  idExpediente        Int?        @map("id_expediente")
+  doctor              Usuario?    @relation("EvaluacionDoctor", fields: [idDoctor], references: [idUsuario])
+  expediente          Expediente? @relation(fields: [idExpediente], references: [idExpediente])
+  paciente            Usuario     @relation("EvaluacionPaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
+  cita                Cita?       @relation(fields: [idCita], references: [idCita])
 
-  @@map("diagnostico")
+  @@map("evaluacion_diagnostico")
 }
 
 model AntecedenteClinico {

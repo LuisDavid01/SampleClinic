@@ -66,7 +66,7 @@ export default function DiagnosticoTable({ expedienteId }: DiagnosticoTableProps
 		queryKey: ['diagnosticos', expedienteId],
 		queryFn: async () => {
 			const res = await getDiagnosticosByExpediente(expedienteId)
-			return res.diagnosticos || []
+			return res.evaluaciones || []
 		},
 		staleTime: 2 * 60 * 1000,
 	})
@@ -157,13 +157,15 @@ export default function DiagnosticoTable({ expedienteId }: DiagnosticoTableProps
 									<TableRow>
 										<TableHead>Fecha</TableHead>
 										<TableHead>Doctor</TableHead>
-										<TableHead>Diagnóstico</TableHead>
+										<TableHead>Diagnóstico Principal</TableHead>
+										<TableHead>Síntomas</TableHead>
+										<TableHead>Evaluación</TableHead>
 										<TableHead>Acciones</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
 									{diagnosticos.map((diagnostico) => (
-										<TableRow key={diagnostico.idDiagnostico} className="hover:bg-muted/50">
+										<TableRow key={diagnostico.idEvaluacion} className="hover:bg-muted/50">
 											<TableCell className="font-mono text-sm">
 												{formatDate(diagnostico.fecha)}
 											</TableCell>
@@ -173,8 +175,18 @@ export default function DiagnosticoTable({ expedienteId }: DiagnosticoTableProps
 												</div>
 											</TableCell>
 											<TableCell className="max-w-xs">
-												<div className="truncate" title={diagnostico.diagnostico}>
-													{diagnostico.diagnostico}
+												<div className="truncate" title={diagnostico.diagnosticoPrincipal}>
+													{diagnostico.diagnosticoPrincipal}
+												</div>
+											</TableCell>
+											<TableCell className="max-w-xs">
+												<div className="truncate" title={diagnostico.sintomasReportados || 'No especificado'}>
+													{diagnostico.sintomasReportados || 'No especificado'}
+												</div>
+											</TableCell>
+											<TableCell className="max-w-xs">
+												<div className="truncate" title={diagnostico.evaluacionFisica || 'No especificado'}>
+													{diagnostico.evaluacionFisica || 'No especificado'}
 												</div>
 											</TableCell>
 											<TableCell>
@@ -188,13 +200,13 @@ export default function DiagnosticoTable({ expedienteId }: DiagnosticoTableProps
 															>
 																<Edit className="w-4 h-4" />
 															</Button>
-															<Button 
+															{/* <Button 
 																variant="destructive" 
 																size="sm"
-																onClick={() => handleDelete(diagnostico.idDiagnostico)}
+																onClick={() => handleDelete(diagnostico.idEvaluacion)}
 															>
 																<Trash2 className="w-4 h-4" />
-															</Button>
+															</Button> */}
 														</>
 													)}
 												</div>
@@ -212,7 +224,7 @@ export default function DiagnosticoTable({ expedienteId }: DiagnosticoTableProps
 			{!isLoading && diagnosticos.length > 0 && (
 				<div className="lg:hidden space-y-4">
 					{diagnosticos.map((diagnostico) => (
-						<Card key={diagnostico.idDiagnostico}>
+						<Card key={diagnostico.idEvaluacion}>
 							<CardContent className="p-4">
 								<div className="flex items-start justify-between mb-3">
 									<div className="flex items-center gap-2">
@@ -230,11 +242,39 @@ export default function DiagnosticoTable({ expedienteId }: DiagnosticoTableProps
 									</div>
 								</div>
 								
-								<div className="space-y-2">
+								<div className="space-y-3">
 									<div className="text-sm">
-										<p className="text-muted-foreground mb-1">Diagnóstico:</p>
-										<p className="font-medium">{diagnostico.diagnostico}</p>
+										<p className="text-muted-foreground mb-1">Diagnóstico Principal:</p>
+										<p className="font-medium">{diagnostico.diagnosticoPrincipal}</p>
 									</div>
+									
+									{diagnostico.sintomasReportados && (
+										<div className="text-sm">
+											<p className="text-muted-foreground mb-1">Síntomas Reportados:</p>
+											<p className="text-sm">{diagnostico.sintomasReportados}</p>
+										</div>
+									)}
+									
+									{diagnostico.evaluacionFisica && (
+										<div className="text-sm">
+											<p className="text-muted-foreground mb-1">Evaluación Física:</p>
+											<p className="text-sm">{diagnostico.evaluacionFisica}</p>
+										</div>
+									)}
+									
+									{diagnostico.planTratamiento && (
+										<div className="text-sm">
+											<p className="text-muted-foreground mb-1">Plan de Tratamiento:</p>
+											<p className="text-sm">{diagnostico.planTratamiento}</p>
+										</div>
+									)}
+									
+									{diagnostico.recomendaciones && (
+										<div className="text-sm">
+											<p className="text-muted-foreground mb-1">Recomendaciones:</p>
+											<p className="text-sm">{diagnostico.recomendaciones}</p>
+										</div>
+									)}
 									
 									{canManageDiagnosticos && (
 										<div className="flex gap-2 pt-2">
@@ -250,7 +290,7 @@ export default function DiagnosticoTable({ expedienteId }: DiagnosticoTableProps
 											<Button 
 												variant="destructive" 
 												size="sm"
-												onClick={() => handleDelete(diagnostico.idDiagnostico)}
+												onClick={() => handleDelete(diagnostico.idEvaluacion)}
 												className="flex-1"
 											>
 												<Trash2 className="w-4 h-4 mr-2" />

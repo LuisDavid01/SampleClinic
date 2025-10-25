@@ -48,7 +48,7 @@ export const getDiagnosticos = async (req, res) => {
     }
 
     // Obtener diagnósticos con relaciones
-    const diagnosticos = await prisma.diagnostico.findMany({
+    const diagnosticos = await prisma.evaluacionDiagnostico.findMany({
       where,
       skip,
       take,
@@ -85,7 +85,7 @@ export const getDiagnosticos = async (req, res) => {
     });
 
     // Contar total de registros
-    const total = await prisma.diagnostico.count({ where });
+    const total = await prisma.evaluacionDiagnostico.count({ where });
 
     res.json({
       success: true,
@@ -124,8 +124,8 @@ export const getDiagnosticoById = async (req, res) => {
       });
     }
 
-    const diagnostico = await prisma.diagnostico.findUnique({
-      where: { idDiagnostico: diagnosticoId },
+    const diagnostico = await prisma.evaluacionDiagnostico.findUnique({
+      where: { idEvaluacion: diagnosticoId },
       include: {
         paciente: {
           select: {
@@ -319,7 +319,7 @@ export const createDiagnostico = async (req, res) => {
     }
 
     // Crear el diagnóstico
-    const nuevoDiagnostico = await prisma.diagnostico.create({
+    const nuevoDiagnostico = await prisma.evaluacionDiagnostico.create({
       data: {
         idPaciente: parseInt(idPaciente),
         idDoctor: doctorId,
@@ -390,8 +390,8 @@ export const updateDiagnostico = async (req, res) => {
     }
 
     // Verificar que el diagnóstico existe
-    const diagnosticoExistente = await prisma.diagnostico.findUnique({
-      where: { idDiagnostico: diagnosticoId },
+    const diagnosticoExistente = await prisma.evaluacionDiagnostico.findUnique({
+      where: { idEvaluacion: diagnosticoId },
       include: { paciente: true }
     });
 
@@ -465,8 +465,8 @@ export const updateDiagnostico = async (req, res) => {
     }
 
     // Actualizar el diagnóstico
-    const diagnosticoActualizado = await prisma.diagnostico.update({
-      where: { idDiagnostico: diagnosticoId },
+    const diagnosticoActualizado = await prisma.evaluacionDiagnostico.update({
+      where: { idEvaluacion: diagnosticoId },
       data: {
         diagnostico: diagnostico || diagnosticoExistente.diagnostico,
         idDoctor: doctorId,
@@ -534,8 +534,8 @@ export const deleteDiagnostico = async (req, res) => {
     }
 
     // Verificar que el diagnóstico existe
-    const diagnostico = await prisma.diagnostico.findUnique({
-      where: { idDiagnostico: diagnosticoId }
+    const diagnostico = await prisma.evaluacionDiagnostico.findUnique({
+      where: { idEvaluacion: diagnosticoId }
     });
 
     if (!diagnostico) {
@@ -547,8 +547,8 @@ export const deleteDiagnostico = async (req, res) => {
     }
 
     // Eliminar el diagnóstico
-    await prisma.diagnostico.delete({
-      where: { idDiagnostico: diagnosticoId }
+    await prisma.evaluacionDiagnostico.delete({
+      where: { idEvaluacion: diagnosticoId }
     });
 
     res.json({
@@ -602,7 +602,7 @@ export const getDiagnosticosByPaciente = async (req, res) => {
     }
 
     // Obtener diagnósticos del paciente
-    const diagnosticos = await prisma.diagnostico.findMany({
+    const diagnosticos = await prisma.evaluacionDiagnostico.findMany({
       where: { idPaciente: pacienteId },
       skip,
       take,
@@ -630,7 +630,7 @@ export const getDiagnosticosByPaciente = async (req, res) => {
     });
 
     // Contar total de diagnósticos del paciente
-    const total = await prisma.diagnostico.count({
+    const total = await prisma.evaluacionDiagnostico.count({
       where: { idPaciente: pacienteId }
     });
 
@@ -694,7 +694,7 @@ export const getDiagnosticosByExpediente = async (req, res) => {
     }
 
     // Obtener diagnósticos del expediente
-    const diagnosticos = await prisma.diagnostico.findMany({
+    const diagnosticos = await prisma.evaluacionDiagnostico.findMany({
       where: {
         idPaciente: expediente.idPaciente
       },

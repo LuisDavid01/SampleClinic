@@ -1,4 +1,5 @@
 import { verifyToken, createClerkClient } from '@clerk/backend';
+import { syncClerkUser } from '../utils/clerkSync.js';
 
 /**
  * Separa el apellido completo en apellido1 y apellido2
@@ -135,6 +136,22 @@ const clerkAuth = async (req, res, next) => {
     req.user = userData;
     req.clerkUserId = userData.id;
     req.clerkSessionId = userData.sessionId;
+
+    // 🔄 SINCRONIZAR USUARIO AUTOMÁTICAMENTE
+    try {
+      console.log('🔄 Sincronizando usuario automáticamente...');
+      const dbUser = await syncClerkUser(userData);
+      req.dbUser = dbUser; // Agregar usuario de la BD al request
+      console.log('✅ Usuario sincronizado:', {
+        id: dbUser.idUsuario,
+        nombre: dbUser.nombre,
+        rol: dbUser.rol?.nombreRol,
+        idRol: dbUser.idRol
+      });
+    } catch (syncError) {
+      console.error('⚠️ Error sincronizando usuario (continuando):', syncError.message);
+      // No fallar la autenticación por error de sincronización
+    }
 
     next();
   } catch (error) {

@@ -34,14 +34,18 @@ interface Documento {
 	fechaCreacion: string; // formato: ISO 8601
 }
 
-// Definición del tipo para un Diagnóstico
+// Definición del tipo para una Evaluación y Diagnóstico
 export interface Diagnostico {
-	idDiagnostico: number;
+	idEvaluacion: number;
 	idPaciente: number;
 	fecha: string; // formato: YYYY-MM-DD
 	idDoctor: number;
-	diagnostico: string;
-	doctor: Usuario; // El médico que hizo el diagnóstico
+	diagnosticoPrincipal: string;
+	sintomasReportados?: string;
+	evaluacionFisica?: string;
+	planTratamiento?: string;
+	recomendaciones?: string;
+	doctor: Usuario; // El médico que hizo la evaluación
 }
 
 
