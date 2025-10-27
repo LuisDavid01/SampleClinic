@@ -150,18 +150,36 @@ async function syncClerkUser(clerkUser) {
         nombreActual: usuario.nombre,
         apellido1Actual: usuario.apellido1,
         apellido2Actual: usuario.apellido2,
+        rolActual: usuario.rol?.nombreRol,
         nombreNuevo: fullClerkUser.firstName,
         apellido1Nuevo: fullClerkUser.apellido1,
         apellido2Nuevo: fullClerkUser.apellido2
       });
       
-      // Forzar la actualización de apellidos
+      // Determinar nuevo rol basado en metadatos de Clerk
+      const nuevoRolId = await determineUserRole(fullClerkUser);
+      
+      // Validar que el rol existe en la base de datos
+      const rolExiste = await prisma.rol.findUnique({
+        where: { idRol: nuevoRolId }
+      });
+      
+      if (!rolExiste) {
+        console.error(`❌ El rol con ID ${nuevoRolId} no existe en la base de datos`);
+        // Mantener el rol actual si el nuevo no es válido
+        console.log('🔄 Manteniendo rol actual del usuario');
+      } else {
+        console.log(`🎯 Actualizando rol del usuario: ${usuario.rol?.nombreRol} (ID: ${usuario.idRol}) → Rol ID: ${nuevoRolId}`);
+      }
+      
+      // Forzar la actualización de apellidos y rol
       const updateData = {
         nombre: fullClerkUser.firstName || usuario.nombre,
         apellido1: fullClerkUser.apellido1 || '',
         apellido2: fullClerkUser.apellido2 || '',
         correoElectronico: fullClerkUser.email,
         clerkId: fullClerkUser.id,
+        ...(rolExiste && { idRol: nuevoRolId }) // Solo actualizar rol si es válido
       };
       
       console.log('📝 Datos a actualizar:', updateData);
@@ -180,7 +198,9 @@ async function syncClerkUser(clerkUser) {
         apellido1: usuario.apellido1,
         apellido2: usuario.apellido2,
         email: usuario.correoElectronico,
-        clerkId: usuario.clerkId
+        clerkId: usuario.clerkId,
+        rol: usuario.rol?.nombreRol,
+        idRol: usuario.idRol
       });
     } else {
       // Crear nuevo usuario
@@ -223,8 +243,19 @@ async function syncClerkUser(clerkUser) {
       
       console.log(`🎯 Creando usuario con rol ID: ${rolId}`);
       
-      usuario = await prisma.usuario.create({
-        data: {
+      usuario = await prisma.usuario.upsert({
+        where: {
+          correoElectronico: fullClerkUser.email
+        },
+        update: {
+          nombre: fullClerkUser.firstName || 'Usuario',
+          apellido1: fullClerkUser.apellido1 || 'Clerk',
+          apellido2: fullClerkUser.apellido2 || '',
+          clerkId: fullClerkUser.id,
+          idRol: rolId,
+          activo: true
+        },
+        create: {
           nombre: fullClerkUser.firstName || 'Usuario',
           apellido1: fullClerkUser.apellido1 || 'Clerk',
           apellido2: fullClerkUser.apellido2 || '',

@@ -13,6 +13,20 @@ export interface Paciente {
   foto?: string;
 }
 
+export interface Archivo {
+  id: number;
+  nombreArchivo: string;
+  nombreOriginal: string;
+  rutaArchivo: string;
+  tipoMime: string;
+  tamanoArchivo: number;
+  extension: string;
+  descripcion?: string;
+  categoria?: string;
+  etiquetas?: string;
+  fechaSubida: Date;
+}
+
 export interface Cita {
   id: string;
   pacienteId: string;
@@ -26,15 +40,29 @@ export interface Cita {
   notas?: string;
   sintomas?: string;
   diagnostico?: string;
-  tratamiento?: string;
+  evaluacionFisica?: string;
+  planTratamiento?: string;
   recomendaciones?: string;
+  archivos?: Archivo[];
+  evaluacionCompleta?: {
+    idEvaluacion: number;
+    fechaEvaluacion: Date;
+    doctorEvaluacion: string;
+    diagnosticoPrincipal?: string;
+    sintomasReportados?: string;
+    evaluacionFisica?: string;
+    planTratamiento?: string;
+    recomendaciones?: string;
+  };
 }
 
 export interface Diagnostico {
+  diagnosticoPrincipal: any;
   id: string;
   citaId: string;
   pacienteId: string;
   fisioterapeutaId: string;
+  fisioterapeutaNombre: string;
   fecha: Date;
   sintomas: string;
   evaluacion: string;
@@ -57,8 +85,8 @@ export interface Medicamento {
 }
 
 export interface Archivo {
-  id: string;
-  diagnosticoId: string;
+  id: number;
+  diagnosticoId?: number;
   nombre: string;
   tipo: 'imagen' | 'documento' | 'video' | 'audio';
   url: string;

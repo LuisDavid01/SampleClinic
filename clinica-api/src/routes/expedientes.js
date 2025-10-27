@@ -137,7 +137,7 @@ router.get('/', clerkAuth, async (req, res) => {
             }
           },
           documentos: true,
-          diagnosticos: {
+          evaluaciones: {
             include: {
               doctor: {
                 select: {
@@ -232,7 +232,7 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
           }
         },
         documentos: true,
-        diagnosticos: {
+        evaluaciones: {
           include: {
             doctor: {
               select: {
@@ -592,7 +592,7 @@ router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico','fisioterapeut
           }
         },
         documentos: true,
-        diagnosticos: {
+        evaluaciones: {
           include: {
             doctor: {
               select: {

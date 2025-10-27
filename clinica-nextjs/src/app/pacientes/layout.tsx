@@ -53,7 +53,7 @@ export default async function pacientesLayout({
 								Mis Cita
 							</Link>
 						</Button>
-						<Button
+						{/* <Button
 							variant="ghost"
 							className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
 							asChild
@@ -61,6 +61,16 @@ export default async function pacientesLayout({
 							<Link href="/pacientes/citas">
 								<Calendar className="w-4 h-4 mr-3" />
 								Citas
+							</Link>
+						</Button> */}
+						<Button
+							variant="ghost"
+							className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+							asChild
+						>
+							<Link href="/pacientes/historial-citas">
+								<Calendar className="w-4 h-4 mr-3" />
+								Citas historial
 							</Link>
 						</Button>
 						<Button

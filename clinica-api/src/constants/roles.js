@@ -39,7 +39,7 @@ const hasRole = (user, roleId) => {
 
 // Funciones específicas para cada rol
 const isAdministrador = (user) => {
-	return hasRole(user, ROLES.ADMINISTRADOR);
+	return hasRole(user, ROLES.Admin);
 };
 
 const isFisioterapeuta = (user) => {
