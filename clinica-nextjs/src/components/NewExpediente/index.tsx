@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { useUser } from '@clerk/nextjs'
 import { expedienteSchema } from '@/lib/validations'
 import { validateFormData } from '@/lib/form-validation'
+import { Switch } from '../ui/switch'
 
 
 
@@ -22,7 +23,6 @@ import { validateFormData } from '@/lib/form-validation'
 interface ExpedienteFormProps {
 	expediente?: Expediente,
 	isEditing?: boolean,
-	isReadOnly?: boolean
 }
 
 const initialState: ActionResponse = {
@@ -34,12 +34,12 @@ const initialState: ActionResponse = {
 export default function ExpedienteForm({
 	expediente,
 	isEditing = false,
-	isReadOnly = false,
 }: ExpedienteFormProps) {
 	const apiClient = useApiClient();
 	const queryClient = useQueryClient();
 	const { user } = useUser();
 	const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+	const [isReadOnly, setIsReadOnly] = useState(isEditing);
 	/*
 		const { isLoading, data: pacients } = useQuery<AdminPaciente[]>({
 			queryKey: ['pacients'],
@@ -250,181 +250,196 @@ export default function ExpedienteForm({
 	}
 
 	return (
-		<form action={formAction} className="w-full space-y-6">
-			{state?.message && (
-				<div
-					className={cn(
-						'w-full rounded-md border px-4 py-3',
-						state.success
-							? 'bg-green-50 text-green-800 border-green-300'
-							: 'bg-red-50 text-red-800 border-red-300'
-					)}
-					role="status"
-					aria-live={state.success ? 'polite' : 'assertive'}
-				>
-					{state.message}
+		<>
+			<div className={`flex items-center space-x-2 `}>
+
+
+				<Switch
+					checked={isReadOnly}
+					onCheckedChange={() => setIsReadOnly(!isReadOnly)}
+					aria-label="Toggle editing mode"
+				/>
+
+				<div className="text-sm font-medium">
+					{isReadOnly ? "Solo visualizar" : "Editar"}
 				</div>
-			)}
-
-			<div className="space-y-2 w-full">
-				<Label htmlFor="idPaciente" className="text-sm font-medium">Nombre del paciente</Label>
-				<Select
-					name="idPaciente"
-					defaultValue={expediente?.idPaciente?.toString() || ''}
-					disabled={isLoading || isEditing}
-				>
-					<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idPaciente || state?.errors?.title ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
-						<SelectValue placeholder="Seleccionar paciente" />
-					</SelectTrigger>
-					<SelectContent>
-						{pacients.map((p: AdminPaciente) => (
-							<SelectItem key={p.nombre + p.idUsuario} value={p.idUsuario.toString()}>
-								{p.nombre + ' ' + p.apellido1 + ' ' + p.apellido2}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				{(validationErrors.idPaciente || state?.errors?.title) && (
-					<p id="idPaciente-error" className="text-sm text-red-500">
-						{validationErrors.idPaciente?.[0] || state?.errors?.title?.[0]}
-					</p>
-				)}
 			</div>
-
-
-			<div className="space-y-2 w-full">
-				<Label htmlFor="cedula" className="text-sm font-medium">Cedula de identidad</Label>
-				<Input
-					id="cedula"
-					name="cedula"
-					placeholder="Documento de identidad del paciente"
-					defaultValue={expediente?.cedula || ''}
-					required
-					minLength={3}
-					maxLength={12}
-					disabled={isPending || isReadOnly}
-					aria-describedby="cedula-error"
-					className={`w-full bg-white border-2 ${validationErrors.cedula || state?.errors?.cedula ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-				/>
-				{(validationErrors.cedula || state?.errors?.cedula) && (
-					<p id="cedula-error" className="text-sm text-red-500">
-						{validationErrors.cedula?.[0] || state?.errors?.cedula?.[0]}
-					</p>
-				)}
-			</div>
-
-
-
-			<div className="space-y-2 w-full">
-				<Label htmlFor="descripcion" className="text-sm font-medium">Descripcion</Label>
-				<Textarea
-					id="descripcion"
-					name="descripcion"
-					placeholder="Descripcion del estado del paciente"
-					rows={4}
-					defaultValue={expediente?.descripcion || ''}
-					disabled={isPending || isReadOnly}
-					aria-describedby="description-error"
-					className={`w-full bg-white border-2 ${validationErrors.descripcion || state?.errors?.description ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-				/>
-				{(validationErrors.descripcion || state?.errors?.description) && (
-					<p id="descripcion-error" className="text-sm text-red-500">
-						{validationErrors.descripcion?.[0] || state?.errors?.description?.[0]}
-					</p>
-				)}
-			</div>
-
-			<div className="space-y-2 w-full">
-				<Label htmlFor="idDoctor" className="text-sm font-medium">Doctor asignado</Label>
-				<Select
-					name="idDoctor"
-					defaultValue={defaultDoctorId?.toString() || ''}
-					disabled={isLoading || (currentUser?.rol?.idRol === 2) || isReadOnly} // Deshabilitar si es fisioterapeuta o solo lectura
-				>
-					<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idDoctor || state?.errors?.idDoctor ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
-						<SelectValue placeholder="Seleccionar doctor" />
-					</SelectTrigger>
-					<SelectContent>
-						{doctors.map((d: AdminPaciente) => (
-							<SelectItem key={d.nombre + d.idUsuario}
-								value={d.idUsuario.toString()}>
-								{d.nombre + ' ' + d.apellido1 + ' ' + d.apellido2}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				{/* Campo oculto para asegurar que el valor se envíe cuando está deshabilitado */}
-				{currentUser?.rol?.idRol === 2 && (
-					<input
-						type="hidden"
-						name="idDoctor"
-						value={defaultDoctorId}
-					/>
-				)}
-				{currentUser?.rol?.idRol === 2 && (
-					<p className="text-xs text-gray-500 mt-1">
-						{isEditing
-							? 'Como fisioterapeuta, solo puedes editar expedientes asignados a ti mismo.'
-							: 'Como fisioterapeuta, solo puedes crear expedientes asignados a ti mismo.'
-						}
-					</p>
-				)}
-				{(validationErrors.idDoctor || state?.errors?.idDoctor) && (
-					<p id="idDoctor-error" className="text-sm text-red-500">
-						{validationErrors.idDoctor?.[0] || state?.errors?.idDoctor?.[0]}
-					</p>
-				)}
-			</div>
-
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<div className="space-y-2 w-full">
-					<Label htmlFor="status" className="text-sm font-medium">Status</Label>
-					<Select
-						name="status"
-						defaultValue={expediente?.estado || 'Activo'}
-						disabled={isPending || isReadOnly}
+			<form action={formAction} className="w-full space-y-6">
+				{state?.message && (
+					<div
+						className={cn(
+							'w-full rounded-md border px-4 py-3',
+							state.success
+								? 'bg-green-50 text-green-800 border-green-300'
+								: 'bg-red-50 text-red-800 border-red-300'
+						)}
+						role="status"
+						aria-live={state.success ? 'polite' : 'assertive'}
 					>
-						<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.estado || state?.errors?.status ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
-							<SelectValue placeholder="Seleccionar status" />
+						{state.message}
+					</div>
+				)}
+
+				<div className="space-y-2 w-full">
+					<Label htmlFor="idPaciente" className="text-sm font-medium">Nombre del paciente</Label>
+					<Select
+						name="idPaciente"
+						defaultValue={expediente?.idPaciente?.toString() || ''}
+						disabled={isLoading || isEditing}
+					>
+						<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idPaciente || state?.errors?.title ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
+							<SelectValue placeholder="Seleccionar paciente" />
 						</SelectTrigger>
 						<SelectContent>
-							{statusOptions.map((option) => (
-								<SelectItem key={option.value} value={option.value}>
-									{option.label}
+							{pacients.map((p: AdminPaciente) => (
+								<SelectItem key={p.nombre + p.idUsuario} value={p.idUsuario.toString()}>
+									{p.nombre + ' ' + p.apellido1 + ' ' + p.apellido2}
 								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
-					{(validationErrors.estado || state?.errors?.status) && (
-						<p id="estado-error" className="text-sm text-red-500">
-							{validationErrors.estado?.[0] || state?.errors?.status?.[0]}
+					{(validationErrors.idPaciente || state?.errors?.title) && (
+						<p id="idPaciente-error" className="text-sm text-red-500">
+							{validationErrors.idPaciente?.[0] || state?.errors?.title?.[0]}
 						</p>
 					)}
 				</div>
-			</div>
 
-			{!isReadOnly && (
-				<div className="w-full mt-8 pt-6 border-t-2 border-gray-300">
-					<div className="flex flex-col gap-4 w-full">
-						<Button
-							type="submit"
-							disabled={isPending}
-							className="w-full font-semibold py-3"
+
+				<div className="space-y-2 w-full">
+					<Label htmlFor="cedula" className="text-sm font-medium">Cedula de identidad</Label>
+					<Input
+						id="cedula"
+						name="cedula"
+						placeholder="Documento de identidad del paciente"
+						defaultValue={expediente?.cedula || ''}
+						required
+						minLength={3}
+						maxLength={12}
+						disabled={isPending || isReadOnly}
+						aria-describedby="cedula-error"
+						className={`w-full bg-white border-2 ${validationErrors.cedula || state?.errors?.cedula ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+					/>
+					{(validationErrors.cedula || state?.errors?.cedula) && (
+						<p id="cedula-error" className="text-sm text-red-500">
+							{validationErrors.cedula?.[0] || state?.errors?.cedula?.[0]}
+						</p>
+					)}
+				</div>
+
+
+
+				<div className="space-y-2 w-full">
+					<Label htmlFor="descripcion" className="text-sm font-medium">Descripcion</Label>
+					<Textarea
+						id="descripcion"
+						name="descripcion"
+						placeholder="Descripcion del estado del paciente"
+						rows={4}
+						defaultValue={expediente?.descripcion || ''}
+						disabled={isPending || isReadOnly}
+						aria-describedby="description-error"
+						className={`w-full bg-white border-2 ${validationErrors.descripcion || state?.errors?.description ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+					/>
+					{(validationErrors.descripcion || state?.errors?.description) && (
+						<p id="descripcion-error" className="text-sm text-red-500">
+							{validationErrors.descripcion?.[0] || state?.errors?.description?.[0]}
+						</p>
+					)}
+				</div>
+
+				<div className="space-y-2 w-full">
+					<Label htmlFor="idDoctor" className="text-sm font-medium">Doctor asignado</Label>
+					<Select
+						name="idDoctor"
+						defaultValue={defaultDoctorId?.toString() || ''}
+						disabled={isLoading || (currentUser?.rol?.idRol === 2) || isReadOnly} // Deshabilitar si es fisioterapeuta o solo lectura
+					>
+						<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idDoctor || state?.errors?.idDoctor ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
+							<SelectValue placeholder="Seleccionar doctor" />
+						</SelectTrigger>
+						<SelectContent>
+							{doctors.map((d: AdminPaciente) => (
+								<SelectItem key={d.nombre + d.idUsuario}
+									value={d.idUsuario.toString()}>
+									{d.nombre + ' ' + d.apellido1 + ' ' + d.apellido2}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					{/* Campo oculto para asegurar que el valor se envíe cuando está deshabilitado */}
+					{currentUser?.rol?.idRol === 2 && (
+						<input
+							type="hidden"
+							name="idDoctor"
+							value={defaultDoctorId}
+						/>
+					)}
+					{currentUser?.rol?.idRol === 2 && (
+						<p className="text-xs text-gray-500 mt-1">
+							{isEditing
+								? 'Como fisioterapeuta, solo puedes editar expedientes asignados a ti mismo.'
+								: 'Como fisioterapeuta, solo puedes crear expedientes asignados a ti mismo.'
+							}
+						</p>
+					)}
+					{(validationErrors.idDoctor || state?.errors?.idDoctor) && (
+						<p id="idDoctor-error" className="text-sm text-red-500">
+							{validationErrors.idDoctor?.[0] || state?.errors?.idDoctor?.[0]}
+						</p>
+					)}
+				</div>
+
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div className="space-y-2 w-full">
+						<Label htmlFor="status" className="text-sm font-medium">Status</Label>
+						<Select
+							name="status"
+							defaultValue={expediente?.estado || 'Activo'}
+							disabled={isPending || isReadOnly}
 						>
-							{isEditing ? 'Confirmar cambios' : 'Crear expediente'}
-						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => router.back()}
-							disabled={isPending}
-							className="w-full bg-white border-2 border-gray-400 hover:border-gray-500 py-3"
-						>
-							Cancel
-						</Button>
+							<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.estado || state?.errors?.status ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
+								<SelectValue placeholder="Seleccionar status" />
+							</SelectTrigger>
+							<SelectContent>
+								{statusOptions.map((option) => (
+									<SelectItem key={option.value} value={option.value}>
+										{option.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{(validationErrors.estado || state?.errors?.status) && (
+							<p id="estado-error" className="text-sm text-red-500">
+								{validationErrors.estado?.[0] || state?.errors?.status?.[0]}
+							</p>
+						)}
 					</div>
 				</div>
-			)}
-		</form>
+
+				{!isReadOnly && (
+					<div className="w-full mt-8 pt-6 border-t-2 border-gray-300">
+						<div className="flex flex-col gap-4 w-full">
+							<Button
+								type="submit"
+								disabled={isPending}
+								className="w-full font-semibold py-3"
+							>
+								{isEditing ? 'Confirmar cambios' : 'Crear expediente'}
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => router.back()}
+								disabled={isPending}
+								className="w-full bg-white border-2 border-gray-400 hover:border-gray-500 py-3"
+							>
+								Cancel
+							</Button>
+						</div>
+					</div>
+				)}
+			</form>
+		</>
 	)
 }

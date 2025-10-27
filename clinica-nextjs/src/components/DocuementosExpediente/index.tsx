@@ -35,7 +35,7 @@ export default function DocumentosExpediente({ expedienteId,
 	const results = useQueries({
 		queries: [
 			{
-				queryKey: ['archivos', page, limit],
+				queryKey: ['archivos', page, limit, pacienteId],
 				queryFn: async () => {
 					// Obtener el usuario actual desde la base de datos
 					console.log("id del paciente", pacienteId)

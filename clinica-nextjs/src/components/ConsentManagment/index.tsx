@@ -49,7 +49,7 @@ export default function ConsentManagement({ expedienteId,
 	const results = useQueries({
 		queries: [
 			{
-				queryKey: ['consentimientos', page, limit],
+				queryKey: ['consentimientos', page, limit, pacienteId],
 				queryFn: async () => {
 					// Obtener el usuario actual desde la base de datos
 					console.log("id del paciente", pacienteId)
