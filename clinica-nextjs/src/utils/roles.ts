@@ -31,3 +31,14 @@ export const checkIsPaciente = async () => {
 	// Si el usuario no tiene rol específico, se considera paciente por defecto
 	return !userRole || userRole === "paciente";
 };
+
+// Probablemente sea mejor sacar el rol solamente
+export const getUserRole = async () => {
+	const { sessionClaims } = await auth();
+	const userRole = sessionClaims?.metadata?.role;
+	if (userRole) {
+		return userRole;
+	}
+
+	return null;
+};

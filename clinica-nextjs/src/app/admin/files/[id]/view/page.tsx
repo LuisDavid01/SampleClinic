@@ -1,3 +1,4 @@
+
 import { ArrowLeftIcon, Eye, FileSignatureIcon, FileText, LucideBookUser } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -17,14 +18,15 @@ import { Button } from '@/components/ui/button'
 
 import { ExpedienteByID } from '@/components/ExpedienteByID'
 import { getExpedienteByID } from '@/actions/expedientes'
+import NewExpediente from '@/components/NewExpediente'
 
 export default async function ViewFilePage({ params }) {
 	const { id } = await params
-	
+
 	// Obtener información del expediente para extraer el ID del paciente
 	const expediente = await getExpedienteByID(Number(id))
 	const pacienteId = expediente?.idPaciente
-	
+
 	return (
 		<div className="space-y-6 p-6 bg-background min-h-screen">
 			<div className="flex items-center justify-between mb-6">
@@ -35,13 +37,7 @@ export default async function ViewFilePage({ params }) {
 					<ArrowLeftIcon size={16} className="mr-1" />
 					Regresar a expedientes
 				</Link>
-				
-				<Link href={`/admin/files/${id}/edit`}>
-					<Button variant="default" className="flex items-center gap-2">
-						<FileText className="w-4 h-4" />
-						Editar expediente
-					</Button>
-				</Link>
+
 			</div>
 
 			<Card className="bg-card shadow-sm">
@@ -57,7 +53,7 @@ export default async function ViewFilePage({ params }) {
 					<CardDescription>Información general del paciente (solo lectura)</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<ExpedienteByID id={id} isReadOnly={true} />
+					<NewExpediente expediente={expediente} isEditing={true} />
 				</CardContent>
 			</Card>
 
@@ -82,7 +78,7 @@ export default async function ViewFilePage({ params }) {
 					</CardHeader>
 					<CardContent>
 						<Suspense fallback={<div>Cargando diagnósticos...</div>}>
-                            <DiagnosticoTable expedienteId={Number(id)} />
+							<DiagnosticoTable expedienteId={Number(id)} />
 						</Suspense>
 					</CardContent>
 				</Card>
@@ -104,7 +100,7 @@ export default async function ViewFilePage({ params }) {
 					</CardHeader>
 					<CardContent>
 						<Suspense fallback={<div>Cargando consentimientos...</div>}>
-                            <ConsentManagement />
+							<ConsentManagement expedienteId={Number(id)} pacienteId={pacienteId} />
 						</Suspense>
 					</CardContent>
 				</Card>
@@ -128,8 +124,8 @@ export default async function ViewFilePage({ params }) {
 				<CardContent>
 					<Suspense fallback={<div>Cargando antecedentes...</div>}>
 						{pacienteId ? (
-							<AntecedentesManager 
-								pacienteId={pacienteId} 
+							<AntecedentesManager
+								pacienteId={pacienteId}
 								expedienteId={Number(id)}
 								canEdit={true}
 							/>
@@ -157,7 +153,7 @@ export default async function ViewFilePage({ params }) {
 				</CardHeader>
 				<CardContent>
 					<Suspense fallback={<div>Cargando documentos...</div>}>
-                        <DocumentosExpediente />
+						<DocumentosExpediente expedienteId={Number(id)} pacienteId={pacienteId} />
 					</Suspense>
 				</CardContent>
 			</Card>
