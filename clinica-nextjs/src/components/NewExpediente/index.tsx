@@ -54,25 +54,25 @@ export default function ExpedienteForm({
 	const results = useQueries({
 		queries: [
 			{
-				queryKey: ['currentUser'], 
+				queryKey: ['currentUser'],
 				queryFn: async () => {
 					// Obtener el usuario actual desde la base de datos
 					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}`)
 					const currentUser = res.usuarios.find((u: any) => u.clerkId === user?.id);
 					return currentUser;
-				}, 
+				},
 				staleTime: 10 * 60 * 1000,
 				enabled: !!user?.id
 			},
 			{
-				queryKey: ['doctors'], 
+				queryKey: ['doctors'],
 				queryFn: async () => {
 					// Obtener el usuario actual primero
 					const currentUserRes = await apiClient.get(`${apiEndpoints.getUsuarios()}`)
 					const currentUser = currentUserRes.usuarios.find((u: any) => u.clerkId === user?.id);
-					
+
 					if (!currentUser) return [];
-					
+
 					// Si es admin o recepcionista, obtener todos los doctores
 					if (currentUser.rol?.idRol === 1 || currentUser.rol?.idRol === 3) { // admin o recepcionista
 						const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=fisioterapeuta`)
@@ -84,7 +84,7 @@ export default function ExpedienteForm({
 					}
 					// Si no tiene rol o es paciente, no puede crear expedientes
 					return [];
-				}, 
+				},
 				staleTime: 10 * 60 * 1000,
 				enabled: !!user?.id
 			},
@@ -103,10 +103,7 @@ export default function ExpedienteForm({
 	const doctors = results[1].data ?? [];
 	const pacients = results[2].data ?? [];
 
-	const doctorOptions = useMemo(
-		() => doctors.map((d: any) => ({ label: `${d.nombre} ${d.apellido1}`, value: String(d.idUsuario) })),
-		[doctors]
-	);
+
 
 	// Lógica para el doctor por defecto
 	const defaultDoctorId = useMemo(() => {
@@ -125,25 +122,18 @@ export default function ExpedienteForm({
 	// Validación: Si es fisioterapeuta editando, verificar que el expediente le pertenece
 	const canEditExpediente = useMemo(() => {
 		if (!isEditing || !expediente || !currentUser) return true;
-		
+
 		// Si es fisioterapeuta, solo puede editar expedientes asignados a él
 		if (currentUser.rol?.idRol === 2) {
 			return expediente.idMedico === currentUser.idUsuario;
 		}
-		
+
 		// Admin y recepcionista pueden editar cualquier expediente
 		return true;
 	}, [isEditing, expediente, currentUser]);
 
 
 
-	const patientOptions = useMemo(() => {
-		if (!pacients) return [];
-		return pacients.map((p: AdminPaciente) => ({
-			label: `${p.nombre} ${p.apellido1}`,
-			value: String(p.idUsuario),
-		}));
-	}, [pacients]);
 
 	const router = useRouter()
 
@@ -164,22 +154,22 @@ export default function ExpedienteForm({
 				if (formIdDoctor && formIdDoctor !== '') {
 					return Number(formIdDoctor);
 				}
-				
+
 				// Si es fisioterapeuta, usar su propio ID
 				if (currentUser?.rol?.idRol === 2 && doctors.length > 0) {
 					return Number(doctors[0].idUsuario);
 				}
-				
+
 				// Si está editando, mantener el médico actual
 				if (isEditing && expediente?.idMedico) {
 					return Number(expediente.idMedico);
 				}
-				
+
 				// Si hay doctores disponibles, usar el primero
 				if (doctors.length > 0) {
 					return Number(doctors[0].idUsuario);
 				}
-				
+
 				// Fallback: usar el primer doctor disponible o 0 si no hay ninguno
 				return doctors.length > 0 ? Number(doctors[0].idUsuario) : 0;
 			})(),
@@ -281,24 +271,24 @@ export default function ExpedienteForm({
 				<Select
 					name="idPaciente"
 					defaultValue={expediente?.idPaciente?.toString() || ''}
-					disabled={isLoading || isReadOnly}
+					disabled={isLoading || isEditing}
 				>
-				<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idPaciente || state?.errors?.title ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
-					<SelectValue placeholder="Seleccionar paciente" />
-				</SelectTrigger>
-				<SelectContent>
-					{patientOptions.map((option) => (
-						<SelectItem key={option.value} value={option.value.toString()}>
-							{option.label}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
-			{(validationErrors.idPaciente || state?.errors?.title) && (
-				<p id="idPaciente-error" className="text-sm text-red-500">
-					{validationErrors.idPaciente?.[0] || state?.errors?.title?.[0]}
-				</p>
-			)}
+					<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idPaciente || state?.errors?.title ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
+						<SelectValue placeholder="Seleccionar paciente" />
+					</SelectTrigger>
+					<SelectContent>
+						{pacients.map((p: AdminPaciente) => (
+							<SelectItem key={p.nombre + p.idUsuario} value={p.idUsuario.toString()}>
+								{p.nombre + ' ' + p.apellido1 + ' ' + p.apellido2}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				{(validationErrors.idPaciente || state?.errors?.title) && (
+					<p id="idPaciente-error" className="text-sm text-red-500">
+						{validationErrors.idPaciente?.[0] || state?.errors?.title?.[0]}
+					</p>
+				)}
 			</div>
 
 
@@ -349,30 +339,31 @@ export default function ExpedienteForm({
 				<Select
 					name="idDoctor"
 					defaultValue={defaultDoctorId?.toString() || ''}
-					disabled={isPending || (currentUser?.rol?.idRol === 2) || isReadOnly} // Deshabilitar si es fisioterapeuta o solo lectura
+					disabled={isLoading || (currentUser?.rol?.idRol === 2) || isReadOnly} // Deshabilitar si es fisioterapeuta o solo lectura
 				>
 					<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idDoctor || state?.errors?.idDoctor ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
 						<SelectValue placeholder="Seleccionar doctor" />
 					</SelectTrigger>
 					<SelectContent>
-						{doctorOptions.map((option) => (
-							<SelectItem key={option.value} value={option.value.toString()}>
-								{option.label}
+						{doctors.map((d: AdminPaciente) => (
+							<SelectItem key={d.nombre + d.idUsuario}
+								value={d.idUsuario.toString()}>
+								{d.nombre + ' ' + d.apellido1 + ' ' + d.apellido2}
 							</SelectItem>
 						))}
 					</SelectContent>
 				</Select>
 				{/* Campo oculto para asegurar que el valor se envíe cuando está deshabilitado */}
 				{currentUser?.rol?.idRol === 2 && (
-					<input 
-						type="hidden" 
-						name="idDoctor" 
-						value={defaultDoctorId} 
+					<input
+						type="hidden"
+						name="idDoctor"
+						value={defaultDoctorId}
 					/>
 				)}
 				{currentUser?.rol?.idRol === 2 && (
 					<p className="text-xs text-gray-500 mt-1">
-						{isEditing 
+						{isEditing
 							? 'Como fisioterapeuta, solo puedes editar expedientes asignados a ti mismo.'
 							: 'Como fisioterapeuta, solo puedes crear expedientes asignados a ti mismo.'
 						}
@@ -415,8 +406,8 @@ export default function ExpedienteForm({
 			{!isReadOnly && (
 				<div className="w-full mt-8 pt-6 border-t-2 border-gray-300">
 					<div className="flex flex-col gap-4 w-full">
-						<Button 
-							type="submit" 
+						<Button
+							type="submit"
 							disabled={isPending}
 							className="w-full font-semibold py-3"
 						>

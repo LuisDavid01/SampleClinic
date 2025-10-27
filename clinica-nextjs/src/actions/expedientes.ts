@@ -30,8 +30,12 @@ export type ExpedienteData = z.infer<typeof ExpedienteSchema>
 export async function getExpedientes(page: number, search?: string, limit: number = 10) {
 
 	const user = await auth();
-	if (!user.userId && !checkRole('admin')) {
-		return [];
+	if (!user.userId) {
+		return {
+			success: false,
+			message: 'Unauthorized access',
+			error: 'Unauthorized',
+		}
 	}
 
 	const params = new URLSearchParams({
@@ -59,7 +63,11 @@ export async function getExpedienteByID(id: number) {
 
 	const user = await auth();
 	if (!user.userId && !checkRole('admin')) {
-		return [];
+		return {
+			success: false,
+			message: 'Unauthorized access',
+			error: 'Unauthorized',
+		}
 	}
 
 
@@ -101,7 +109,7 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 
 		// Create expediente with validated data
 		const validatedData = validationResult.data
-		
+
 		// Transform idDoctor to idMedico for the API
 		const apiData = {
 			...validatedData,
@@ -124,7 +132,7 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 		// Check if the response is not ok
 		if (!response.ok) {
 			const errorData = await response.json()
-			
+
 			// Handle specific error cases
 			if (errorData.error === 'El paciente ya tiene un expediente activo') {
 				return {
@@ -133,7 +141,7 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 					error: 'Expediente duplicado',
 				}
 			}
-			
+
 			if (errorData.error === 'Ya existe un expediente con esta cédula') {
 				return {
 					success: false,
@@ -141,7 +149,7 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 					error: 'Cédula duplicada',
 				}
 			}
-			
+
 			// Handle other API errors
 			return {
 				success: false,
@@ -230,7 +238,7 @@ export async function updateExpediente(
 		// Check if the response is not ok
 		if (!response.ok) {
 			const errorData = await response.json()
-			
+
 			// Handle specific error cases
 			if (errorData.error === 'El paciente ya tiene un expediente activo') {
 				return {
@@ -239,7 +247,7 @@ export async function updateExpediente(
 					error: 'Expediente duplicado',
 				}
 			}
-			
+
 			if (errorData.error === 'Ya existe un expediente con esta cédula') {
 				return {
 					success: false,
@@ -247,7 +255,7 @@ export async function updateExpediente(
 					error: 'Cédula duplicada',
 				}
 			}
-			
+
 			// Handle other API errors
 			return {
 				success: false,
