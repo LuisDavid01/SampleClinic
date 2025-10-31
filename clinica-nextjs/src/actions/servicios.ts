@@ -1,292 +1,236 @@
 'use server'
 
 import { z } from 'zod'
-import { auth } from '@clerk/nextjs/server'
+import { auth, User } from '@clerk/nextjs/server'
 import { checkRole } from '@/utils/roles'
-
 /** ========= Schema alineado con la API ========= */
 const ServicioSchema = z.object({
-  nombreServicio: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
-  descripcion: z.string().optional().nullable(),
-  precio: z.number().nullable().refine((v) => v === null || !Number.isNaN(v), {
-    message: 'Precio inválido',
-  }),
-  activo: z.boolean().default(true),
+	nombreServicio: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
+	descripcion: z.string().optional().nullable(),
+	precio: z.coerce.number().min(0, 'El precio debe ser mayor a 0'),
+	activo: z.enum(['true', 'false']).transform(val => val === 'true')
 })
 
 export type ServicioData = z.infer<typeof ServicioSchema>
-export type ActionResponse = {
-  success: boolean
-  message: string
-  errors?: Record<string, string[]>
-  error?: string
-}
+
 
 /** ========= Base URL ========= */
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+
 function ensureBaseUrl() {
-  if (!baseUrl) throw new Error('API base URL no configurada (NEXT_PUBLIC_API_BASE_URL)')
-  return baseUrl.replace(/\/$/, '')
+	// realmente no se necesita ???
+	if (!baseUrl) throw new Error('API base URL no configurada (NEXT_PUBLIC_API_BASE_URL)')
+	return baseUrl.replace(/\/$/, '')
 }
 
-/** ========= Helpers de auth ========= */
-async function requireAuthToken() {
-  const a = await auth()
-  if (!a?.userId) throw new Error('No autenticado')
-  const token = await a.getToken()
-  if (!token) throw new Error('Token de autenticación no disponible')
-  return token
-}
-
-async function requireAdminToken() {
-  const a = await auth()
-  if (!a?.userId) throw new Error('No autenticado')
-  if (!checkRole('admin')) throw new Error('Acceso no autorizado (requiere rol admin)')
-  const token = await a.getToken()
-  if (!token) throw new Error('Token de autenticación no disponible')
-  return token
-}
 
 /** ========= GET: listado ========= */
 export async function getServicios(page = 1, search?: string, limit = 10, activo?: boolean) {
-  const token = await requireAuthToken()
-  const base = ensureBaseUrl()
+	const user = await auth()
+	if (!user.userId) {
+		return { success: false, message: 'no autenticado', error: 'UnAuthenticated' }
+	}
+	const token = await user.getToken()
+	const base = ensureBaseUrl()
 
-  const url = new URL(`${base}/servicios`)
-  url.search = new URLSearchParams({
-    page: String(page),
-    limit: String(limit),
-    ...(search ? { search } : {}),
-    ...(typeof activo === 'boolean' ? { activo: String(activo) } : {}),
-  }).toString()
+	const url = new URL(`${base}/servicios`)
+	url.search = new URLSearchParams({
+		page: String(page),
+		limit: String(limit),
+		...(search ? { search } : {}),
+		...(typeof activo === 'boolean' ? { activo: String(activo) } : {}),
+	}).toString()
 
-  const res = await fetch(url.toString(), {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  })
+	const res = await fetch(url.toString(), {
+		method: 'GET',
+		headers: { Authorization: `Bearer ${token}` },
+		cache: 'no-store',
+	})
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => '')
-    throw new Error(`GET ${url.pathname} → ${res.status} ${res.statusText}. Body: ${body.slice(0, 800)}`)
-  }
+	if (!res.ok) {
+		const body = await res.text().catch(() => '')
+		throw new Error(`GET ${url.pathname} → ${res.status} ${res.statusText}. Body: ${body.slice(0, 800)}`)
+	}
 
-  return res.json()
+	return res.json()
 }
 
 /** ========= GET: por ID ========= */
 export async function getServicioByID(id: number) {
-  if (!Number.isFinite(id)) throw new Error('ID inválido')
+	// validamos el usuario
+	const user = await auth()
+	if (!user.userId) {
+		return { success: false, message: 'no autenticado', error: 'UnAuthenticated' }
+	}
+	const token = await user.getToken()
+	const base = ensureBaseUrl()
 
-  const token = await requireAuthToken()
-  const base = ensureBaseUrl()
+	const res = await fetch(`${base}/servicios/${id}`, {
+		method: 'GET',
+		headers: { Authorization: `Bearer ${token}` },
+	})
 
-  const res = await fetch(`${base}/servicios/${id}`, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  })
+	if (!res.ok) {
+		const body = await res.text().catch(() => '')
+		throw new Error(`GET /servicios/${id} → ${res.status} ${res.statusText}. Body: ${body.slice(0, 800)}`)
+	}
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => '')
-    throw new Error(`GET /servicios/${id} → ${res.status} ${res.statusText}. Body: ${body.slice(0, 800)}`)
-  }
-
-  return res.json()
+	return res.json()
 }
 
 /** ========= POST: crear ========= */
-export async function createServicio(raw: {
-  nombreServicio: string
-  descripcion?: string | null
-  precio?: string | number | null
-  activo?: boolean | string // <-- Acepta string desde el front
-}): Promise<ActionResponse> {
-  try {
-    const token = await requireAdminToken()
-    const base = ensureBaseUrl()
+export async function createServicio(data: ServicioData): Promise<ActionResponse> {
+	try {
+		// validamos el usuario
+		const user = await auth()
+		if (!user.userId) {
+			return { success: false, message: 'no autenticado', error: 'UnAuthenticated' }
+		}
+		const token = await user.getToken()
 
-    // ✅ Conversión string → boolean
-    const activoBool =
-      typeof raw.activo === 'string'
-        ? raw.activo.toLowerCase() === 'activo'
-        : Boolean(raw.activo)
 
-    // Normaliza precio
-    const precioNum =
-      raw.precio === '' || raw.precio === undefined
-        ? null
-        : raw.precio === null
-        ? null
-        : typeof raw.precio === 'string'
-        ? raw.precio.trim()
-          ? Number(raw.precio)
-          : null
-        : Number(raw.precio)
+		const parsed = ServicioSchema.safeParse(data)
+		if (!parsed.success) {
+			console.log(parsed.error.flatten().fieldErrors)
+			return {
+				success: false,
+				message: 'Validación fallida',
+				errors: parsed.error.flatten().fieldErrors,
+			}
+		}
 
-    const toValidate: ServicioData = {
-      nombreServicio: raw.nombreServicio,
-      descripcion: raw.descripcion ?? null,
-      precio: precioNum,
-      activo: activoBool,
-    }
+		const res = await fetch(`${baseUrl}/servicios`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify(parsed.data),
+		})
 
-    const parsed = ServicioSchema.safeParse(toValidate)
-    if (!parsed.success) {
-      return {
-        success: false,
-        message: 'Validación fallida',
-        errors: parsed.error.flatten().fieldErrors,
-      }
-    }
-
-    const res = await fetch(`${base}/servicios`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(parsed.data),
-      cache: 'no-store',
-    })
-
-    const json = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      return {
-        success: false,
-        message: `Error API (${res.status})`,
-        error: JSON.stringify(json),
-      }
-    }
-
-    return { success: true, message: json?.message ?? 'Servicio creado con éxito' }
-  } catch (error: any) {
-    console.error('Error creando el servicio:', error)
-    return {
-      success: false,
-      message: 'Ha ocurrido un error al crear el servicio',
-      error: error?.message ?? 'No se pudo crear el servicio',
-    }
-  }
+		if (!res.ok) {
+			return {
+				success: false,
+				message: `Error API (${res.status})`,
+				error: 'Error al  crear el servicio',
+			}
+		}
+		return { success: true, message: 'Servicio creado con éxito' }
+	} catch (error: any) {
+		console.error('Error creando el servicio:', error)
+		return {
+			success: false,
+			message: 'Ha ocurrido un error al crear el servicio',
+			error: error?.message ?? 'No se pudo crear el servicio',
+		}
+	}
 }
 
 /** ========= PUT: actualizar ========= */
 export async function updateServicio(
-  id: number,
-  data: Partial<{
-    nombreServicio: string
-    descripcion: string | null
-    precio: string | number | null
-    activo: boolean | string
-  }>
+	id: number,
+	data: Partial<ServicioData>
 ): Promise<ActionResponse> {
-  try {
-    if (!Number.isFinite(id)) {
-      return { success: false, message: 'ID inválido', error: 'ID inválido' }
-    }
+	try {
+		if (!Number.isFinite(id)) {
+			return { success: false, message: 'ID inválido', error: 'ID inválido' }
+		}
 
-    const token = await requireAdminToken()
-    const base = ensureBaseUrl()
+		// validamos el usuario
+		const user = await auth()
+		if (!user.userId) {
+			return { success: false, message: 'no autenticado', error: 'UnAuthenticated' }
+		}
+		const token = await user.getToken()
 
-    const updateRaw: any = {}
+		const base = ensureBaseUrl()
 
-    if (data.nombreServicio !== undefined) updateRaw.nombreServicio = data.nombreServicio
-    if (data.descripcion !== undefined) updateRaw.descripcion = data.descripcion ?? null
+		// safepase valida los datos no se necesita validar manualmente
+		const validationResult = ServicioSchema.safeParse(data)
 
-    // ✅ Conversión string → boolean
-    if (data.activo !== undefined) {
-      updateRaw.activo =
-        typeof data.activo === 'string'
-          ? data.activo.toLowerCase() === 'activo'
-          : Boolean(data.activo)
-    }
+		if (!validationResult.success) {
+			return {
+				success: false,
+				message: 'Validación fallida',
+				errors: validationResult.error.flatten().fieldErrors,
+			}
+		}
 
-    if (data.precio !== undefined) {
-      const precioNum =
-        data.precio === '' || data.precio === undefined
-          ? null
-          : data.precio === null
-          ? null
-          : typeof data.precio === 'string'
-          ? data.precio.trim()
-            ? Number(data.precio)
-            : null
-          : Number(data.precio)
-      updateRaw.precio = precioNum
-    }
 
-    const UpdateSchema = ServicioSchema.partial()
-    const parsed = UpdateSchema.safeParse(updateRaw)
-    if (!parsed.success) {
-      return {
-        success: false,
-        message: 'Validación fallida',
-        errors: parsed.error.flatten().fieldErrors,
-      }
-    }
+		// en caso de haber datos nulos cambiarlos por su valor anteior
+		const validatedData = validationResult.data
 
-    const res = await fetch(`${base}/servicios/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(parsed.data),
-      cache: 'no-store',
-    })
+		//pasa esta variable al api
+		const updateData: Record<string, unknown> = {}
 
-    const json = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      return {
-        success: false,
-        message: `Error API (${res.status})`,
-        error: JSON.stringify(json),
-      }
-    }
+		// hazlo con todos los campos
+		if (validatedData?.nombreServicio !== undefined) {
+			updateData.nombreServicio = validatedData.nombreServicio
+		}
 
-    return { success: true, message: json?.message ?? 'Servicio actualizado correctamente' }
-  } catch (error: any) {
-    console.error('Error actualizando el servicio:', error)
-    return {
-      success: false,
-      message: 'Ha ocurrido un error al actualizar el servicio',
-      error: error?.message ?? 'Error al actualizar el servicio',
-    }
-  }
+		const res = await fetch(`${base}/servicios/${id}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify(updateData),
+		})
+
+		if (!res.ok) {
+			return {
+				success: false,
+				message: `Error al actualizar el servicio)`,
+				error: JSON.stringify('no se pudo actualizar el servicio'),
+			}
+		}
+
+		return { success: true, message: 'Servicio actualizado correctamente' }
+	} catch (error: any) {
+		console.error('Error actualizando el servicio:', error)
+		return {
+			success: false,
+			message: 'Ha ocurrido un error al actualizar el servicio',
+			error: error?.message ?? 'Error al actualizar el servicio',
+		}
+	}
 }
 
 /** ========= DELETE ========= */
 export async function deleteServicio(id: number): Promise<ActionResponse> {
-  try {
-    if (!Number.isFinite(id)) {
-      return { success: false, message: 'ID inválido', error: 'ID inválido' }
-    }
+	try {
+		if (!Number.isFinite(id)) {
+			return { success: false, message: 'ID inválido', error: 'ID inválido' }
+		}
 
-    const token = await requireAdminToken()
-    const base = ensureBaseUrl()
+		// validamos el usuario
+		const user = await auth()
+		if (!user.userId) {
+			return { success: false, message: 'no autenticado', error: 'UnAuthenticated' }
+		}
+		const token = await user.getToken()
+		const base = ensureBaseUrl()
 
-    const res = await fetch(`${base}/servicios/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
-    })
+		const res = await fetch(`${base}/servicios/${id}`, {
+			method: 'DELETE',
+			headers: { Authorization: `Bearer ${token}` },
+		})
 
-    const json = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      return {
-        success: false,
-        message: `Error API (${res.status})`,
-        error: JSON.stringify(json),
-      }
-    }
+		if (!res.ok) {
+			return {
+				success: false,
+				message: `Error al eliminar el servicio`,
+				error: 'Error elimnando el servicio',
+			}
+		}
 
-    return { success: true, message: json?.message ?? 'Servicio desactivado correctamente' }
-  } catch (error: any) {
-    console.error('Error eliminando/desactivando el servicio:', error)
-    return {
-      success: false,
-      message: 'Un error ocurrió al desactivar el servicio',
-      error: error?.message ?? 'Failed to delete servicio',
-    }
-  }
+		return { success: true, message: 'Servicio desactivado correctamente' }
+	} catch (error: any) {
+		console.error('Error eliminando/desactivando el servicio:', error)
+		return {
+			success: false,
+			message: 'Un error ocurrió al desactivar el servicio',
+			error: error?.message ?? 'Failed to delete servicio',
+		}
+	}
 }

@@ -34,20 +34,14 @@ export default function ServicioForm({ servicio, isEditing = false }: ServicioFo
 
   const [state, formAction, isPending] = useActionState<ActionResponse, FormData>(
     async (_prevState, formData) => {
-      const precioStr = (formData.get('precio') ?? '').toString().trim()
-      const precio = precioStr === '' ? null : Number(precioStr)
-      if (precio !== null && (Number.isNaN(precio) || precio < 0)) {
-        return { success: false, message: 'Precio inválido', errors: { precio: ['Precio inválido'] } }
-      }
 
-      const statusStr = ((formData.get('status') ?? 'activo') as string).toLowerCase()
-      const activo: 'activo' | 'inactivo' = statusStr === 'inactivo' ? 'inactivo' : 'activo'
 
-      const data: ServicioPayload = {
-        nombreServicio: ((formData.get('nombre') ?? '') as string).trim(),
-        descripcion: ((formData.get('detalle') ?? '') as string).trim() || null,
-        precio,
-        activo, 
+
+      const data = {
+        nombreServicio: ((formData.get('nombre') ?? '') as string),
+        descripcion: ((formData.get('detalle') ?? '') as string),
+        precio: Number(formData.get('precio')),
+        activo: formData.get('activo') as string, 
       }
 
       if (!data.nombreServicio || data.nombreServicio.length < 3) {
@@ -83,8 +77,8 @@ export default function ServicioForm({ servicio, isEditing = false }: ServicioFo
 
   // Mantén el select con valores en minúscula para que coincida con el type
   const statusOptions = [
-    { label: 'Activo', value: 'activo' },
-    { label: 'Inactivo', value: 'inactivo' },
+    { label: 'Activo', value: 'true' },
+    { label: 'Inactivo', value: 'false' },
   ]
 
   return (
@@ -158,11 +152,11 @@ export default function ServicioForm({ servicio, isEditing = false }: ServicioFo
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormGroup>
-          <FormLabel htmlFor="status">Estado</FormLabel>
+          <FormLabel htmlFor="activo">Estado</FormLabel>
           <FormSelect
-            id="status"
-            name="status"
-            defaultValue={servicio?.activo ?? 'activo'}
+            id="activo"
+            name="activo"
+            defaultValue={servicio?.activo ?? 'true'}
             options={statusOptions}
             disabled={isPending}
             required

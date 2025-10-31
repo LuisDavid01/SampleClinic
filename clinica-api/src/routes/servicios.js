@@ -326,7 +326,7 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/servicios - Crear nuevo servicio (solo admin)
-router.post('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateServicio, async (req, res) => {
+router.post('/', clerkAuth, requireClerkRole(['admin']), validateServicio, async (req, res) => {
   try {
     const { nombreServicio, descripcion, precio, activo = true } = req.body;
 
