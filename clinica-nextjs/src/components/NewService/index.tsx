@@ -41,7 +41,7 @@ export default function ServicioForm({ servicio, isEditing = false }: ServicioFo
         nombreServicio: ((formData.get('nombre') ?? '') as string),
         descripcion: ((formData.get('detalle') ?? '') as string),
         precio: Number(formData.get('precio')),
-        activo: formData.get('activo') as string, 
+		activo: (formData.get('activo') || 'false') === 'true'
       }
 
       if (!data.nombreServicio || data.nombreServicio.length < 3) {
