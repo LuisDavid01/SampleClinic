@@ -234,10 +234,11 @@ export default function FloatingChat() {
 
 	}
 	const toggleChat = () => {
-		if (!wsRef.current && !isOpen && isSurveyActive === false) {
+		if (!wsRef.current && isSurveyActive === false) {
 			console.log("Intentando reconectar...");
 			initializeWebSocket();
 		}
+		setIsSurveyActive(false);
 		setIsOpen(!isOpen);
 	};
 

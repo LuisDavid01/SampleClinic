@@ -481,12 +481,13 @@ const validateEncuesta = [
 		.isLength({ max: 2000 })
 		.withMessage('El comentario no puede exceder 2000 caracteres'),
 
-	body('ClerkId')
+	body('idUsuario')
 		.notEmpty()
 		.withMessage('El Id de Clerk es requerido'),
 
 	handleValidationErrors
 ];
+
 
 export {
 	handleValidationErrors,

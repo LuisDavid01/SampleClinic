@@ -10,12 +10,12 @@ import {
   FormTextarea,
   FormSelect,
   FormError,
-} from '../ui/form'
-import { Testimony, TESTIMONY_STATUS } from '@/types/Testimony'
+} from '../FormWithActions'
+import {  HistoriaExito, TESTIMONY_STATUS } from '@/types/Testimony'
 import { formatDateForInput } from '@/lib/utils'
 import { Star } from 'lucide-react'
 interface ExpedienteFormProps {
-  testimony ?: Testimony,
+  testimony ?: HistoriaExito,
   isEditing?: boolean
 }
 
@@ -32,22 +32,14 @@ export default function EditTestimony ({testimony,
 }: ExpedienteFormProps) {
 
 
-    const ratings = [
-  { label: '1', value: '1' },
-   { label: '2', value: '2' },
-   { label: '3', value: '3' },
-   { label: '4', value: '4' },
-   { label: '5', value: '5' },
-   { label: '0', value: '0' },
-    ]
     const router = useRouter()
 
-  // Use useActionState hook for the form submission action
+  // Use useActionState hook for the Form submission action
   const [state, formAction, isPending] = useActionState<
     ActionResponse,
     FormData
   >(async (prevState: ActionResponse, formData: FormData) => {
-    // Extract data from form
+    // Extract data from Form
     const data = {
       descripcion: formData.get('description') as string,
       status: formData.get('status') as
@@ -91,7 +83,7 @@ export default function EditTestimony ({testimony,
     value,
   }))
     return (
-    <form>
+    <Form>
       {state?.message && (
         <FormError
           className={`mb-4 ${
@@ -103,22 +95,19 @@ export default function EditTestimony ({testimony,
       )}
 
       <FormGroup>
-        <FormLabel htmlFor="pacienteID">Paciente</FormLabel>
-        <FormInput
-          id="pacienteID"
-          name="pacienteID"
-          placeholder="id del paciente"
-          defaultValue={testimony?.name || ''}
+        <FormLabel htmlFor="idPaciente">Paciente</FormLabel>
+        <FormSelect
+          id="idPaciente"
+          name="idPaciente"
+          defaultValue={testimony?.idPaciente || ''}
           required
-          minLength={3}
-          maxLength={100}
           disabled={isPending}
           aria-describedby="title-error"
           className={state?.errors?.title ? 'border-red-500' : ''}
         />
         {state?.errors?.title && (
-          <p id="title-error" className="text-sm text-red-500">
-            {state.errors.title[0]}
+          <p id="idPaciente-error" className="text-sm text-red-500">
+            {state.errors.idPaciente[0]}
           </p>
         )}
       </FormGroup>
@@ -126,18 +115,17 @@ export default function EditTestimony ({testimony,
       
 
       <FormGroup>
-        <FormLabel htmlFor="description">Rating</FormLabel>
+        <FormLabel htmlFor="idMedico">Doctor </FormLabel>
         <FormSelect
-          id="doctor"
-          name="doctor"
-          options={ratings}
-          defaultValue={testimony?.rating|| ''}
+          id="idMedico"
+          name="idMedico"
+          defaultValue={testimony?.idMedico|| ''}
           aria-describedby="description-error"
-          className={state?.errors?.description ? 'border-red-500' : ''}
+          className={state?.errors?.idMedico ? 'border-red-500' : ''}
         />
-        {state?.errors?.description && (
-          <p id="description-error" className="text-sm text-red-500">
-            {state.errors.description[0]}
+        {state?.errors?.idMedico && (
+          <p id="idMedico-error" className="text-sm text-red-500">
+            {state.errors.idMedico[0]}
           </p>
         )}
       </FormGroup>
@@ -149,16 +137,16 @@ export default function EditTestimony ({testimony,
           id="fecha"
           name="fecha"
           placeholder=""
-          defaultValue={formatDateForInput(testimony?.created) || ''}
+          defaultValue={formatDateForInput(testimony?.fechaInicio)}
           type="date"
           required
-          disabled={testimony?.created != null}
-          aria-describedby="title-error"
-          className={state?.errors?.title ? 'border-red-500' : ''}
+          disabled={isPending}
+          aria-describedby="fecha-inicio-error"
+          className={state?.errors?.fechaInicio ? 'border-red-500' : ''}
         />
         {state?.errors?.title && (
-          <p id="title-error" className="text-sm text-red-500">
-            {state.errors.title[0]}
+          <p id="fecha-error" className="text-sm text-red-500">
+            {state.errors.fechaInicio[0]}
           </p>
         )}
       </FormGroup>
@@ -171,16 +159,16 @@ export default function EditTestimony ({testimony,
           <FormSelect
             id="status"
             name="status"
-            defaultValue={testimony?.status || 'Programada'}
+            defaultValue={testimony?.publicado ? 'activo': 'inActivo'}
             options={statusOptions}
             disabled={isPending}
             required
-            aria-describedby="status-error"
-            className={state?.errors?.status ? 'border-red-500' : ''}
+            aria-describedby="publicado-error"
+            className={state?.errors?.publicado ? 'border-red-500' : ''}
           />
           {state?.errors?.status && (
             <p id="status-error" className="text-sm text-red-500">
-              {state.errors.status[0]}
+              {state.errors.publicado[0]}
             </p>
           )}
         </FormGroup>
@@ -191,7 +179,7 @@ export default function EditTestimony ({testimony,
           id="nota"
           name="nota"
           placeholder="coloque una nota..."
-          defaultValue={testimony?.text || ''}
+          defaultValue={testimony?.experiencia || ''}
           required
           rows={4}
           minLength={3}
@@ -199,7 +187,7 @@ export default function EditTestimony ({testimony,
           disabled={isPending}
           aria-describedby="title-error"
           className={state?.errors?.title ? 'border-red-500' : ''}
-        />
+        /> 
         {state?.errors?.title && (
           <p id="title-error" className="text-sm text-red-500">
             {state.errors.title[0]}
@@ -222,6 +210,6 @@ export default function EditTestimony ({testimony,
             Confirmar cambios
         </Button>
       </div>
-    </form>
+    </Form>
   )
 }

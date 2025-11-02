@@ -35,9 +35,7 @@ export default function FilesPage() {
 						</Button>
 					</Link>
 				</div>
-				<Suspense fallback={<div>Cargando expedientes...</div>}>
 					<ExpedientesList />
-				</Suspense>
 			</div>
 		</div>
 	)

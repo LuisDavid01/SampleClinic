@@ -180,12 +180,12 @@ export const getEncuestaById = async (req, res) => {
  */
 export const createEncuesta = async (req, res) => {
 	try {
-		const { calificacion, comentario, ClerkId } = req.body;
+		const { calificacion, comentario, idUsuario } = req.body;
 
 		// Validar que el usuario existe
 		const usuario = await prisma.usuario.findUnique({
 			where: {
-				clerkId: ClerkId
+				clerkId: idUsuario
 			}
 		});
 
@@ -201,7 +201,7 @@ export const createEncuesta = async (req, res) => {
 			data: {
 				calificacion: parseInt(calificacion),
 				comentario: comentario || null,
-				clerkId: ClerkId
+				clerkId: idUsuario
 
 			},
 			include: {
@@ -235,19 +235,21 @@ export const createEncuesta = async (req, res) => {
 			message: 'Encuesta creada exitosamente',
 			data: encuesta
 		});
-	}
-	if (error.code === 'P2002') {
-		return res.status(400).json({
-			success: false,
-			message: 'Ya existe una encuesta con estos datos'
-		});
-	}
 
-	res.status(500).json({
-		success: false,
-		message: 'Error interno del servidor',
-		error: process.env.NODE_ENV === 'development' ? error.message : undefined
-	});
+		if (error.code === 'P2002') {
+			return res.status(400).json({
+				success: false,
+				message: 'Ya existe una encuesta con estos datos'
+			});
+		}
+
+		res.status(500).json({
+			success: false,
+			message: 'Error interno del servidor',
+			error: process.env.NODE_ENV === 'development' ? error.message : undefined
+		});
+
+	}
 }
 
 
