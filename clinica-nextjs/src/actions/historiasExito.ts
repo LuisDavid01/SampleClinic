@@ -1,23 +1,20 @@
 'use server'
 import { auth } from "@clerk/nextjs/server";
-import  z  from "zod";
+import z from "zod";
 const TesimonySchema = z.object({
 	idServicio: z.number('Invalido'),
 	idMedico: z.number('Invalido'),
-idPaciente: z.number('Invalido'),
-titulo: z.string('Invalido'),
-descripcion: z.string('Invalido'),
-fechaInicio: z.string('Invalido'),
-fechaFin: z.string('Invalido'),
-resultado: z.string('Invalido'),
-testimonio: z.string('Invalido'),
+	idPaciente: z.number('Invalido'),
+	experiencia: z.string('Invalido'),
+	fechaTratamiento: z.string('Invalido'),
+	publicado: z.boolean('Invalido'),
 })
 
 export type TestimonyData = z.infer<typeof TesimonySchema>
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
-export const getTestimonies = async (page:number, limit: number, search: string) => {
+export const getTestimonies = async (page: number, limit: number, search: string) => {
 	const user = await auth();
 	if (!user.userId) {
 		return {
@@ -31,7 +28,7 @@ export const getTestimonies = async (page:number, limit: number, search: string)
 		page: page.toString(),
 		limit: limit.toString(),
 	});
-		const res = await fetch(`${baseUrl}/historias-exito?${params}`, {
+	const res = await fetch(`${baseUrl}/historias-exito?${params}`, {
 		method: 'GET',
 		headers: {
 			'Content-Type': 'application/json',
@@ -45,8 +42,36 @@ export const getTestimonies = async (page:number, limit: number, search: string)
 	return res.json();
 
 }
+
+export const getTestimony = async (idHistoria: number) => {
+	const user = await auth();
+	if (!user.userId) {
+		return {
+			success: false,
+			message: 'Unauthorized access',
+			error: 'Unauthorized',
+		}
+	}
+
+
+	const res = await fetch(`${baseUrl}/historias-exito/${idHistoria}`, {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+
+			authorization: `Bearer ${await user.getToken()}`
+		}
+	});
+	if (!res.ok) {
+		throw new Error('Failed to fetch historias de exito');
+	}
+	return res.json();
+
+}
+
 export const createTestimony = async (data: TestimonyData) => {
 	try {
+		console.log(data.idPaciente, data.experiencia, data.publicado, data.fechaTratamiento);
 		const user = await auth()
 		if (!user.userId) {
 			return {
@@ -57,8 +82,6 @@ export const createTestimony = async (data: TestimonyData) => {
 		}
 		const token = await user.getToken()
 
-
-
 		// Validate with Zod
 		const validationResult = TesimonySchema.safeParse(data)
 		if (!validationResult.success) {
@@ -66,7 +89,7 @@ export const createTestimony = async (data: TestimonyData) => {
 			return {
 				success: false,
 				message: 'Error validando los archivos',
-				error: validationResult.error.flatten().formErrors,
+				errors: validationResult.error.flatten().fieldErrors,
 			}
 		}
 
@@ -74,17 +97,18 @@ export const createTestimony = async (data: TestimonyData) => {
 		const validatedData = validationResult.data
 
 		// fetch
-		const response = await fetch(`${baseUrl}/files/${validatedData.idPaciente}/upload`, {
+		const response = await fetch(`${baseUrl}/historias-exito`, {
 			method: 'POST',
 			headers: {
-				contentType: 'application/json',
+				'Content-Type': 'application/json',
 				authorization: `Bearer ${token}`,
 			},
 			body: JSON.stringify(validatedData),
 		})
-
+		console.log(response)
 		// Check if the response is not ok
 		if (!response.ok) {
+
 			return {
 				success: false,
 				message: 'Error al subir la historia de exito',
@@ -102,6 +126,18 @@ export const createTestimony = async (data: TestimonyData) => {
 			message: 'Error interno del servidor',
 			error: 'Error subiendo la historia de exito',
 		}
+	}
+
+}
+
+export const updateTestimony = async (
+	id: number,
+	data: Partial<TestimonyData>) => {
+	console.log(data);
+	return {
+		success: false,
+		message: 'Unauthorized access',
+		error: 'Unauthorized',
 	}
 
 }

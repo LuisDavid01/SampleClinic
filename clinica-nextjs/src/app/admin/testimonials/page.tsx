@@ -25,51 +25,20 @@ import {
 	ChevronsRight,
 	Star
 } from "lucide-react"
-import { formatRelativeTime } from "@/lib/utils"
+import { cn, formatRelativeTime } from "@/lib/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { getTestimonies } from "@/actions/historiasExito"
+import { HistoriaExito } from "@/types/Testimony"
 
-// Mock data
-const reviews = [
-	{
-		id: 1,
-		name: "María González",
-		role: "Paciente desde 2023",
-		text: "Después de mi lesión de rodilla, pensé que no volvería a caminar normalmente. El tratamiento personalizado y la dedicación del equipo me ayudaron a recuperar completamente mi movilidad. ¡Incluso puedo correr otra vez!",
-		rating: 5,
-		avatar: "M",
-		created: new Date(2025, 0, 3),
-		status: 'activo'
-	},
-	{
-		id: 2,
-		name: "Carlos Ruiz",
-		role: "Atleta profesional",
-		text: "Como deportista de alto rendimiento, necesito un cuidado especializado y preciso. Aquí encontré profesionales que realmente entienden las demandas del deporte y me ayudaron a volver más fuerte que antes.",
-		rating: 5,
-		avatar: "C",
-		created: new Date(2025, 3, 3),
-		status: 'activo'
-	},
-	{
-		id: 3,
-		name: "Ana López",
-		role: "Recuperación post-cirugía",
-		text: "El seguimiento continuo y la dedicación personalizada del equipo fueron fundamentales en mi proceso de rehabilitación. Su apoyo emocional fue tan importante como el tratamiento físico.",
-		rating: 5,
-		avatar: "A",
-		created: new Date(2025, 2, 3),
-		status: 'activo'
-	},
-];
+
 
 const statusConfig = {
-	activo: {
+	true: {
 		label: "Activo",
 		color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
 	},
-	inactivo: {
+	false: {
 		label: "Inactivo",
 		color: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
 	}
@@ -185,11 +154,11 @@ export default function FilesPage() {
 						<div className="overflow-x-auto">
 							<Table>
 								<TableHeader>
-									<TableRow>
+									<TableRow >
 										<TableHead>Usuario</TableHead>
 										<TableHead>Estado</TableHead>
-										<TableHead>Rating</TableHead>
-										<TableHead>Creado</TableHead>
+										<TableHead>Servicio brindado</TableHead>
+										<TableHead>Fecha de tratmiento</TableHead>
 										<TableHead>resumen</TableHead>
 										<TableHead>Acciones</TableHead>
 									</TableRow>
@@ -209,37 +178,35 @@ export default function FilesPage() {
 											</TableRow>
 										) :
 
-											data.historias.map((review: any) => {
-												const statusConfig_ = statusConfig[review.status as keyof typeof statusConfig]
+											data.historias.map((review: HistoriaExito) => {
 
 												return (
-													<TableRow key={review.id} className="hover:bg-muted/50">
+													<TableRow key={review.idHistoria + review.fechaTratamiento + review.idPaciente} className="hover:bg-muted/50">
 														<TableCell className="font-medium">
 															<div className="flex items-center gap-2">
-																{review.name}
+																{review.paciente.nombre + ' ' + review.paciente.apellido1 + ' ' + review.paciente.apellido2}
 															</div>
 														</TableCell>
 														<TableCell>
-															<Badge className={statusConfig_?.color}>
-																{statusConfig_?.label}
+															<Badge className={cn({
+																"bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300": review.publicado,
+																"bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300": !review.publicado
+
+															})}>
+																{review.publicado ? "Activo" : "Inactivo"}
 															</Badge>
 														</TableCell>
-														<TableCell>
-															<div className="flex items-center gap-1">
-																<Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-																<span className="font-mono text-sm whitespace-nowrap">
-																	{review.rating}
-																</span>
-															</div>
+														<TableCell className="text-sm">
+															{review.servicio.nombreServicio}
 														</TableCell>
-														<TableCell className="font-mono text-sm">
-															{formatRelativeTime(review.created)}
+														<TableCell className="text-sm">
+															{formatRelativeTime(review.fechaTratamiento)}
 														</TableCell>
 														<TableCell className="max-w-xs overflow-hidden truncate">
-															{review.text}
+															{review.experiencia}
 														</TableCell>
 														<TableCell>
-															<Link href={`testimonials/edit/${review.id}`} >
+															<Link href={`testimonials/edit/${review.idHistoria}`} >
 																<Button variant="outline" size="sm" className="mr-3">
 																	Ver
 																</Button>
@@ -264,58 +231,54 @@ export default function FilesPage() {
 
 				<div className="lg:hidden space-y-4">
 					{isLoading ? (<div className="text-center">Cargando...</div>)
-						: reviews.map((review) => {
-						const statusConfig_ = statusConfig[review.status as keyof typeof statusConfig]
+						: data.historias.map((review: HistoriaExito) => {
 
-						return (
-							<Card key={review.id}>
-								<CardContent className="p-4">
-									<div className="flex items-start justify-between mb-3">
-										<div className="flex items-center gap-2">
-											<div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-												<User className="h-4 w-4 text-muted-foreground" />
-											</div>
-											<div>
-												<h3 className="font-medium">{review.name}</h3>
-												<div className="flex items-center gap-1 text-sm text-muted-foreground">
-
-													<Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-													<span className="font-mono text-sm whitespace-nowrap">
-														{review.rating}
-													</span>
+							return (
+								<Card key={review.idHistoria + review.fechaTratamiento + review.idPaciente + 'mobile'}>
+									<CardContent className="p-4">
+										<div className="flex items-start justify-between mb-3">
+											<div className="flex items-center gap-2">
+												<div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+													<User className="h-4 w-4 text-muted-foreground" />
+												</div>
+												<div>
+													<h3 className="font-medium">{review.paciente.nombre + ' ' + review.paciente.apellido1}</h3>
 
 												</div>
 											</div>
-										</div>
-										<Badge className={statusConfig_?.color}>
-											{statusConfig_?.label}
-										</Badge>
-									</div>
+											<Badge className={cn({
+												"bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300": review.publicado,
+												"bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300": !review.publicado
 
-									<div className="space-y-2">
-										<div className="flex items-center justify-between">
-											<p className="text-sm text-muted-foreground">Actualizado</p>
-											<p className="text-sm font-medium">{formatRelativeTime(review.created)}</p>
+											})}>
+												{review.publicado ? "Activo" : "Inactivo"}
+											</Badge>
 										</div>
 
-										<div className="flex gap-2 pt-2">
-											<Link href={`testimonials/edit/${review.id}`} className="flex-1">
-												<Button variant="outline" className="w-full">
-													Ver testimonio
+										<div className="space-y-2">
+											<div className="flex items-center justify-between">
+												<p className="text-sm text-muted-foreground">Fecha</p>
+												<p className="text-sm font-medium">{formatRelativeTime(review.fechaTratamiento)}</p>
+											</div>
+
+											<div className="flex gap-2 pt-2">
+												<Link href={`testimonials/edit/${review.idHistoria}`} className="flex-1">
+													<Button variant="outline" className="w-full">
+														Ver testimonio
+													</Button>
+												</Link>
+
+												<Button variant="destructive" size="sm" className="w-full mb-3">
+													Eliminar
 												</Button>
-											</Link>
-
-											<Button variant="destructive" size="sm" className="w-full mb-3">
-												Eliminar
-											</Button>
+											</div>
 										</div>
-									</div>
-								</CardContent>
-							</Card>
-						)
-					})}
+									</CardContent>
+								</Card>
+							)
+						})}
 				</div>
-				
+
 				{/* Pagination */}
 				<Card>
 					<CardContent className="p-4">

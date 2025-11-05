@@ -48,7 +48,7 @@ export default function ServiceList() {
     queryKey: ['servicios', page, search, limit],
     queryFn: async () => {
       const res = await getServicios(page, search, limit)
-      return res?.servicios as Servicio[] // ajusta si tu API devuelve otra forma
+      return res?.servicios ?? [];
     },
     staleTime: 60 * 1000,
   })
