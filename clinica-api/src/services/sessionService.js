@@ -41,7 +41,6 @@ class SessionService {
 				}
 			});
 
-			console.log(`✅ Nueva sesión creada para usuario ${userId}`);
 			return session;
 		} catch (error) {
 			console.error('Error creando sesión:', error);
@@ -116,7 +115,6 @@ class SessionService {
 				where: { idSesion: sessionId },
 				data: { activa: false }
 			});
-			console.log(`❌ Sesión ${sessionId} invalidada`);
 		} catch (error) {
 			console.error('Error invalidando sesión:', error);
 		}
@@ -134,7 +132,6 @@ class SessionService {
 				},
 				data: { activa: false }
 			});
-			console.log(`❌ Todas las sesiones del usuario ${userId} invalidadas`);
 		} catch (error) {
 			console.error('Error invalidando sesiones del usuario:', error);
 		}
@@ -153,7 +150,6 @@ class SessionService {
 				},
 				data: { activa: false }
 			});
-			console.log(`❌ Sesión con token invalidada`);
 		} catch (error) {
 			console.error('Error invalidando sesión por token:', error);
 		}
@@ -217,7 +213,6 @@ class SessionService {
 			});
 
 			if (result.count > 0) {
-				console.log(`🧹 ${result.count} sesiones expiradas limpiadas`);
 			}
 		} catch (error) {
 			console.error('Error limpiando sesiones expiradas:', error);
@@ -232,7 +227,6 @@ class SessionService {
 			this.cleanupExpiredSessions();
 		}, this.cleanupInterval);
 
-		console.log('🔄 Tarea de limpieza de sesiones iniciada');
 	}
 
 	/**

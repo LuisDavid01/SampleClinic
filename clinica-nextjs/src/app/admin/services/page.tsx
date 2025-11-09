@@ -29,12 +29,12 @@ export default function ServicesPage() {
                         </div>
                     </div>
 
-                    <Link href="services/new">
+                    {/* <Link href="@/components/NewServiceDialog">
                         <Button className="cursor-pointer">
                             <PlusIcon className="w-4 h-4 mr-2" />
                             Nuevo Servicio
                         </Button>
-                    </Link>
+                    </Link> */}
                 </div>
                 <Suspense fallback={<div>Cargando Servicios...</div>}>
                     <ServiceList />

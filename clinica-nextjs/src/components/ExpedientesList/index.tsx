@@ -72,7 +72,7 @@ export const ExpedientesList = () => {
 	return (
 		<>
 			{/* Filters */}
-			<Card>
+			<Card className="w-full overflow-hidden">
 				<CardHeader>
 					<CardTitle className="flex items-center justify-between">
 						<div className="flex items-center gap-2">
@@ -90,41 +90,49 @@ export const ExpedientesList = () => {
 						</Button>
 					</CardTitle>
 				</CardHeader>
-				<CardContent>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-						<div className="lg:col-span-2">
-							<div className="relative">
+				<CardContent className="overflow-visible">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 w-full">
+						{/* Búsqueda - Ocupa 2 columnas en desktop */}
+						<div className="lg:col-span-2 min-w-0">
+							<div className="relative w-full">
 								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground w-4 h-4" />
 								<input
 									placeholder="Buscar en registros..."
+									value={search}
+									onChange={(e) => setSearch(e.target.value)}
 									className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-background border border-muted rounded-lg text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200"
 								/>
 							</div>
 						</div>
 
-						<Select value="all" >
-							<SelectTrigger>
-								<SelectValue placeholder="Diagnostico" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">Todas los diagnosticos</SelectItem>
+						{/* Diagnóstico - 1 columna */}
+						<div className="min-w-0">
+							<Select value="all">
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Diagnostico" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">Todas los diagnosticos</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
 
-							</SelectContent>
-						</Select>
+						{/* Usuario - 1 columna */}
+						<div className="min-w-0">
+							<Select value="all">
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Usuario" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">Todos los doctores</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
 
-						<Select value="all">
-							<SelectTrigger>
-								<SelectValue placeholder="Usuario" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">Todos los doctores</SelectItem>
-
-							</SelectContent>
-						</Select>
-
-						<div className="flex gap-2">
+						{/* Estado y botón de refresh - 1 columna, flex en desktop, columna completa en móvil */}
+						<div className="flex flex-col sm:flex-row gap-2 w-full min-w-0">
 							<Select defaultValue="all">
-								<SelectTrigger>
+								<SelectTrigger className="w-full sm:flex-1 min-w-0">
 									<SelectValue placeholder="Estado" />
 								</SelectTrigger>
 								<SelectContent>
@@ -134,8 +142,11 @@ export const ExpedientesList = () => {
 								</SelectContent>
 							</Select>
 
-							<Button variant="outline" size="icon"
+							<Button 
+								variant="outline" 
+								size="icon"
 								onClick={() => refetch()}
+								className="flex-shrink-0 aspect-square w-full sm:w-auto"
 							>
 								<RefreshCw className="w-4 h-4" />
 							</Button>
@@ -206,12 +217,25 @@ export const ExpedientesList = () => {
 																</Button>
 															</Link>
 															<Button variant="destructive" size="sm"
-																onClick={() => {
-																	deleteExpediente(file.idExpediente);
+																onClick={async () => {
+																	const result = await deleteExpediente(file.idExpediente);
+																	if (result.success) {
+																		showNotification({
+																			type: 'success',
+																			title: 'Éxito',
+																			message: result.message || 'Expediente inactivado correctamente'
+																		});
+																	} else {
+																		showNotification({
+																			type: 'error',
+																			title: 'Error',
+																			message: result.message || 'Error al inactivar el expediente'
+																		});
+																	}
 																	refetch();
 																}}
 															>
-																Eliminar
+																Archivar
 															</Button>
 														</div>
 													</TableCell>
@@ -276,13 +300,26 @@ export const ExpedientesList = () => {
 												</Link>
 												<Button variant="destructive" size="sm" className="w-full mb-3"
 													onClick={async () => {
-														await deleteExpediente(file.idExpediente);
+														const result = await deleteExpediente(file.idExpediente);
+														if (result.success) {
+															showNotification({
+																type: 'success',
+																title: 'Éxito',
+																message: result.message || 'Expediente inactivado correctamente'
+															});
+														} else {
+															showNotification({
+																type: 'error',
+																title: 'Error',
+																message: result.message || 'Error al inactivar el expediente'
+															});
+														}
 														// Usar la función de refresh del hook
 														refreshExpedientes();
 													}}
 
 												>
-													Eliminar
+													Inactivar
 												</Button>
 											</div>
 										</div>

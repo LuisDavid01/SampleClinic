@@ -86,14 +86,16 @@ model PerfilCertificacion {
 }
 
 model Servicio {
-  idServicio     Int              @id @default(autoincrement()) @map("id_servicio")
-  nombreServicio String           @map("nombre_servicio") @db.VarChar(100)
-  descripcion    String?
-  precio         Decimal?         @db.Decimal(10, 2)
-  activo         Boolean          @default(true)
-  citas          Cita[]
-  historiasExito HistoriaExito[]
-  perfiles       PerfilServicio[]
+  idServicio       Int              @id @default(autoincrement()) @map("id_servicio")
+  nombreServicio   String           @map("nombre_servicio") @db.VarChar(100)
+  descripcion      String?
+  precio           Decimal?         @db.Decimal(10, 2)
+  activo           Boolean          @default(true)
+  fechaCreacion    DateTime         @default(now()) @map("fecha_creacion")
+  fechaModificacion DateTime        @default(now()) @updatedAt @map("fecha_modificacion")
+  citas            Cita[]
+  historiasExito   HistoriaExito[]
+  perfiles         PerfilServicio[]
 
   @@map("servicios")
 }

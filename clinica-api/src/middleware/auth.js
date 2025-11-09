@@ -7,12 +7,9 @@ import sessionService from '../services/sessionService.js';
 // Middleware para verificar token JWT
 const authenticateToken = async (req, res, next) => {
 	const authHeader = req.headers['authorization'];
-	console.log('🔍 Auth Header:', authHeader); // Debug log
 	const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-	console.log('🔍 Token extraído:', token ? 'Presente' : 'Ausente'); // Debug log
 
 	if (!token) {
-		console.log('❌ No token provided'); // Debug log
 		return res.status(401).json({
 			error: 'Token de acceso requerido',
 			message: 'Debe proporcionar un token de autenticación'

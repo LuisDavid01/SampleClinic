@@ -27,7 +27,6 @@ router.get('/test', async (req, res) => {
 router.get('/create-test/:clerkId', async (req, res) => {
   try {
     const { clerkId } = req.params;
-    console.log('Creando usuario de prueba con clerkId:', clerkId);
     
     const usuario = await prisma.usuario.create({
       data: {
@@ -126,20 +125,8 @@ router.get('/create-test/:clerkId', async (req, res) => {
 router.get('/:clerkId', async (req, res) => {
   try {
     const { clerkId } = req.params;
-    console.log('Buscando usuario con clerkId:', clerkId);
-
     // Usar la función existente de Clerk sync para obtener o crear el usuario
     const usuario = await getOrCreateClerkUser(req);
-    
-    console.log('Usuario obtenido/creado:', {
-      id: usuario.idUsuario,
-      nombre: usuario.nombre,
-      apellido1: usuario.apellido1,
-      apellido2: usuario.apellido2,
-      email: usuario.correoElectronico,
-      clerkId: usuario.clerkId,
-      rol: usuario.rol?.nombreRol
-    });
 
     res.json({
       success: true,
