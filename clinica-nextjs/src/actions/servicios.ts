@@ -1,28 +1,23 @@
 'use server'
-
 import { z } from 'zod'
-import { auth, User } from '@clerk/nextjs/server'
+import { auth } from '@clerk/nextjs/server'
 import { checkRole } from '@/utils/roles'
-/** ========= Schema alineado con la API ========= */
+
+/** ========= Schema ========= */
 const ServicioSchema = z.object({
-	nombreServicio: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
-	descripcion: z.string().optional().nullable(),
-	precio: z.coerce.number().min(0, 'El precio debe ser mayor a 0'),
-	activo: z.enum(['true', 'false']).transform(val => val === 'true')
+  nombre: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
+  detalle: z.string().optional().nullable(),
+  precio: z.number().refine((val) => !isNaN(val), {
+  message: 'Precio inválido',
+}),
+  // Usa minúsculas si tu API las espera en minúsculas, igual que en expedientes:
+  estado: z.enum(['activo', 'inactivo']),
 })
 
 export type ServicioData = z.infer<typeof ServicioSchema>
 
-
 /** ========= Base URL ========= */
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
-
-function ensureBaseUrl() {
-	// realmente no se necesita ???
-	if (!baseUrl) throw new Error('API base URL no configurada (NEXT_PUBLIC_API_BASE_URL)')
-	return baseUrl.replace(/\/$/, '')
-}
-
 
 /** ========= GET: listado ========= */
 export async function getServicios(page: number, search?: string, limit: number = 10) {
@@ -45,6 +40,30 @@ export async function getServicios(page: number, search?: string, limit: number 
   })
 
   const res = await fetch(`${baseUrl}/servicios?${params}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      authorization: `Bearer ${token}`,
+    },
+  })
+  if (!res.ok) throw new Error('Failed to fetch servicios')
+  return res.json()
+}
+
+export async function getAllServicios() {
+  const user = await auth()
+  if (!user.userId) {
+    throw new Error('Token de autorización requerido')
+  }
+
+  // Validar y obtener el token de Clerk
+  const token = await user.getToken()
+  if (!token) {
+    throw new Error('Token de autorización requerido')
+  }
+
+
+  const res = await fetch(`${baseUrl}/servicios}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -143,8 +162,8 @@ export async function createServicio(data: ServicioData): Promise<ActionResponse
 
 /** ========= PUT: actualizar ========= */
 export async function updateServicio(
-	id: number,
-	data: Partial<ServicioData>
+  id: number,
+  data: Partial<ServicioData>
 ): Promise<ActionResponse> {
   try {
     const user = await auth()

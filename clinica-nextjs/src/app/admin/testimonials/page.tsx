@@ -200,7 +200,7 @@ export default function FilesPage() {
 															</Badge>
 														</TableCell>
 														<TableCell className="text-sm">
-															{review.servicio.nombreServicio}
+															{review.servicio.nombre}
 														</TableCell>
 														<TableCell className="text-sm">
 															{formatRelativeTime(review.fechaTratamiento)}

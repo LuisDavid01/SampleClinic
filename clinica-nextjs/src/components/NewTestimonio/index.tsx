@@ -15,6 +15,7 @@ import { Button } from "../ui/button";
 import { MessageSquareShare, Send } from "lucide-react";
 
 import { Checkbox } from "../ui/checkbox";
+import { Form } from "../FormWithActions";
 
 export function NewTestimonio() {
 	return (
@@ -27,6 +28,8 @@ export function NewTestimonio() {
 					Comparte tu experiencia!
 				</ModalTrigger>
 				<ModalBody>
+				<Form>
+
 					<ModalContent>
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
@@ -41,8 +44,7 @@ export function NewTestimonio() {
 								Tu opinión nos ayuda a mejorar nuestros servicios de salud
 							</p>
 						</motion.div>
-						<form>
-							{/* Sistema de Calificación */}
+													{/* Sistema de Calificación */}
 							<motion.div
 								initial={{ opacity: 0, x: -20 }}
 								animate={{ opacity: 1, x: 0 }}
@@ -51,10 +53,7 @@ export function NewTestimonio() {
 								<label className="block text-text-primary font-medium mb-3 text-center">
 									¿Cómo calificarías nuestro servicio?
 								</label>
-								<StarRating
-									value={0}
-									onChange={() => { }}
-								/>
+
 
 							</motion.div>
 
@@ -97,8 +96,7 @@ export function NewTestimonio() {
 								</label>
 							</motion.div>
 
-						</form>
-					</ModalContent>
+											</ModalContent>
 					<ModalFooter className="gap-4 pt-6 border-t border-muted">
 						<Button
 							type="submit"
@@ -112,6 +110,7 @@ export function NewTestimonio() {
 							</>
 						</Button>
 					</ModalFooter>
+					</Form>
 
 				</ModalBody>
 			</Modal>

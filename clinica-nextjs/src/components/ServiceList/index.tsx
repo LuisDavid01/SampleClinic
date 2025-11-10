@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+	Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -20,24 +20,24 @@ import { useNotification } from "@/components/UseNotification"
 import EditServiceDialog from "@/components/EditServiceDialog"
 import NewServiceDialog from "@/components/NewServiceDialog"
 
-// --- utils pequeños ---
+// --- util pequeño para moneda y fecha ---
 const formatCRC = (n: number) =>
-  new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(n)
+	new Intl.NumberFormat("es-CR", { style: "currency", currency: "CRC", maximumFractionDigits: 0 }).format(n)
 
 const formatRelative = (date?: string | Date) => {
-  if (!date) return "—"
-  const d = typeof date === "string" ? new Date(date) : date
-  const diff = (Date.now() - d.getTime()) / 1000
-  if (diff < 60) return "hace unos segundos"
-  if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`
-  if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`
-  return d.toLocaleDateString("es-CR")
+	if (!date) return "—"
+	const d = typeof date === "string" ? new Date(date) : date
+	const diff = (Date.now() - d.getTime()) / 1000
+	if (diff < 60) return "hace unos segundos"
+	if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`
+	if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`
+	return d.toLocaleDateString("es-CR")
 }
 
-// pinta estado (usa claves minúsculas)
+// para pintar estado (acepta 'Activo'/'Inactivo' o minúsculas)
 const statusConfig = {
-  activo: { label: "Activo", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" },
-  inactivo: { label: "Inactivo", color: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300" }
+	activo: { label: "Activo", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" },
+	inactivo: { label: "Inactivo", color: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300" }
 } as const
 
 export default function ServiceList() {
@@ -343,18 +343,38 @@ export default function ServiceList() {
 				)}
 			</div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                className="cursor-pointer"
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
+			{/* Pagination */}
+			<Card>
+				<CardContent className="p-4">
+					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+						<div className="flex items-center gap-2">
+							<span className="text-sm text-muted-foreground">Mostrar</span>
+							<Select defaultValue={String(limit)} onValueChange={(v) => setLimit(parseInt(v))}>
+								<SelectTrigger className="w-20">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="10">10</SelectItem>
+									<SelectItem value="25">25</SelectItem>
+									<SelectItem value="50">50</SelectItem>
+									<SelectItem value="100">100</SelectItem>
+								</SelectContent>
+							</Select>
+							<span className="text-sm text-muted-foreground">
+								de {data.length} servicios
+							</span>
+						</div>
 
-              <span className="text-sm px-4">Página {page}</span>
+						<div className="flex items-center gap-2">
+							<Button
+								className="cursor-pointer"
+								variant="outline"
+								size="sm"
+								disabled={page <= 1}
+								onClick={() => setPage(page - 1)}
+							>
+								<ChevronLeft className="w-4 h-4" />
+							</Button>
 
 							<span className="text-sm px-4">Página {page}</span>
 

@@ -16,7 +16,7 @@ import { HistoriaExito } from '@/types/Testimony'
 import { createTestimony, updateTestimony } from '@/actions/historiasExito'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { apiEndpoints, useApiClient } from '@/utils/apiClient'
-import { getServicios } from '@/actions/servicios'
+import { getAllServicios, getServicios } from '@/actions/servicios'
 import { Usuario } from '@/types/Usuario'
 import { Servicio } from '@/types/Service'
 import { formatDateForInput } from '@/lib/utils'
@@ -62,7 +62,7 @@ export default function EditTestimony({ testimony,
 			{
 				queryKey: ['servicios'],
 				queryFn: async () => {
-					const res = await getServicios()
+					const res = await getAllServicios()
 					return res?.servicios ?? [];
 				},
 				staleTime: 3 * 60 * 1000,
@@ -184,8 +184,8 @@ export default function EditTestimony({ testimony,
 					name="idServicio"
 					defaultValue={testimony?.idServicio || ''}
 					options={servicios.map((servicio: Servicio) => ({
-						label: servicio.nombreServicio,
-						value: servicio.idServicio
+						label: servicio.nombre,
+						value: servicio.id
 					}))}
 					aria-describedby="Servicio-error"
 					className={state?.errors?.idServicio ? 'border-red-500' : ''}
