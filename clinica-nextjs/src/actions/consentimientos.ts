@@ -66,6 +66,52 @@ export async function getConsentimientosbyUser(idUser: number, page: number, lim
 
 }
 
+/**
+ * Obtiene los archivos de consentimiento del expediente del paciente actual
+ */
+export async function getConsentimientosByExpediente(idUsuario: number, expedienteId: number, page: number = 1, limit: number = 100) {
+	const user = await auth();
+	if (!user.userId) {
+		return {
+			success: false,
+			message: 'Unauthorized access',
+			error: 'Unauthorized',
+		}
+	}
+
+	const params = new URLSearchParams({
+		page: page.toString(),
+		limit: limit.toString(),
+		categoria: 'consentimiento',
+		expedienteId: expedienteId.toString(),
+	});
+
+	const res = await fetch(`${baseUrl}/files/${idUsuario}?${params}`, {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+			authorization: `Bearer ${await user.getToken()}`
+		}
+	});
+	
+	if (!res.ok) {
+		return {
+			success: false,
+			message: 'Error al obtener consentimientos',
+			error: 'Failed to fetch consentimientos',
+			data: [],
+			pagination: {}
+		}
+	}
+	
+	const data = await res.json();
+	return {
+		success: true,
+		data: data.data || [],
+		pagination: data.pagination || {}
+	};
+}
+
 export async function newConsentimiento(data: ConsentimientoData) {
 	try {
 		const user = await auth()

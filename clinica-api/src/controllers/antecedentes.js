@@ -130,11 +130,6 @@ export const createAntecedentes = async (req, res) => {
       }
     });
 
-    console.log('Antecedentes creados:', {
-      idAntecedente: antecedentes.idAntecedente,
-      idPaciente: antecedentes.idPaciente,
-      idMedicoRegistro: antecedentes.idMedicoRegistro
-    });
 
     res.status(201).json({
       success: true,

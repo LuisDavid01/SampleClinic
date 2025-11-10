@@ -260,16 +260,6 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
       include: { rol: true }
     });
 
-    console.log('🔍 Debug permisos expediente:', {
-      expedienteId: id,
-      expedienteIdPaciente: expediente.idPaciente,
-      expedienteIdMedico: expediente.idMedico,
-      userRole,
-      usuarioId: usuario?.idUsuario,
-      usuarioRol: usuario?.rol?.idRol,
-      usuarioRolNombre: usuario?.rol?.nombreRol,
-      clerkId: req.user.id
-    });
 
     // Usar el rol de la base de datos en lugar del rol de Clerk (más confiable)
     const dbRole = usuario?.rol?.idRol;
@@ -277,29 +267,17 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
     if (dbRole === 4) { // PACIENTE
       // Pacientes solo pueden ver sus propios expedientes
       if (usuario && expediente.idPaciente !== usuario.idUsuario) {
-        console.log('❌ Acceso denegado - Paciente:', {
-          expedienteIdPaciente: expediente.idPaciente,
-          usuarioId: usuario.idUsuario,
-          sonIguales: expediente.idPaciente === usuario.idUsuario
-        });
         return res.status(403).json({ error: 'No tienes permisos para ver este expediente' });
       }
     } else if (dbRole === 2) { // FISIOTERAPEUTA
       // Fisioterapeutas solo pueden ver expedientes asignados a ellos
       if (usuario && expediente.idMedico !== usuario.idUsuario) {
-        console.log('❌ Acceso denegado - Fisioterapeuta:', {
-          expedienteIdMedico: expediente.idMedico,
-          usuarioId: usuario.idUsuario,
-          sonIguales: expediente.idMedico === usuario.idUsuario
-        });
         return res.status(403).json({ error: 'No tienes permisos para ver este expediente' });
       }
     } else if (dbRole === 1) { // ADMINISTRADOR
       // Los administradores pueden ver cualquier expediente (sin restricciones)
-      console.log('✅ Acceso permitido - Administrador');
     } else {
       // Si no se reconoce el rol, denegar acceso
-      console.log('❌ Acceso denegado - Rol no reconocido:', dbRole);
       return res.status(403).json({ error: 'No tienes permisos para ver este expediente' });
     }
     // Los administradores pueden ver cualquier expediente (sin restricciones)
@@ -520,18 +498,6 @@ router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico','fisioterapeut
     const { id } = req.params;
     const { cedula, estado, idMedico, descripcion } = req.body;
     
-    // Debug: Log the received data
-    console.log('Backend received data:', {
-      id,
-      cedula,
-      estado,
-      idMedico,
-      descripcion,
-      idMedicoType: typeof idMedico,
-      idMedicoValue: idMedico
-    });
-    
-    console.log('Validation passed for expediente update');
 
     // Verificar que el expediente existe
     const expedienteExistente = await prisma.expediente.findUnique({
@@ -607,12 +573,6 @@ router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico','fisioterapeut
       }
     });
 
-    // Debug: Log the updated expediente
-    console.log('Updated expediente:', {
-      idExpediente: expediente.idExpediente,
-      idMedico: expediente.idMedico,
-      medico: expediente.medico
-    });
 
     res.json(expediente);
   } catch (error) {
@@ -625,8 +585,8 @@ router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico','fisioterapeut
  * @swagger
  * /expedientes/{id}:
  *   delete:
- *     summary: Eliminar expediente
- *     description: Elimina un expediente. Solo administradores pueden eliminar expedientes.
+ *     summary: Inactivar expediente
+ *     description: Inactiva un expediente cambiando su estado a 'inactivo'. Solo administradores pueden inactivar expedientes.
  *     tags: [Expedientes]
  *     security:
  *       - clerkAuth: []
@@ -639,7 +599,7 @@ router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico','fisioterapeut
  *         description: ID del expediente
  *     responses:
  *       200:
- *         description: Expediente eliminado exitosamente
+ *         description: Expediente inactivado exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -647,7 +607,9 @@ router.put('/:id', clerkAuth, requireClerkRole(['admin', 'medico','fisioterapeut
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Expediente eliminado exitosamente
+ *                   example: Expediente inactivado exitosamente
+ *                 expediente:
+ *                   $ref: '#/components/schemas/Expediente'
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
@@ -670,14 +632,45 @@ router.delete('/:id', clerkAuth, requireClerkRole(['admin']), validateId, async 
       return res.status(404).json({ error: 'Expediente no encontrado' });
     }
 
-    // Eliminar expediente (esto también eliminará documentos y diagnósticos relacionados por CASCADE)
-    await prisma.expediente.delete({
-      where: { idExpediente: parseInt(id) }
+    // Verificar si ya está inactivo
+    if (expediente.estado === 'inactivo') {
+      return res.status(400).json({ error: 'El expediente ya está inactivo' });
+    }
+
+    // Inactivar expediente cambiando su estado a 'inactivo'
+    const expedienteInactivado = await prisma.expediente.update({
+      where: { idExpediente: parseInt(id) },
+      data: {
+        estado: 'inactivo'
+      },
+      include: {
+        paciente: {
+          select: {
+            idUsuario: true,
+            nombre: true,
+            apellido1: true,
+            apellido2: true,
+            correoElectronico: true
+          }
+        },
+        medico: {
+          select: {
+            idUsuario: true,
+            nombre: true,
+            apellido1: true,
+            apellido2: true,
+            correoElectronico: true
+          }
+        }
+      }
     });
 
-    res.json({ message: 'Expediente eliminado exitosamente' });
+    res.json({ 
+      message: 'Expediente inactivado exitosamente',
+      expediente: expedienteInactivado
+    });
   } catch (error) {
-    console.error('Error al eliminar expediente:', error);
+    console.error('Error al inactivar expediente:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });

@@ -74,6 +74,30 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
+// GET /api/servicios/public - Obtener servicios activos (público, sin autenticación)
+router.get('/public', async (req, res) => {
+  try {
+    const servicios = await prisma.servicio.findMany({
+      where: { activo: true },
+      select: {
+        idServicio: true,
+        nombreServicio: true,
+        descripcion: true,
+        precio: true
+      },
+      orderBy: { nombreServicio: 'asc' }
+    });
+
+    res.json({ servicios });
+  } catch (error) {
+    console.error('Error al obtener servicios públicos:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudieron obtener los servicios'
+    });
+  }
+});
+
 // GET /api/servicios - Obtener todos los servicios
 router.get('/', clerkAuth, async (req, res) => {
   try {
@@ -90,9 +114,11 @@ router.get('/', clerkAuth, async (req, res) => {
       ];
     }
 
-    if (activo !== undefined) {
-      where.activo = activo === 'true';
+    // Si se especifica activo, filtrar por ese estado. Si no se especifica, mostrar todos
+    if (activo !== undefined && activo !== 'all' && activo !== '') {
+      where.activo = activo === 'true' || activo === true;
     }
+    // Si activo es 'all' o no se especifica, no agregar filtro (mostrar todos)
 
     const [servicios, total] = await Promise.all([
       prisma.servicio.findMany({
@@ -103,6 +129,8 @@ router.get('/', clerkAuth, async (req, res) => {
       }),
       prisma.servicio.count({ where })
     ]);
+
+   
 
     res.json({
       servicios,
@@ -326,16 +354,30 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/servicios - Crear nuevo servicio (solo admin)
-router.post('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateServicio, async (req, res) => {
+router.post('/', clerkAuth, requireClerkRole(['admin','recepcionista']), validateServicio, async (req, res) => {
   try {
-    const { nombreServicio, descripcion, precio, activo = true } = req.body;
+    const { nombre, detalle, precio, estado, nombreServicio, descripcion, activo = true } = req.body;
+
+    // Mapear campos del frontend a campos del modelo Prisma
+    const nombreServicioValue = nombre || nombreServicio;
+    const descripcionValue = detalle || descripcion;
+    const activoValue = estado !== undefined 
+      ? (estado === 'activo' || estado === 'Activo' || estado === true)
+      : activo;
+
+    if (!nombreServicioValue) {
+      return res.status(400).json({
+        error: 'Datos inválidos',
+        message: 'El nombre del servicio es requerido'
+      });
+    }
 
     const servicio = await prisma.servicio.create({
       data: {
-        nombreServicio,
-        descripcion,
+        nombreServicio: nombreServicioValue,
+        descripcion: descripcionValue || null,
         precio: precio ? parseFloat(precio) : null,
-        activo
+        activo: activoValue
       }
     });
 
@@ -441,14 +483,38 @@ router.post('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateSer
  *               $ref: '#/components/schemas/Error'
  */
 // PUT /api/servicios/:id - Actualizar servicio (solo admin)
-router.put('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, validateServicio, async (req, res) => {
+router.put('/:id',clerkAuth, requireClerkRole(['admin','recepcionista']), validateId, validateServicio, async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = { ...req.body };
-
-    // Convertir precio a decimal si se proporciona
-    if (updateData.precio !== undefined) {
-      updateData.precio = updateData.precio ? parseFloat(updateData.precio) : null;
+    const { nombre, detalle, precio, estado, nombreServicio, descripcion, activo } = req.body;
+    
+    // Mapear campos del frontend a campos del modelo Prisma
+    const updateData = {};
+    
+    // Mapear nombre (frontend) -> nombreServicio (Prisma)
+    if (nombre !== undefined) {
+      updateData.nombreServicio = nombre;
+    } else if (nombreServicio !== undefined) {
+      updateData.nombreServicio = nombreServicio;
+    }
+    
+    // Mapear detalle (frontend) -> descripcion (Prisma)
+    if (detalle !== undefined) {
+      updateData.descripcion = detalle;
+    } else if (descripcion !== undefined) {
+      updateData.descripcion = descripcion;
+    }
+    
+    // Mapear precio
+    if (precio !== undefined) {
+      updateData.precio = precio ? parseFloat(precio) : null;
+    }
+    
+    // Mapear estado (frontend) -> activo (Prisma)
+    if (estado !== undefined) {
+      updateData.activo = estado === 'activo' || estado === 'Activo' || estado === true;
+    } else if (activo !== undefined) {
+      updateData.activo = activo;
     }
 
     const servicio = await prisma.servicio.update({
@@ -533,32 +599,50 @@ router.put('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateI
  *               $ref: '#/components/schemas/Error'
  */
 // DELETE /api/servicios/:id - Desactivar servicio (solo admin)
-router.delete('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.delete('/:id', clerkAuth, requireClerkRole(['admin','recepcionista']), validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Verificar si el servicio tiene citas activas
-    const citasActivas = await prisma.cita.count({
-      where: {
-        idServicio: parseInt(id),
-        estadoCita: { not: 'cancelada' }
-      }
+    // Verificar que el servicio existe
+    const servicioExistente = await prisma.servicio.findUnique({
+      where: { idServicio: parseInt(id) }
     });
 
-    if (citasActivas > 0) {
-      return res.status(400).json({
-        error: 'No se puede desactivar',
-        message: 'El servicio tiene citas activas. Primero cancele o complete las citas.'
+    if (!servicioExistente) {
+      return res.status(404).json({
+        error: 'Servicio no encontrado',
+        message: 'No existe un servicio con el ID proporcionado'
       });
+    }
+
+    // Si el servicio está activo, inactivarlo. Si está inactivo, activarlo.
+    const nuevoEstado = !servicioExistente.activo;
+    
+    // Si se va a inactivar, verificar que no tenga citas activas
+    if (!nuevoEstado) {
+      const citasActivas = await prisma.cita.count({
+        where: {
+          idServicio: parseInt(id),
+          estadoCita: { not: 'cancelada' }
+        }
+      });
+
+      if (citasActivas > 0) {
+        return res.status(400).json({
+          error: 'No se puede desactivar',
+          message: 'El servicio tiene citas activas. Primero cancele o complete las citas.'
+        });
+      }
     }
 
     const servicio = await prisma.servicio.update({
       where: { idServicio: parseInt(id) },
-      data: { activo: false }
+      data: { activo: nuevoEstado }
     });
 
     res.json({
-      message: 'Servicio desactivado exitosamente'
+      message: nuevoEstado ? 'Servicio activado exitosamente' : 'Servicio inactivado exitosamente',
+      servicio
     });
 
   } catch (error) {
@@ -794,7 +878,7 @@ router.get('/:id/perfiles', clerkAuth, validateId, async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/servicios/:id/perfiles - Asociar perfil con servicio (solo admin)
-router.post('/:id/perfiles', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.post('/:id/perfiles', clerkAuth, requireClerkRole(['admin','recepcionista']), validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const { idPerfil } = req.body;
@@ -931,7 +1015,7 @@ router.post('/:id/perfiles', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]),
  *               $ref: '#/components/schemas/Error'
  */
 // DELETE /api/servicios/:id/perfiles/:idPerfil - Desasociar perfil del servicio (solo admin)
-router.delete('/:id/perfiles/:idPerfil', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.delete('/:id/perfiles/:idPerfil', clerkAuth, requireClerkRole(['admin','recepcionista']), validateId, async (req, res) => {
   try {
     const { id, idPerfil } = req.params;
 

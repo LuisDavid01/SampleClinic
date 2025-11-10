@@ -125,7 +125,6 @@ router.get('/paciente/:pacienteId', async (req, res) => {
     const hasAuth = req.headers.authorization && req.headers.authorization !== 'Bearer mock-token';
     
     if (!hasAuth && isDevelopment) {
-      console.log('🛠️ Modo desarrollo: Sin autenticación, obteniendo datos reales');
       
       // Obtener datos reales de la base de datos
       // Buscar por clerkId en lugar de idUsuario

@@ -72,12 +72,10 @@ const clerkAuth = async (req, res, next) => {
     // Obtener datos completos del usuario desde Clerk API
     let userData;
     try {
-      console.log('🔄 Obteniendo datos completos del usuario desde Clerk API...');
       const clerk = createClerkClient({
         secretKey: process.env.CLERK_SECRET_KEY
       });
       const clerkUser = await clerk.users.getUser(payload.sub);
-      console.log('🔍 Datos del usuario obtenidos:', clerkUser);
       // Separar el apellido en apellido1 y apellido2
       const { apellido1, apellido2 } = splitLastName(clerkUser.lastName);
       
@@ -99,12 +97,6 @@ const clerkAuth = async (req, res, next) => {
         }
       };
       
-      console.log('✅ Datos del usuario obtenidos:', {
-        id: userData.id,
-        email: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName
-      });
       
     } catch (clerkApiError) {
       console.error('❌ Error obteniendo datos del usuario desde Clerk API:', clerkApiError);
@@ -129,7 +121,6 @@ const clerkAuth = async (req, res, next) => {
         }
       };
       
-      console.log('⚠️ Usando datos básicos del token como fallback');
     }
 
     // Agregar información del usuario al request
@@ -139,15 +130,8 @@ const clerkAuth = async (req, res, next) => {
 
     // 🔄 SINCRONIZAR USUARIO AUTOMÁTICAMENTE
     try {
-      console.log('🔄 Sincronizando usuario automáticamente...');
       const dbUser = await syncClerkUser(userData);
       req.dbUser = dbUser; // Agregar usuario de la BD al request
-      console.log('✅ Usuario sincronizado:', {
-        id: dbUser.idUsuario,
-        nombre: dbUser.nombre,
-        rol: dbUser.rol?.nombreRol,
-        idRol: dbUser.idRol
-      });
     } catch (syncError) {
       console.error('⚠️ Error sincronizando usuario (continuando):', syncError.message);
       // No fallar la autenticación por error de sincronización
@@ -254,24 +238,10 @@ const requireClerkRole = (allowedRoles = []) => {
       userRoles.push(userRole);
     }
     
-    console.log('🔍 Verificando roles:', {
-      userRoles,
-      userRole,
-      allowedRoles,
-      metadata: req.user.metadata,
-      userId: req.user.id,
-      userEmail: req.user.email
-    });
     
     const hasRequiredRole = allowedRoles.some(role => userRoles.includes(role));
 
     if (!hasRequiredRole && allowedRoles.length > 0) {
-      console.log('❌ Acceso denegado:', {
-        requiredRoles: allowedRoles,
-        userRoles: userRoles,
-        userRole: userRole
-      });
-      
       return res.status(403).json({
         error: 'Acceso denegado',
         message: 'No tiene permisos suficientes para acceder a este recurso',
@@ -280,7 +250,6 @@ const requireClerkRole = (allowedRoles = []) => {
       });
     }
 
-    console.log('✅ Acceso permitido para roles:', userRoles);
     next();
   };
 };

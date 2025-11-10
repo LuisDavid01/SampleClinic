@@ -44,9 +44,16 @@ async function fetchWithAuth(url: string, options?: RequestInit) {
 
 		const response = await fetch(url, { ...options, headers });
 
-
+		// Manejar respuesta no exitosa
 		if (!response.ok) {
 			const errorData = await response.json();
+			// Si es un 404 con el mensaje específico de "no se encontraron antecedentes", 
+			// no es un error, solo significa que no hay datos registrados
+			if (response.status === 404 && 
+				errorData.error === 'No se encontraron antecedentes clínicos para este paciente') {
+				// Retornar un objeto especial que indica "no encontrado" pero no es un error
+				return { notFound: true, data: null };
+			}
 			throw new Error(errorData.error || 'Error en la solicitud');
 		}
 
@@ -71,6 +78,14 @@ export interface ActionResponse {
 export async function getAntecedentes(pacienteId: number): Promise<ActionResponse> {
 	try {
 		const response = await fetchWithAuth(`${API_BASE_URL}/pacientes/${pacienteId}/antecedentes`);
+
+		// Si no se encontraron antecedentes, retornar éxito pero sin datos
+		if (response.notFound) {
+			return {
+				success: true,
+				data: null
+			};
+		}
 
 		return {
 			success: true,

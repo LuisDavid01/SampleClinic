@@ -442,14 +442,9 @@ const startServer = async () => {
 
 		// Conectar a la base de datos
 		await prisma.$connect();
-		console.log('✅ Conectado a la base de datos PostgreSQL');
 
 		// Iniciar servidor
 		app.listen(port, () => {
-			console.log(`🚀 Servidor ejecutándose en puerto ${port}`);
-			console.log(`📊 Entorno: ${nodeEnv}`);
-			console.log(`🌐 URL: http://localhost:${port}`);
-			console.log(`📚 Documentación API: http://localhost:${port}/api-docs`);
 		});
 	} catch (error) {
 		console.error('❌ Error al iniciar el servidor:', error);
@@ -459,13 +454,11 @@ const startServer = async () => {
 
 // Manejo de cierre graceful
 process.on('SIGINT', async () => {
-	console.log('\n🛑 Cerrando servidor...');
 	await prisma.$disconnect();
 	process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-	console.log('\n🛑 Cerrando servidor...');
 	await prisma.$disconnect();
 	process.exit(0);
 });
