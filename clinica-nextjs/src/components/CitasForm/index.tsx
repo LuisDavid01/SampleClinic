@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,17 +53,21 @@ export const CitasForm = () => {
 		alert("¡Cita de fisioterapia agendada exitosamente! Te contactaremos pronto para confirmar tu consulta médica.");
 	};
 
-	const servicios = [
-		"Terapia Manual",
-		"Rehabilitación Física",
-		"Prevención de Lesiones",
-		"Evaluación Biomecánica",
-		"Terapia Deportiva",
-		"Fisioterapia Respiratoria",
-		"Terapia Neurológica",
-		"Terapia Pediátrica",
-		"Otro"
-	];
+	// Obtener servicios reales del API
+	const { data: serviciosData, isLoading: isLoadingServicios } = useQuery({
+		queryKey: ['servicios-public'],
+		queryFn: async () => {
+			const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+			const res = await fetch(`${baseUrl}/servicios/public`);
+			if (!res.ok) {
+				throw new Error('Error al obtener servicios');
+			}
+			return res.json();
+		},
+		staleTime: 5 * 60 * 1000, // Cache por 5 minutos
+	});
+
+	const servicios = serviciosData?.servicios || [];
 
 	const horas = [
 		"09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
@@ -294,11 +299,14 @@ export const CitasForm = () => {
 									onChange={handleInputChange}
 									className={inputStyles}
 									aria-label="Selecciona un servicio de interés"
+									disabled={isLoadingServicios}
 								>
-									<option value="">Selecciona un servicio</option>
-									{servicios.map((servicio) => (
-										<option key={servicio} value={servicio}>
-											{servicio}
+									<option value="">
+										{isLoadingServicios ? 'Cargando servicios...' : 'Selecciona un servicio'}
+									</option>
+									{servicios.map((servicio: { idServicio: number; nombreServicio: string }) => (
+										<option key={servicio.idServicio} value={servicio.nombreServicio}>
+											{servicio.nombreServicio}
 										</option>
 									))}
 								</select>

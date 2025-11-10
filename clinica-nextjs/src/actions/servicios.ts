@@ -25,105 +25,120 @@ function ensureBaseUrl() {
 
 
 /** ========= GET: listado ========= */
-export async function getServicios(page = 1, search?: string, limit = 10, activo?: boolean) {
-	const user = await auth()
-	if (!user.userId) {
-		return { success: false, message: 'no autenticado', error: 'UnAuthenticated' }
-	}
-	const token = await user.getToken()
-	const base = ensureBaseUrl()
+export async function getServicios(page: number, search?: string, limit: number = 10) {
+  const user = await auth()
+  if (!user.userId && !checkRole('admin')) {
+    return []
+  }
 
-	const url = new URL(`${base}/servicios`)
-	url.search = new URLSearchParams({
-		page: String(page),
-		limit: String(limit),
-		...(search ? { search } : {}),
-		...(typeof activo === 'boolean' ? { activo: String(activo) } : {}),
-	}).toString()
+  // Validar y obtener el token de Clerk
+  const token = await user.getToken()
+  if (!token) {
+    throw new Error('Token de autorización requerido')
+  }
 
-	const res = await fetch(url.toString(), {
-		method: 'GET',
-		headers: { Authorization: `Bearer ${token}` },
-		cache: 'no-store',
-	})
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    activo: 'all', // Mostrar todos los servicios (activos e inactivos)
+    ...(search && { search }),
+  })
 
-	if (!res.ok) {
-		const body = await res.text().catch(() => '')
-		throw new Error(`GET ${url.pathname} → ${res.status} ${res.statusText}. Body: ${body.slice(0, 800)}`)
-	}
-
-	return res.json()
+  const res = await fetch(`${baseUrl}/servicios?${params}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      authorization: `Bearer ${token}`,
+    },
+  })
+  if (!res.ok) throw new Error('Failed to fetch servicios')
+  return res.json()
 }
 
 /** ========= GET: por ID ========= */
 export async function getServicioByID(id: number) {
-	// validamos el usuario
-	const user = await auth()
-	if (!user.userId) {
-		return { success: false, message: 'no autenticado', error: 'UnAuthenticated' }
-	}
-	const token = await user.getToken()
-	const base = ensureBaseUrl()
+  const user = await auth()
+  if (!user.userId && !checkRole('admin')) {
+    return []
+  }
 
-	const res = await fetch(`${base}/servicios/${id}`, {
-		method: 'GET',
-		headers: { Authorization: `Bearer ${token}` },
-	})
+  // Validar y obtener el token de Clerk
+  const token = await user.getToken()
+  if (!token) {
+    throw new Error('Token de autorización requerido')
+  }
 
-	if (!res.ok) {
-		const body = await res.text().catch(() => '')
-		throw new Error(`GET /servicios/${id} → ${res.status} ${res.statusText}. Body: ${body.slice(0, 800)}`)
-	}
-
-	return res.json()
+  const res = await fetch(`${baseUrl}/servicios/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      authorization: `Bearer ${token}`,
+    },
+  })
+  if (!res.ok) throw new Error('Failed to fetch servicio')
+  return res.json()
 }
 
 /** ========= POST: crear ========= */
 export async function createServicio(data: ServicioData): Promise<ActionResponse> {
-	try {
-		// validamos el usuario
-		const user = await auth()
-		if (!user.userId) {
-			return { success: false, message: 'no autenticado', error: 'UnAuthenticated' }
-		}
-		const token = await user.getToken()
+  try {
+    const user = await auth()
+    if (!user.userId && !checkRole('admin')) {
+      return { success: false, message: 'Unauthorized access', error: 'Unauthorized' }
+    }
 
+    // Validar y obtener el token de Clerk
+    const token = await user.getToken()
+    if (!token) {
+      return {
+        success: false,
+        message: 'Token de autorización requerido',
+        error: 'Unauthorized - No token available',
+      }
+    }
 
-		const parsed = ServicioSchema.safeParse(data)
-		if (!parsed.success) {
-			console.log(parsed.error.flatten().fieldErrors)
-			return {
-				success: false,
-				message: 'Validación fallida',
-				errors: parsed.error.flatten().fieldErrors,
-			}
-		}
+    const validationResult = ServicioSchema.safeParse(data)
+    if (!validationResult.success) {
+      return {
+        success: false,
+        message: 'Validation failed',
+        errors: validationResult.error.flatten().fieldErrors,
+      }
+    }
 
-		const res = await fetch(`${baseUrl}/servicios`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
-			},
-			body: JSON.stringify(parsed.data),
-		})
+    const validatedData = validationResult.data
 
-		if (!res.ok) {
-			return {
-				success: false,
-				message: `Error API (${res.status})`,
-				error: 'Error al  crear el servicio',
-			}
-		}
-		return { success: true, message: 'Servicio creado con éxito' }
-	} catch (error: any) {
-		console.error('Error creando el servicio:', error)
-		return {
-			success: false,
-			message: 'Ha ocurrido un error al crear el servicio',
-			error: error?.message ?? 'No se pudo crear el servicio',
-		}
-	}
+    const response = await fetch(`${baseUrl}/servicios`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(validatedData),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return {
+        success: false,
+        message: errorData.message || errorData.error || 'Error al crear el servicio',
+        error: 'Failed to create servicio',
+      }
+    }
+
+    const result = await response.json()
+    return { 
+      success: true, 
+      message: result.message || 'Servicio creado con éxito' 
+    }
+  } catch (error) {
+    console.error('Error creando el servicio:', error)
+    return {
+      success: false,
+      message: 'Ha ocurrido un error al crear el servicio',
+      error: 'No se pudo crear el servicio',
+    }
+  }
 }
 
 /** ========= PUT: actualizar ========= */
@@ -131,106 +146,123 @@ export async function updateServicio(
 	id: number,
 	data: Partial<ServicioData>
 ): Promise<ActionResponse> {
-	try {
-		if (!Number.isFinite(id)) {
-			return { success: false, message: 'ID inválido', error: 'ID inválido' }
-		}
+  try {
+    const user = await auth()
+    if (!user.userId && !checkRole('admin')) {
+      return { success: false, message: 'Acceso no autorizado', error: 'Acceso no autorizado' }
+    }
 
-		// validamos el usuario
-		const user = await auth()
-		if (!user.userId) {
-			return { success: false, message: 'no autenticado', error: 'UnAuthenticated' }
-		}
-		const token = await user.getToken()
+    // Validar y obtener el token de Clerk
+    const token = await user.getToken()
+    if (!token) {
+      return {
+        success: false,
+        message: 'Token de autorización requerido',
+        error: 'Unauthorized - No token available',
+      }
+    }
 
-		const base = ensureBaseUrl()
+    const UpdateServicioSchema = ServicioSchema.partial()
+    const validationResult = UpdateServicioSchema.safeParse(data)
+    if (!validationResult.success) {
+      return {
+        success: false,
+        message: 'Validation failed',
+        errors: validationResult.error.flatten().fieldErrors,
+      }
+    }
 
-		// safepase valida los datos no se necesita validar manualmente
-		const validationResult = ServicioSchema.safeParse(data)
+    const validatedData = validationResult.data
+    const updateData: Record<string, unknown> = {}
 
-		if (!validationResult.success) {
-			return {
-				success: false,
-				message: 'Validación fallida',
-				errors: validationResult.error.flatten().fieldErrors,
-			}
-		}
+    if (validatedData.nombre !== undefined) updateData.nombre = validatedData.nombre
+    if (validatedData.detalle !== undefined) updateData.detalle = validatedData.detalle
+    if (validatedData.precio !== undefined) updateData.precio = validatedData.precio
+    if (validatedData.estado !== undefined) updateData.estado = validatedData.estado
 
+    const response = await fetch(`${baseUrl}/servicios/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updateData)
+    })
 
-		// en caso de haber datos nulos cambiarlos por su valor anteior
-		const validatedData = validationResult.data
+    if (!response.ok) {
+      const errorData = await response.json()
+      return {
+        success: false,
+        message: errorData.message || errorData.error || 'Error al actualizar el servicio',
+        error: 'Failed to update servicio',
+      }
+    }
 
-		//pasa esta variable al api
-		const updateData: Record<string, unknown> = {}
-
-		// hazlo con todos los campos
-		if (validatedData?.nombreServicio !== undefined) {
-			updateData.nombreServicio = validatedData.nombreServicio
-		}
-
-		const res = await fetch(`${base}/servicios/${id}`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${token}`,
-			},
-			body: JSON.stringify(updateData),
-		})
-
-		if (!res.ok) {
-			return {
-				success: false,
-				message: `Error al actualizar el servicio)`,
-				error: JSON.stringify('no se pudo actualizar el servicio'),
-			}
-		}
-
-		return { success: true, message: 'Servicio actualizado correctamente' }
-	} catch (error: any) {
-		console.error('Error actualizando el servicio:', error)
-		return {
-			success: false,
-			message: 'Ha ocurrido un error al actualizar el servicio',
-			error: error?.message ?? 'Error al actualizar el servicio',
-		}
-	}
+    const result = await response.json()
+    return { 
+      success: true, 
+      message: result.message || 'Servicio actualizado correctamente' 
+    }
+  } catch (error) {
+    console.error('Error actualizando el servicio:', error)
+    return {
+      success: false,
+      message: 'Ha ocurrido un error al actualizar el servicio',
+      error: 'Error al actualizar el servicio',
+    }
+  }
 }
 
-/** ========= DELETE ========= */
+/** ========= DELETE: activar/inactivar servicio ========= */
 export async function deleteServicio(id: number): Promise<ActionResponse> {
-	try {
-		if (!Number.isFinite(id)) {
-			return { success: false, message: 'ID inválido', error: 'ID inválido' }
-		}
+  try {
+    const user = await auth()
+    if (!user.userId && !checkRole('admin')) {
+      return { 
+        success: false, 
+        message: 'Acceso no autorizado', 
+        error: 'Unauthorized' 
+      }
+    }
 
-		// validamos el usuario
-		const user = await auth()
-		if (!user.userId) {
-			return { success: false, message: 'no autenticado', error: 'UnAuthenticated' }
-		}
-		const token = await user.getToken()
-		const base = ensureBaseUrl()
+    // Validar y obtener el token de Clerk
+    const token = await user.getToken()
+    if (!token) {
+      return {
+        success: false,
+        message: 'Token de autorización requerido',
+        error: 'Unauthorized - No token available',
+      }
+    }
 
-		const res = await fetch(`${base}/servicios/${id}`, {
-			method: 'DELETE',
-			headers: { Authorization: `Bearer ${token}` },
-		})
+    const response = await fetch(`${baseUrl}/servicios/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+    })
 
-		if (!res.ok) {
-			return {
-				success: false,
-				message: `Error al eliminar el servicio`,
-				error: 'Error elimnando el servicio',
-			}
-		}
+    if (!response.ok) {
+      const errorData = await response.json()
+      return {
+        success: false,
+        message: errorData.message || errorData.error || 'Error al cambiar el estado del servicio',
+        error: 'Failed to toggle servicio status',
+      }
+    }
 
-		return { success: true, message: 'Servicio desactivado correctamente' }
-	} catch (error: any) {
-		console.error('Error eliminando/desactivando el servicio:', error)
-		return {
-			success: false,
-			message: 'Un error ocurrió al desactivar el servicio',
-			error: error?.message ?? 'Failed to delete servicio',
-		}
-	}
+    const data = await response.json()
+    return { 
+      success: true, 
+      message: data.message || 'Estado del servicio actualizado correctamente' 
+    }
+  } catch (error) {
+    console.error('Error cambiando el estado del servicio:', error)
+    return {
+      success: false,
+      message: 'Un error ocurrió al cambiar el estado del servicio',
+      error: 'Failed to toggle servicio status',
+    }
+  }
 }

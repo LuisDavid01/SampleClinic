@@ -53,6 +53,7 @@ export async function getExpedientes(page: number, search?: string, limit: numbe
 		}
 	});
 	if (!res.ok) {
+		console.error(res.ok, res.status, res.statusText);
 		throw new Error('Failed to fetch expedientes');
 	}
 	return res.json();
@@ -284,20 +285,30 @@ export async function deleteExpediente(id: number) {
 			throw new Error('Unauthorized')
 		}
 
-		// Delete Expediente
-		await fetch(`${baseUrl}/expedientes/${id}`, {
+		// Inactivar Expediente (cambia estado a 'inactivo')
+		const response = await fetch(`${baseUrl}/expedientes/${id}`, {
 			method: 'DELETE',
 			headers: {
 				authorization: `Bearer ${await user.getToken()}`
 			}
 		})
-		return { success: true, message: 'Expediente eliminado correctamente' }
+
+		if (!response.ok) {
+			const errorData = await response.json()
+			return {
+				success: false,
+				message: errorData.error || 'Un error ocurrió al inactivar el expediente',
+				error: 'Failed to deactivate expediente',
+			}
+		}
+
+		return { success: true, message: 'Expediente inactivado correctamente' }
 	} catch (error) {
-		console.error('Error eliminando el expediente:', error)
+		console.error('Error inactivando el expediente:', error)
 		return {
 			success: false,
-			message: 'Un error ocurrio al eliminar el expediente',
-			error: 'Failed to delete issue',
+			message: 'Un error ocurrió al inactivar el expediente',
+			error: 'Failed to deactivate expediente',
 		}
 	}
 }

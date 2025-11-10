@@ -7,9 +7,10 @@ export const SERVICE_STATUS = {
 export type ServiceStatus = (typeof SERVICE_STATUS)[keyof typeof SERVICE_STATUS]['value']
 
 export type Servicio = {
-  idServicio: number
-  nombreServicio: string
-  descripcion?: string | null
-  precio: number | null
-  activo: ServiceStatus
+  id: number
+  nombre: string
+  detalle: string
+  precio: number
+  estado: ServiceStatus
+  fechaModificacion?: string | Date
 }

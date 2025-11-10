@@ -50,7 +50,7 @@ export default async function pacientesLayout({
 						>
 							<Link href="/pacientes">
 								<Users className="w-4 h-4 mr-3" />
-								Mis Cita
+								Mis Historial
 							</Link>
 						</Button>
 						{/* <Button

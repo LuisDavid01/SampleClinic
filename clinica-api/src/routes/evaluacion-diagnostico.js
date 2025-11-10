@@ -457,19 +457,6 @@ router.post('/', clerkAuth, async (req, res) => {
       idExpediente
     } = req.body;
 
-    // Debug: Log the received data
-    console.log('🔍 Datos recibidos para crear evaluación:', {
-      idPaciente,
-      idDoctor,
-      diagnosticoPrincipal: diagnosticoPrincipal?.substring(0, 50) + '...',
-      sintomasReportados: sintomasReportados ? 'Presente' : 'No especificado',
-      evaluacionFisica: evaluacionFisica ? 'Presente' : 'No especificado',
-      planTratamiento: planTratamiento ? 'Presente' : 'No especificado',
-      recomendaciones: recomendaciones ? 'Presente' : 'No especificado',
-      idExpediente,
-      userId: userId
-    });
-
     // Validar datos requeridos
     if (!idPaciente || !diagnosticoPrincipal) {
       return res.status(400).json({
