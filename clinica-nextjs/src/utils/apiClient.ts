@@ -182,4 +182,7 @@ export const apiEndpoints = {
 	createExpediente: () => '/expedientes',
 	updateExpediente: (id: string) => `/expedientes/${id}`,
 	deleteExpediente: (id: string) => `/expedientes/${id}`,
+
+	//Auditoria
+	getAuditoria: () => '/auditoria',
 };

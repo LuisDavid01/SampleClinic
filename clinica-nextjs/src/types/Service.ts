@@ -13,3 +13,12 @@ export type Servicio = {
   precio: number
   estado: ServiceStatus
 }
+
+export interface Service {
+  id: number
+  nombre: string
+  detalle: string
+  precio: number
+  estado: ServiceStatus
+}
+

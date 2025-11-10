@@ -14,6 +14,8 @@ export const auditMiddleware = async (req, res, next) => {
       logAuditAction(req, res, data).catch(error => {
         console.error('Error registrando auditoría:', error);
       });
+      //console.log('Req recibida:', req);
+
     }
     
     // Llamar al método original
@@ -28,14 +30,13 @@ export const auditMiddleware = async (req, res, next) => {
  */
 async function logAuditAction(req, res, data) {
   try {
-    const { method, url, user } = req;
+    const { method, url, baseUrl, user } = req;
     const { statusCode } = res;
-    
     // Extraer información de la acción
     const action = getActionFromMethod(method);
-    const resource = getResourceFromUrl(url);
+    const resource = getResourceFromUrl(url, baseUrl);
     const resourceId = getResourceIdFromUrl(url);
-    
+    console.log('Recurso auditado:', req);
     // Obtener información del usuario
     const userId = user?.id ? await getUserIdFromClerkId(user.id) : null;
     const userInfo = user ? {
@@ -107,9 +108,12 @@ function getActionFromMethod(method) {
 /**
  * Extrae el recurso de la URL
  */
-function getResourceFromUrl(url) {
+function getResourceFromUrl(url, baseURL) {
   if (url.includes('/antecedentes')) {
     return 'ANTECEDENTES_CLINICOS';
+  }
+  if (baseURL.includes('/usuarios')) {
+    return 'LOGS_USUARIOS';
   }
   return 'DESCONOCIDO';
 }

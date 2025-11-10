@@ -7,8 +7,99 @@ import {
   getLogsSeguridad,
   exportarAuditoria
 } from '../controllers/auditoria.js';
+import prisma from '../config/database.js';
+import { auditMiddleware } from '../middleware/audit.js';
 
 const router = express.Router();
+
+router.get('/', clerkAuth, auditMiddleware, async (req, res) => {
+  try {
+    const { page = 1, limit = 10, accion, metodo, recursoId, usuarioId } = req.query;
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Filtros dinámicos
+    const where = {};
+
+    if (accion) where.accion = { contains: accion, mode: 'insensitive' };
+    if (metodo) where.metodo = metodo.toUpperCase();
+    if (recursoId) where.recursoId = parseInt(recursoId);
+    if (usuarioId) where.usuarioId = parseInt(usuarioId);
+
+    // Verificar usuario autenticado en DB
+    const usuario = await prisma.usuario.findFirst({
+      where: { clerkId: req.user.id },
+      include: { rol: true }
+    });
+
+    if (!usuario) {
+      return res.status(403).json({ error: 'Usuario no encontrado en la base de datos' });
+    }
+
+    const dbRole = usuario?.rol?.idRol;
+
+    // 🎭 Aplicar restricciones por rol
+    if (dbRole === 4) {
+      // PACIENTE → solo sus registros
+      where.usuarioId = usuario.idUsuario;
+    } else if (dbRole === 2) {
+      // FISIOTERAPEUTA → sus registros o los de sus pacientes
+      where.OR = [
+        { usuarioId: usuario.idUsuario },
+        { recursoId: usuario.idUsuario }
+      ];
+    } else if (dbRole === 1) {
+      // ADMINISTRADOR → acceso total
+    } else {
+      // Rol no reconocido → acceso limitado
+      where.usuarioId = usuario.idUsuario;
+    }
+
+    // Consultar registros de auditoría
+    const [auditorias, total] = await Promise.all([
+      prisma.auditoriaAntecedentes.findMany({
+        where,
+        include: {
+          usuario: {
+            select: {
+              idUsuario: true,
+              nombre: true,
+              apellido1: true,
+              apellido2: true,
+              correoElectronico: true,
+              rol: {
+                select: { nombreRol: true } // Campo correcto
+              }
+            }
+          }
+        },
+        skip,
+        take: limitNum,
+        orderBy: { timestamp: 'desc' }
+      }),
+      prisma.auditoriaAntecedentes.count({ where })
+    ]);
+
+    // 🧾 Respuesta final
+    res.json({
+      auditorias,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.ceil(total / limitNum)
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al obtener registros de auditoría:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: error.message
+    });
+  }
+});
 
 /**
  * @swagger

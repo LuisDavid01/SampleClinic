@@ -4,6 +4,7 @@ import { authenticateToken, requireRole, requireOwnershipOrAdmin } from '../midd
 import { clerkAuth, requireClerkRole } from '../middleware/clerkAuth.js';
 import { ROLES, isPaciente, isFisioterapeuta, isAdministrador, canManageAppointments } from '../constants/roles.js';
 import { validateCita, validateId } from '../middleware/validation.js';
+import { auditMiddleware } from '../middleware/audit.js';
 
 const router = Router();
 
@@ -419,7 +420,7 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/citas - Crear nueva cita
-router.post('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateCita, async (req, res) => {
+router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateCita, async (req, res) => {
   try {
     const { fechaCita, idPaciente, idMedico, idServicio, descripcion, estadoCita } = req.body;
 
@@ -587,7 +588,7 @@ router.post('/', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.RECEPCI
  *               $ref: '#/components/schemas/Error'
  */
 // PUT /api/citas/:id - Actualizar cita
-router.put('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
+router.put('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -714,7 +715,7 @@ router.put('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.RECEP
  *               $ref: '#/components/schemas/Error'
  */
 // DELETE /api/citas/:id - Cancelar cita
-router.delete('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA]), validateId, async (req, res) => {
+router.delete('/:id', auditMiddleware, clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -836,7 +837,7 @@ router.delete('/:id', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.RE
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/citas/:id/notas - Agregar nota a cita
-router.post('/:id/notas', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
+router.post('/:id/notas', auditMiddleware, clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const { nota } = req.body;
@@ -973,7 +974,7 @@ router.post('/:id/notas', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLE
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/citas/:id/resultados - Agregar resultado a cita
-router.post('/:id/resultados', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
+router.post('/:id/resultados', auditMiddleware, clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const { resultado, resumenResultado } = req.body;

@@ -47,7 +47,8 @@
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.0"
+    "swagger-ui-express": "^5.0.0",
+    "react-datepicker": "^4.25.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
