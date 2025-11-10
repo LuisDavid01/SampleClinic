@@ -23,12 +23,13 @@ import {
 	ChevronLeft,
 	ChevronsLeft,
 	ChevronsRight,
-	Star
+	Star,
+	Loader2
 } from "lucide-react"
 import { cn, formatRelativeTime } from "@/lib/utils"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import { getTestimonies } from "@/actions/historiasExito"
+import { deleteTestimony, getTestimonies, publishTestimony, unpublishTestimony } from "@/actions/historiasExito"
 import { HistoriaExito } from "@/types/Testimony"
 
 
@@ -45,6 +46,7 @@ const statusConfig = {
 }
 
 export default function FilesPage() {
+	const queryClient = useQueryClient()
 	const [page, setPage] = useState(1)
 	const [limit, setLimit] = useState(10)
 	const [search, setSearch] = useState("")
@@ -53,6 +55,7 @@ export default function FilesPage() {
 		queryFn: async () => {
 			const res = await getTestimonies(page, limit, search)
 			console.log(res);
+			console.log(res.pagination.pages)
 			return res
 		}
 	}
@@ -211,11 +214,32 @@ export default function FilesPage() {
 																	Ver
 																</Button>
 															</Link>
+															{review.publicado ? (
+																<Button variant="destructive" size="sm" className="mr-3"
+																	onClick={async () => {
+																		const deletedHistoria = await unpublishTestimony(review.idHistoria)
+																		console.log(deletedHistoria)
+																		queryClient.invalidateQueries({
+																			queryKey: ['testimonials', page, limit, search]
+																		})
+																	}}
+																>
+																	despublicar
+																</Button>
+															) : (
+																<Button variant="secondary" size="sm" className="mr-3"
+																	onClick={async () => {
+																		const publishHistoria = await publishTestimony(review.idHistoria)
+																		console.log(publishHistoria)
+																		queryClient.invalidateQueries({
+																			queryKey: ['testimonials', page, limit, search]
+																		})
+																	}}
+																>
+																	publicar
+																</Button>
 
-
-															<Button variant="destructive" size="sm" className="mr-3">
-																Eliminar
-															</Button>
+															)}
 
 														</TableCell>
 													</TableRow>
@@ -283,65 +307,84 @@ export default function FilesPage() {
 				<Card>
 					<CardContent className="p-4">
 						<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-							<div className="flex items-center gap-2">
-								<span className="text-sm text-muted-foreground">Mostrar</span>
-								<Select defaultValue="10">
-									<SelectTrigger className="w-20">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="10">10</SelectItem>
-										<SelectItem value="25">25</SelectItem>
-										<SelectItem value="50">50</SelectItem>
-										<SelectItem value="100">100</SelectItem>
-									</SelectContent>
-								</Select>
-								<span className="text-sm text-muted-foreground">
-									de {2} registros
-								</span>
-							</div>
+							{isLoading ? (
+								<div className="flex items-center justify-center w-full">
+									<Loader2 className="w-4 h-4 animate-spin" />
+									<span>Cargando...</span>
+								</div>
+							) : (
+								<>
+									{/* Primera parte: Select */}
+									<div className="flex items-center gap-2">
+										<span className="text-sm text-muted-foreground">Mostrar</span>
+										<Select
+											value={limit.toString()} 
+											onValueChange={(value) => {
+												setLimit(Number(value));
+												setPage(1);
+											}}
+										>
+											<SelectTrigger className="w-20">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="10">10</SelectItem>
+												<SelectItem value="25">25</SelectItem>
+												<SelectItem value="50">50</SelectItem>
+												<SelectItem value="100">100</SelectItem>
+											</SelectContent>
+										</Select>
+										<span className="text-sm text-muted-foreground">
+											de {data?.pagination?.total || 0} registros
+										</span>
+									</div>
 
-							<div className="flex items-center gap-2">
-								<Button
-									variant="outline"
-									size="sm"
+									{/* Segunda parte: Botones de paginación */}
+									<div className="flex items-center gap-2">
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setPage(1)}
+											disabled={page === 1}
+										>
+											<ChevronsLeft className="w-4 h-4" />
+										</Button>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setPage(page - 1)}
+											disabled={page === 1}
+										>
+											<ChevronLeft className="w-4 h-4" />
+										</Button>
 
-									disabled
-								>
-									<ChevronsLeft className="w-4 h-4" />
-								</Button>
-								<Button
-									variant="outline"
-									size="sm"
+										<span className="text-sm px-4">
+											Página {page} de {data?.pagination?.pages || 1}
+										</span>
 
-									disabled
-								>
-									<ChevronLeft className="w-4 h-4" />
-								</Button>
-
-								<span className="text-sm px-4">
-									Página 1 de 2
-								</span>
-
-								<Button
-									variant="outline"
-									size="sm"
-									disabled
-								>
-									<ChevronRight className="w-4 h-4" />
-								</Button>
-								<Button
-									variant="outline"
-									size="sm"
-									disabled
-								>
-									<ChevronsRight className="w-4 h-4" />
-								</Button>
-							</div>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setPage(page + 1)}
+											disabled={page >= (data?.pagination?.pages || 1)}
+										>
+											<ChevronRight className="w-4 h-4" />
+										</Button>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => setPage(data?.pagination?.pages || 1)}
+											disabled={page >= (data?.pagination?.pages || 1)}
+										>
+											<ChevronsRight className="w-4 h-4" />
+										</Button>
+									</div>
+								</>
+							)}
 						</div>
 					</CardContent>
 				</Card>
-			</div>
-		</div>
+			</div >
+		</div >
 	)
 }

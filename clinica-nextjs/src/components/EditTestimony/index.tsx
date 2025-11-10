@@ -14,7 +14,7 @@ import {
 import { HistoriaExito } from '@/types/Testimony'
 
 import { createTestimony, updateTestimony } from '@/actions/historiasExito'
-import { useQueries } from '@tanstack/react-query'
+import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { apiEndpoints, useApiClient } from '@/utils/apiClient'
 import { getServicios } from '@/actions/servicios'
 import { Usuario } from '@/types/Usuario'
@@ -38,7 +38,6 @@ export default function EditTestimony({ testimony,
 }: ExpedienteFormProps) {
 
 	const apiClient = useApiClient();
-
 	const router = useRouter()
 	const results = useQueries({
 		queries: [
@@ -134,6 +133,7 @@ export default function EditTestimony({ testimony,
 			<FormGroup>
 				<FormLabel htmlFor="idPaciente">Paciente</FormLabel>
 				<FormSelect
+					key={"testimony-paciente-select"}
 					id="idPaciente"
 					name="idPaciente"
 					defaultValue={testimony?.idPaciente || ''}
@@ -158,6 +158,7 @@ export default function EditTestimony({ testimony,
 			<FormGroup>
 				<FormLabel htmlFor="idMedico">Doctor </FormLabel>
 				<FormSelect
+					key={"testimony-medico-select"}
 					id="idMedico"
 					name="idMedico"
 					defaultValue={testimony?.idMedico || ''}
@@ -178,6 +179,7 @@ export default function EditTestimony({ testimony,
 			<FormGroup>
 				<FormLabel htmlFor="idServicio">Servicio recibido </FormLabel>
 				<FormSelect
+					key={"testimony-servicio-select"}
 					id="idServicio"
 					name="idServicio"
 					defaultValue={testimony?.idServicio || ''}
