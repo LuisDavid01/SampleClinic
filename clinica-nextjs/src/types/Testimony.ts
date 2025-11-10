@@ -1,18 +1,19 @@
-export type StatusTestimony = 'activo' | 'inactivo' 
+import { Servicio } from "./Service";
+import { Usuario } from "./Usuario";
 
-export type Testimony = {
-    id: number,
-      name: string,
-      role: string,
-      text: string,
-      rating: number,
-      avatar: string,
-      created: Date,
-      status: string
+
+
+export interface HistoriaExito {
+  idHistoria: number;
+  idServicio: number;
+  idMedico: number;
+  idPaciente: number;
+  experiencia: string;
+  publicado: boolean;
+  fechaTratamiento: string;
+  servicio: Servicio;
+  medico: Usuario;
+  paciente: Usuario;
 }
 
 
-export const TESTIMONY_STATUS = {
-  activo: { label: 'Activo', value: 'activo' },
-  inActivo: { label: 'Inactivo', value: 'inactivo' },
-}

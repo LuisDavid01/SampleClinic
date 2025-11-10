@@ -10,22 +10,14 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import EditTestimony from '@/components/EditTestimony'
+import { getTestimony } from '@/actions/historiasExito'
+import { HistoriaExito } from '@/types/Testimony'
 
 
 
-export default function TestomonioPorId(){
-       const mock = {
-        
-         id: 1,
-      name: "María González",
-      role: "Paciente desde 2023",
-      text: "Después de mi lesión de rodilla, pensé que no volvería a caminar normalmente. El tratamiento personalizado y la dedicación del equipo me ayudaron a recuperar completamente mi movilidad. ¡Incluso puedo correr otra vez!",
-      rating: 5,
-      avatar: "M",
-      created: new Date(2025, 0, 3),
-      status: 'activo'
-    }
-
+export default async function TestomonioPorId({ params }){
+	const {id} = await params
+	const data = await getTestimony(id)
    return (
        <div className="min-h-screen bg-background p-6">
          <Link
@@ -49,7 +41,7 @@ export default function TestomonioPorId(){
               </CardHeader>
               <CardContent>
                 <Suspense fallback={<div>loading...</div>}>
-                <EditTestimony isEditing={true} testimony={mock}/>
+                <EditTestimony isEditing={true} testimony={data}/>
                 </Suspense>
               </CardContent>
             </Card>

@@ -17,7 +17,7 @@
     "test:performance": "node run-tests.js performance",
     "test:tokens": "node run-tests.js tokens",
     "test:menu": "node run-tests.js menu",
-    "test:populate": "node scripts/populate-essential-data.js",
+    "test:populate": "node Script_Test/poblar-datos-reales.js",
     "test:files": "node test-files-api.js",
     "test:files-clerk": "node test-files-clerk.js",
     "test:blob-upload": "node test-blob-upload.js"

@@ -692,7 +692,7 @@ router.delete('/:id', clerkAuth, validateId, async (req, res) => {
  *         $ref: '#/components/responses/InternalServerError'
  */
 // POST /api/historias-exito/:id/publicar - Publicar historia de éxito (solo admin)
-router.post('/:id/publicar', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.post('/:id/publicar', clerkAuth, requireClerkRole(['admin']), validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -777,7 +777,7 @@ router.post('/:id/publicar', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]),
  *         $ref: '#/components/responses/InternalServerError'
  */
 // POST /api/historias-exito/:id/despublicar - Despublicar historia de éxito (solo admin)
-router.post('/:id/despublicar', clerkAuth, requireClerkRole([ROLES.ADMINISTRADOR]), validateId, async (req, res) => {
+router.post('/:id/despublicar', clerkAuth, requireClerkRole(['admin']), validateId, async (req, res) => {
   try {
     const { id } = req.params;
 

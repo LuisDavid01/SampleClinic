@@ -50,6 +50,30 @@ export async function getServicios(page: number, search?: string, limit: number 
   return res.json()
 }
 
+export async function getAllServicios() {
+  const user = await auth()
+  if (!user.userId) {
+    throw new Error('Token de autorización requerido')
+  }
+
+  // Validar y obtener el token de Clerk
+  const token = await user.getToken()
+  if (!token) {
+    throw new Error('Token de autorización requerido')
+  }
+
+
+  const res = await fetch(`${baseUrl}/servicios}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      authorization: `Bearer ${token}`,
+    },
+  })
+  if (!res.ok) throw new Error('Failed to fetch servicios')
+  return res.json()
+}
+
 /** ========= GET: por ID ========= */
 export async function getServicioByID(id: number) {
   const user = await auth()

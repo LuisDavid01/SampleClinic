@@ -12,6 +12,7 @@ import {
 
 import { submitSurvey } from '@/actions/survey'
 import { Button } from '../ui/button'
+import { Check, User } from 'lucide-react'
 
 const initialState: ActionResponse = {
 	success: false,
@@ -94,21 +95,38 @@ export const SurveyForm = ({ handleExitForm, recepcionist }) => {
 
 
 	return (
-		<div className="flex flex-col  h-full px-6  text-center justify-around">
+
+
+		<div className="flex flex-col h-full px-6 text-center justify-center ">
 			{aswered ? (
 				<>
-					<p className='text-lg lg:text-xl bg-green-100 text-foreground'>
-						Gracias por contestar la encuesta! 😊
-					</p>
-					{/* Mostrar info del receptionist si es necesario */}
+					{/* Mensaje principal con mejor estética */}
+					<div className="mb-4 p-4 rounded-lg ">
+						<div className="flex items-center gap-2">
+							<Check className="h-5 w-5 text-green-600 flex-shrink-0" />
+							<p className="text-lg lg:text-xl font-medium text-foreground">
+								Gracias por contestar la encuesta! 😊
+							</p>
+						</div>
+					</div>
+
+					{/* Mostrar info del recepcionista si es necesario */}
 					{recepcionist && (
-						<p>Atendido por: {recepcionist.username}</p>
+						<div className="mb-4 p-3 bg-muted/20 rounded-md border border-border">
+							<div className="flex items-center gap-2 text-sm text-muted-foreground">
+								<User className="h-4 w-4 flex-shrink-0" />
+								<span className="font-medium text-foreground">
+									Atendido por: {recepcionist.username}
+								</span>
+							</div>
+						</div>
 					)}
-					<div className="p-4">
+
+					<div className="flex justify-center">
 						<Button
 							variant="outline"
 							onClick={handleClose}
-							className="mt-4"
+							className="px-6 py-2"
 						>
 							Cerrar encuesta
 						</Button>
@@ -127,9 +145,6 @@ export const SurveyForm = ({ handleExitForm, recepcionist }) => {
 							</FormError>
 						)}
 
-
-
-
 						<FormGroup>
 							<FormLabel htmlFor="comentario">Comentario</FormLabel>
 							<FormTextarea
@@ -138,7 +153,6 @@ export const SurveyForm = ({ handleExitForm, recepcionist }) => {
 								placeholder="Si tienes algun comentario, sugerencia o queja, dejala aqui!😊"
 								rows={4}
 								defaultValue={''}
-
 								disabled={isPending}
 								aria-describedby="description-error"
 								className={state?.errors?.comentario ? 'border-red-500' : ''}
@@ -169,31 +183,29 @@ export const SurveyForm = ({ handleExitForm, recepcionist }) => {
 									</p>
 								)}
 							</FormGroup>
-
-
 						</div>
 
-						<div className="flex justify-center  mt-6">
-
+						<div className="flex justify-center mb-3">
 							<Button type="submit" disabled={isPending}>
 								Enviar encuesta
 							</Button>
 						</div>
 					</Form>
-					<div className='flex justify-center'>
+
+					<div className='flex justify-center mb-1'>
 						<Button
 							variant="link"
 							size="sm"
 							onClick={handleExitForm}
-							className="items-center mt-4 text-sm hover:text-red-600"
+							className="items-center mt-0 text-xs hover:text-red-600"
 						>
 							<span>No, gracias</span>
 						</Button>
 					</div>
-					<p className='text-xs px-6  text-center '>
+
+					<p className='text-xs font-medium px-6 text-center mb-0'>
 						Tu opinion nos importa! Porfavor llena esta encuesta para mejorar nuestro servicio.
 					</p>
-
 				</>
 			}
 		</div>
