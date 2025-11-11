@@ -1477,11 +1477,13 @@ export default function CalendarAdmin() {
                   }
                 >
                   <option value="">Seleccione un médico</option>
-                  {usuarios.map((u) => (
-                    <option key={u.idUsuario} value={u.idUsuario}>
-                      {u.nombre} {u.apellido1}
-                    </option>
-                  ))}
+                  {usuarios
+                    .filter((u) => (u.idRol === 2 || u.rol?.idRol === 2)) // mostrar solo usuarios con rol 2 (médicos/fisioterapeutas)
+                    .map((u) => (
+                      <option key={u.idUsuario} value={u.idUsuario}>
+                        {u.nombre} {u.apellido1}
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -1512,6 +1514,7 @@ export default function CalendarAdmin() {
                   type="datetime-local"
                   className="border rounded-md px-2 py-1 w-full"
                   value={newAppointment.fechaCita}
+                  min={new Date().toISOString().slice(0, 16)}
                   onChange={(e) =>
                     setNewAppointment({
                       ...newAppointment,
