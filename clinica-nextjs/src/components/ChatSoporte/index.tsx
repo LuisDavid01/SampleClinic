@@ -34,7 +34,7 @@ export default function SupportChat() {
 	const [rooms, setRooms] = useState<rooms[]>([]);
 	const [chatroom, setChatroom] = useState<chatRoomEvent | null>(null);
 	const [messages, setMessages] = useState<Array<{
-		id: string; text: string; sender: string; role: 'Pacient' | 'Support'; timestamp: string
+		id: string; text: string; sender: string; role: string ; timestamp: string
 	}>>([]);
 	const { showNotification } = useNotification()
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -179,7 +179,7 @@ export default function SupportChat() {
 					}
 				]);
 
-				if (!isOpenRef.current && messageEvent.role === 'Pacient') {
+				if (!isOpenRef.current && messageEvent.role === 'paciente') {
 					showNotification({
 						type: "newMessage",
 						title: `Nuevo mensaje de ${messageEvent.from}`,
@@ -448,8 +448,8 @@ export default function SupportChat() {
 										<ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
 											<div className="space-y-3">
 												{messages.map(msg => (
-													<div key={msg.id} className={`flex ${msg.role === 'Pacient' ? 'justify-start' : 'justify-end'}`}>
-														<div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'Pacient'
+													<div key={msg.id} className={`flex ${msg.role === 'paciente' ? 'justify-start' : 'justify-end'}`}>
+														<div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'paciente'
 															? 'bg-blue-500 text-white'
 															: 'bg-card'
 															}`}>

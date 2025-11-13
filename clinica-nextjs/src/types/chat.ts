@@ -12,6 +12,11 @@ export interface Chat {
 	messages: Message[];
 }
 */
+const RoleAdmin = "admin"
+const RolePacient = "paciente"
+const RoleFisio = "fisioterapeuta"
+const RoleRecep = "recepcionista"
+
 export class chatRoomEvent {
 	name: string;
 	constructor(name: string) {
@@ -38,9 +43,9 @@ export class chatEvent {
 export class NewMessageEvent {
 	message: string;
 	from: string;
-	role: "Pacient" | "Support";
+	role: string;
 	sent: Date
-	constructor(message: string, from: string, role: "Pacient" | "Support", sent: Date) {
+	constructor(message: string, from: string, role: string, sent: Date) {
 		this.message = message;
 		this.from = from;
 		this.sent = sent;

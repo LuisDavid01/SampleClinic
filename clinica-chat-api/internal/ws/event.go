@@ -20,6 +20,7 @@ const (
 	EventGetHistory  = "get_history"
 	EventError       = "error_message"
 	EventJoinRoom    = "join_room"
+	EventGetSingleRoom = "get_single_room"
 )
 
 type RoomEvent struct {
@@ -50,6 +51,9 @@ type ChangeChatRoomEvent struct {
 
 type GetChatRoomsEvent struct {
 	Rooms []RoomEvent `json:"rooms"`
+}
+type GetSingleRoomEvent struct {
+	Room RoomEvent `json:"room"`
 }
 
 type GetHistoryEvent struct {
