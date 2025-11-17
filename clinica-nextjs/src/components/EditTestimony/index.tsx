@@ -43,15 +43,6 @@ export default function EditTestimony({ testimony,
 		queries: [
 
 			{
-				queryKey: ['doctors'],
-				queryFn: async () => {
-					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=fisioterapeuta`)
-					return res.usuarios;
-
-				},
-				staleTime: 10 * 60 * 1000,
-			},
-			{
 				queryKey: ['pacients'],
 				queryFn: async () => {
 					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=paciente`)
@@ -59,21 +50,11 @@ export default function EditTestimony({ testimony,
 				},
 				staleTime: 3 * 60 * 1000,
 			},
-			{
-				queryKey: ['servicios'],
-				queryFn: async () => {
-					const res = await getAllServicios()
-					return res?.servicios ?? [];
-				},
-				staleTime: 3 * 60 * 1000,
-			}
 
 		]
 	});
 	const isloading = results.some((r) => r.isLoading);
-	const doctors = results[0].data ?? [];
-	const pacients = results[1].data ?? [];
-	const servicios = results[2].data ?? [];
+	const pacients = results[0].data ?? [];
 	// Use useActionState hook for the Form submission action
 	const [state, formAction, isPending] = useActionState<
 		ActionResponse,
@@ -82,11 +63,9 @@ export default function EditTestimony({ testimony,
 		// Extract data from Form
 		const data = {
 			idPaciente: Number(formData.get('idPaciente')),
-			idServicio: Number(formData.get('idServicio')),
-			idMedico: Number(formData.get('idMedico')),
+			rating: Number(formData.get('rating')),
 			fechaTratamiento: formData.get('fechaTratamiento') as string,
 			experiencia: formData.get('experiencia') as string,
-			publicado: formData.get('publicado') === 'true' ? true : false,
 		}
 
 		try {
@@ -115,10 +94,14 @@ export default function EditTestimony({ testimony,
 		}
 	}, initialState)
 
-	const statusOptions = [
-		{ label: 'Activo', value: 'true' },
-		{ label: 'Inactivo', value: 'false' },
+	const ratingOptions = [
+		{ label: 'Deficiente', value: '1' },
+		{ label: 'Insatifecho', value: '2' },
+		{ label: 'Satisfecho', value: '3' },
+		{ label: 'Muy satisfecho', value: '4' },
+		{ label: 'Excelente', value: '5' },
 	]
+
 	return (
 		<Form action={formAction}>
 			{state?.message && (
@@ -156,16 +139,13 @@ export default function EditTestimony({ testimony,
 
 
 			<FormGroup>
-				<FormLabel htmlFor="idMedico">Doctor </FormLabel>
+				<FormLabel htmlFor="rating">Califica la experiencia</FormLabel>
 				<FormSelect
-					key={"testimony-medico-select"}
-					id="idMedico"
-					name="idMedico"
-					defaultValue={testimony?.idMedico || ''}
-					options={doctors.map((doctor: Usuario) => ({
-						label: doctor.nombre + ' ' + doctor.apellido1 + ' ' + doctor.apellido2,
-						value: doctor.idUsuario
-					}))}
+					key={"testimony-rating-select"}
+					id="rating"
+					name="rating"
+					defaultValue={testimony?.rating || ''}
+					options={ratingOptions}
 					aria-describedby="description-error"
 					className={state?.errors?.idMedico ? 'border-red-500' : ''}
 					disabled={isPending || isloading}
@@ -176,28 +156,7 @@ export default function EditTestimony({ testimony,
 					</p>
 				)}
 			</FormGroup>
-			<FormGroup>
-				<FormLabel htmlFor="idServicio">Servicio recibido </FormLabel>
-				<FormSelect
-					key={"testimony-servicio-select"}
-					id="idServicio"
-					name="idServicio"
-					defaultValue={testimony?.idServicio || ''}
-					options={servicios.map((servicio: Servicio) => ({
-						label: servicio.nombre,
-						value: servicio.id
-					}))}
-					aria-describedby="Servicio-error"
-					className={state?.errors?.idServicio ? 'border-red-500' : ''}
-					disabled={isPending || isloading}
-				/>
-				{state?.errors?.idServicio && (
-					<p id="Servicio-error" className="text-sm text-red-500">
-						{state.errors.idServicio[0]}
-					</p>
-				)}
-			</FormGroup>
-
+			
 
 			<FormGroup>
 				<FormLabel htmlFor="fechaTratamiento">Fecha de tratamiento</FormLabel>
@@ -222,24 +181,7 @@ export default function EditTestimony({ testimony,
 
 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<FormGroup >
-					<FormLabel htmlFor="publicado">Estado</FormLabel>
-					<FormSelect
-						id="publicado"
-						name="status"
-						defaultValue={testimony?.publicado ? 'activo' : 'inActivo'}
-						options={statusOptions}
-						disabled={isPending}
-						required
-						aria-describedby="publicado-error"
-						className={state?.errors?.publicado ? 'border-red-500' : ''}
-					/>
-					{state?.errors?.status && (
-						<p id="publicado-error" className="text-sm text-red-500">
-							{state.errors.publicado[0]}
-						</p>
-					)}
-				</FormGroup>
+
 
 				<FormGroup>
 					<FormLabel htmlFor="experiencia">Experiencia</FormLabel>

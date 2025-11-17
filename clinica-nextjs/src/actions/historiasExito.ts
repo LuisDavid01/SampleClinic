@@ -1,14 +1,15 @@
 'use server'
+import { apiEndpoints, useApiClient } from "@/utils/apiClient";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 const TesimonySchema = z.object({
-	idServicio: z.number('Invalido'),
-	idMedico: z.number('Invalido'),
-	idPaciente: z.number('Invalido'),
+	idPaciente: z.number('Invalido').optional().nullable(),
+	rating: z.number('Invalido').min(1).max(5),
 	experiencia: z.string('Invalido'),
-	fechaTratamiento: z.string('Invalido'),
-	publicado: z.boolean('Invalido'),
+	fechaTratamiento: z.string('Invalido').optional().nullable(),
+	publicado: z.boolean('Invalido').optional().nullable(),
+	isAnonimo: z.boolean('Invalido').optional().nullable(),
 })
 
 export type TestimonyData = z.infer<typeof TesimonySchema>
@@ -27,6 +28,33 @@ export const getTestimonies = async (page: number, limit: number, search: string
 
 	const params = new URLSearchParams({
 		page: page.toString(),
+		limit: limit.toString(),
+	});
+	const res = await fetch(`${baseUrl}/historias-exito?${params}`, {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+
+			authorization: `Bearer ${await user.getToken()}`
+		}
+	});
+	if (!res.ok) {
+		throw new Error('Failed to fetch historias de exito');
+	}
+	return res.json();
+
+}
+export const getAllTestimonies = async (limit: number) => {
+	const user = await auth();
+	if (!user.userId) {
+		return {
+			success: false,
+			message: 'Unauthorized access',
+			error: 'Unauthorized',
+		}
+	}
+
+	const params = new URLSearchParams({
 		limit: limit.toString(),
 	});
 	const res = await fetch(`${baseUrl}/historias-exito?${params}`, {
@@ -163,10 +191,8 @@ export const updateTestimony = async (
 
 		if (validatedData.idPaciente !== undefined)
 			updateData.idPaciente = validatedData.idPaciente
-		if (validatedData.idServicio !== undefined)
-			updateData.idServicio = validatedData.idServicio
-		if (validatedData.idMedico !== undefined)
-			updateData.idMedico = validatedData.idMedico
+		if (validatedData.rating !== undefined)
+			updateData.rating = validatedData.rating
 		if (validatedData.experiencia !== undefined)
 			updateData.experiencia = validatedData.experiencia
 		if (validatedData.fechaTratamiento !== undefined)
@@ -183,7 +209,7 @@ export const updateTestimony = async (
 		})
 		// Check if the response is not ok
 		if (!response.ok) {
-
+			console.log(JSON.stringify(response))
 			return {
 				success: false,
 				message: 'Error al actualizar la historia de exito',
@@ -309,6 +335,78 @@ export async function unpublishTestimony(id: number) {
 	return {
 		success: true,
 		message: 'Exito al despublicar la  historia',
+	}
+
+}
+
+// crear testimonio del cliente
+export const createPacientTestimony = async (data: TestimonyData) => {
+	// No se como sacar el id del usuario si el cliente solo tiene acceso
+	// al clerk id y no tiene permisos para traer todos los usuarios
+	let currUserId: number | undefined = undefined;
+	try {
+		const user = await auth()
+		if (!user.userId) {
+			return {
+				success: false,
+				message: 'Unauthorized access',
+				error: 'Unauthorized',
+			}
+		}
+		const token = await user.getToken()
+		console.log(data.rating, data.experiencia)
+		const newData = {
+			experiencia: data.experiencia,
+			fechaTratamiento: new Date().toISOString(),
+			rating: data.rating
+
+
+		}
+		// Validate with Zod
+		const validationResult = TesimonySchema.safeParse(newData)
+		if (!validationResult.success) {
+			console.log('validation failes', validationResult.error);
+			return {
+				success: false,
+				message: 'Error validando los archivos',
+				errors: validationResult.error.flatten().fieldErrors,
+			}
+		}
+
+		// Create expediente with validated data
+		const validatedData = validationResult.data
+
+		// fetch
+
+		const response = await fetch(`${baseUrl}/historias-exito`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				authorization: `Bearer ${token}`,
+			},
+			body: JSON.stringify(validatedData),
+		})
+
+		// Check if the response is not ok
+		if (!response.ok) {
+			console.log(JSON.stringify(response))
+			return {
+				success: false,
+				message: 'Error al subir la historia de exito',
+				error: 'Error al subir la historia de exito',
+			}
+
+		}
+		return {
+			success: true,
+			message: 'Exito al subir la historia de exito',
+		}
+	} catch (error) {
+		return {
+			success: false,
+			message: 'Error interno del servidor',
+			error: 'Error subiendo la historia de exito',
+		}
 	}
 
 }

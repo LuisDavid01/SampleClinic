@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { HistoriaExito } from "@/types/Testimony";
 import { Star } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
@@ -11,13 +12,7 @@ export const InfiniteMovingCards = ({
   pauseOnHover = true,
   className,
 }: {
-  items: {
-    name: string,
-      role: string,
-      text: string,
-      rating: number,
-      avatar: string,
-  }[];
+  items: HistoriaExito[];
   direction?: "left" | "right";
   speed?: "fast" | "normal" | "slow";
   pauseOnHover?: boolean;
@@ -88,16 +83,16 @@ export const InfiniteMovingCards = ({
           pauseOnHover && "hover:[animation-play-state:paused]",
         )}
       >
-        {items.map((item, idx) => (
+        {items.map((item) => (
           <li
             className="relative w-[350px] max-w-full shrink-0 rounded-2xl border border-b-0 border-zinc-200 bg-[linear-gradient(180deg,#e8eced,#dde2e4)] px-8 py-6 md:w-[450px] dark:border-zinc-700 dark:bg-[linear-gradient(180deg,#27272a,#18181b)]"
-            key={item.name}
+			key={`${item.paciente?.nombre ?? 'anonimo'} + ${item.idHistoria} + ${item.idPaciente}`}
           >
             <blockquote>
               <div className="relative z-20 mt-6 flex flex-row items-center">
                 <span className="flex flex-col gap-1">
                   <span className="text-sm leading-[1.6] font-semibold text-text-primary">
-                    {item.name}
+                    {item.paciente?.nombre ?? 'Usuario anónimo'}
                   </span>
                 </span>
               </div>
@@ -112,7 +107,7 @@ export const InfiniteMovingCards = ({
                 className="user-select-none pointer-events-none absolute -top-0.5 -left-0.5 -z-1 h-[calc(100%_+_4px)] w-[calc(100%_+_4px)]"
               ></div>
               <span className="relative z-20 text-sm leading-[1.6] font-normal text-text-primary">
-                {item.text}
+                {item.experiencia}
               </span>
               
             </blockquote>

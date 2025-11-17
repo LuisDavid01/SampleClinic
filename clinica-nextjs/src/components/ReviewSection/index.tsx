@@ -1,39 +1,38 @@
-
-import { Suspense } from "react";
+"use client";
 import { InfiniteMovingCards } from "../ui/infinite-moving-cards";
+import { useQuery } from "@tanstack/react-query";
+import {  getTestimonies } from "@/actions/historiasExito";
+import { HistoriaExito } from "@/types/Testimony";
+import { Loader2 } from "lucide-react";
 
 export const ReviewsSection = () => {
-  const reviews = [
-    {
-      name: "María González",
-      role: "Paciente desde 2023",
-      text: "Después de mi lesión de rodilla, pensé que no volvería a caminar normalmente. El tratamiento personalizado y la dedicación del equipo me ayudaron a recuperar completamente mi movilidad. ¡Incluso puedo correr otra vez!",
-      rating: 5,
-      avatar: "M",
-    },
-    {
-      name: "Carlos Ruiz",
-      role: "Atleta profesional",
-      text: "Como deportista de alto rendimiento, necesito un cuidado especializado y preciso. Aquí encontré profesionales que realmente entienden las demandas del deporte y me ayudaron a volver más fuerte que antes.",
-      rating: 5,
-      avatar: "C",
-    },
-    {
-      name: "Ana López",
-      role: "Recuperación post-cirugía",
-      text: "El seguimiento continuo y la dedicación personalizada del equipo fueron fundamentales en mi proceso de rehabilitación. Su apoyo emocional fue tan importante como el tratamiento físico.",
-      rating: 5,
-      avatar: "A",
-    },
-  ];
+	const { data, isLoading } = useQuery({
+		queryKey: ['reviews-publicadas'],
+		queryFn: async () => {
+			const res = await getTestimonies(1, 10, "")
+			const historias = res.historias.filter((h: HistoriaExito) => h.publicado)
+			console.log(historias)
+			return historias
+		}
+	})
+	return (
+		<>
+			{isLoading ? (
+				<div className="flex items-center justify-center w-full">
+					<Loader2 className="w-4 h-4 animate-spin" />
+					<span>Cargando...</span>
+				</div>
+			) : data?.length === 0 ? (
+				<p>no hay testimonios en este momento</p>
 
-  return (
-    <Suspense fallback={<div>loading...</div>}>
-    <InfiniteMovingCards
-    items={reviews}
-    direction="right"
-    speed="slow"
-    />
-    </Suspense>
-  );
+			) : (
+
+				<InfiniteMovingCards
+					items={data}
+					direction="right"
+					speed="slow"
+				/>
+			)}
+		</>
+	);
 };
