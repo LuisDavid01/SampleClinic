@@ -1778,6 +1778,7 @@ export default function CalendarAdmin() {
                       type="datetime-local"
                       className="border rounded-md px-2 py-1 w-full text-sm"
                       value={dfFormat(selectedAppointment.start, "yyyy-MM-dd'T'HH:mm")}
+                      min={new Date().toISOString().slice(0, 16)}
                       onChange={(e) =>
                         setSelectedAppointment({
                           ...selectedAppointment,
