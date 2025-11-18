@@ -41,3 +41,13 @@ export interface Appointment {
   notas: any[];              // Arreglo de notas relacionadas
   resultados: any[];         // Arreglo de resultados relacionados
 }
+
+
+export type StatusAppointment = "pendiente" | "confirmada" | "cancelada" | "completada";
+
+export const APPOINTMENT_STATUS: { label: string; value: StatusAppointment }[] = [
+  { label: "Pendiente", value: "pendiente" },
+  { label: "Confirmada", value: "confirmada" },
+  { label: "Cancelada", value: "cancelada" },
+  { label: "Completada", value: "completada" }
+];
