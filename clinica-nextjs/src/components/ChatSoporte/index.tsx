@@ -34,9 +34,13 @@ export default function SupportChat() {
 	const [rooms, setRooms] = useState<rooms[]>([]);
 	const [chatroom, setChatroom] = useState<chatRoomEvent | null>(null);
 	const [messages, setMessages] = useState<Array<{
-		id: string; text: string; sender: string; role: string ; timestamp: string
+		id: string; text: string; sender: string; role: string; timestamp: string
 	}>>([]);
+	const [roomNameFilter, setRoomNameFilter] = useState("")
+
+
 	const { showNotification } = useNotification()
+
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +49,9 @@ export default function SupportChat() {
 		isOpenRef.current = isOpen;
 	}, [isOpen]);
 
+	const filteredChats = (
+		rooms.filter((room) => room.name.includes(roomNameFilter))
+	);
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView({
 			behavior: "smooth",
@@ -262,7 +269,6 @@ export default function SupportChat() {
 	}
 	function sendMessage() {
 		const newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
-		console.log("message: ", newMessage?.value);
 		if (newMessage) {
 			sendEvent("send_message", new SendMessageEvent(newMessage.value));
 			/*
@@ -343,40 +349,68 @@ export default function SupportChat() {
 								// Vista de lista de chats
 								<>
 									<CardHeader className="pb-3">
-										<CardTitle className="text-lg flex items-center gap-2">
-											<MessageCircle className="h-5 w-5" />
-											Chats de Soporte
-											{0 > 0 && (
-												<Badge
-													variant="outline"
-													className="ml-auto rounded-full bg-red-600 text-white"
-												>
-													{0}
-												</Badge>
-											)}
+										<CardTitle className="flex justify-between text-lg gap-1 mb-2">
+											<div className="flex items-center gap-1">
+												<MessageCircle className="h-5 w-5" />
+												Chats de Soporte
+												{0 > 0 && (
+													<Badge
+														variant="outline"
+														className="ml-auto rounded-full bg-red-600 text-white"
+													>
+														{0}
+													</Badge>
+												)}
+											</div>
 											<Button
 												variant="ghost"
 												size="sm"
 												onClick={handleExitChat}
-												className="flex items-center gap-1 text-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
+												className="flex items-center gap-1 "
 											>
 												<span>Cerrar</span>
 												<LogOut className="h-4 w-4" />
 											</Button>
 
 										</CardTitle>
-
+										<div className="w-full">
+											<form
+												id="searchForm"
+												name="searchForm"
+												onSubmit={(e) => {
+													e.preventDefault();
+													const searchTerm = document.getElementById("searchChatName") as HTMLInputElement | null;
+													setRoomNameFilter(searchTerm?.value ?? "");
+												}}
+												className="relative"
+											>
+												<input
+													className="w-full border border-input rounded text-sm px-4 py-2.5 pr-20 focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/50"
+													type="text"
+													id="searchChatName"
+													name="searchChatName"
+													placeholder="Buscar chats..."
+												/>
+												<button
+													type="submit"
+													className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium px-3 py-1.5 
+			                                         border-l-2 border-input bg-background/10 hover:cursor-pointer"
+												>
+													Buscar
+												</button>
+											</form>
+										</div>
 									</CardHeader>
 
 									<CardContent className="flex-1 p-0 overflow-hidden">
-										{!rooms || rooms.length === 0 ? (
+										{!filteredChats || filteredChats.length === 0 ? (
 											<div className="flex flex-col items-center justify-center h-full">
 												<div className="p-4 text-center text-muted-foreground">No hay chats disponibles</div>
 												<Button variant="ghost" size="sm" className="m-4" onClick={getChatRooms}><Users className="h-4 w-4 mr-2" />Recargar</Button>
 											</div>
 										) : (
 											<ScrollArea className="h-full">
-												{rooms.map((chat, index) => (
+												{filteredChats.map((chat, index) => (
 													<div key={chat.id}>
 														<div
 															onClick={() => changeChatroom(chat.id)}
@@ -384,13 +418,13 @@ export default function SupportChat() {
 														>
 															<div className="flex items-start justify-between mb-2">
 																<div className="flex items-center gap-2">
-																	<User className="h-4 w-4 text-text-primary" />
+																	<User className="h-4 w-4 " />
 																	<span className="font-medium text-sm">
 																		{chat.name}
 																	</span>
 																</div>
 																<div className="flex items-center gap-2">
-																	<span className="text-xs text-text-primary">
+																	<span className="text-xs ">
 																		{new Date(chat.sent).toLocaleString()}
 																	</span>
 																	{0 > 0 && (
@@ -425,7 +459,7 @@ export default function SupportChat() {
 											<div className="flex-1">
 												<div className="flex items-center gap-2">
 													<User className="h-4 w-4" />
-													<span className="font-medium">Chat actual: {chatroom?.name}</span>
+													<span className="font-medium "> {chatroom?.name}</span>
 													<div className={`w-2 h-2 rounded-full bg-green-400`} />
 
 
@@ -436,11 +470,12 @@ export default function SupportChat() {
 												variant="ghost"
 												size="sm"
 												onClick={() => changeChatroom("")}
-												className="flex items-center gap-1 text-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
+												className="flex items-center gap-1 "
 											>
 												<span>Salir</span>
 												<LogOut className="h-4 w-4" />
 											</Button>
+
 										</div>
 									</CardHeader>
 
