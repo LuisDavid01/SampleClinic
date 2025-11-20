@@ -100,9 +100,9 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 
 	client := NewClient(conn, m, authUsr.UserID, authUsr.Username, authUsr.Rol)
 	m.AddClient(client)
-
+	var clientRoom *Room
 	if client.Rol == RolePacient {
-		clientRoom := &Room{
+		clientRoom = &Room{
 			ID:      strings.Trim(authUsr.Username, " ") + "-" + authUsr.UserID[:8],
 			Name:    authUsr.Username,
 			History: []NewMessageEvent{},
@@ -115,6 +115,11 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 
 	go client.Read()
 	go client.Write()
+
+	if client.Rol == RolePacient {
+
+		newRoomHandler(*clientRoom, client)
+	}
 }
 
 func (m *Manager) AddClient(client *Client) {
@@ -138,8 +143,6 @@ func (m *Manager) RemoveClient(client *Client) {
 
 	}
 }
-
-
 
 func (m *Manager) RouteEvent(event Event, c *Client) error {
 	if handler, ok := m.handlers[event.Type]; ok {

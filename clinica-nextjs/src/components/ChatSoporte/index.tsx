@@ -19,7 +19,7 @@ import {
 	LogOut,
 	Users,
 } from "lucide-react";
-import { chatEvent, chatRoomEvent, errorMessageEvent, GetHistoryEvent, NewMessageEvent, SendMessageEvent, rooms, GetChatRoomsEvent } from "@/types/chat";
+import { chatEvent, chatRoomEvent, errorMessageEvent, GetHistoryEvent, NewMessageEvent, SendMessageEvent, rooms, GetChatRoomsEvent, createRoomEvent } from "@/types/chat";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { useAuth } from "@clerk/nextjs";
@@ -50,8 +50,9 @@ export default function SupportChat() {
 	}, [isOpen]);
 
 	const filteredChats = (
-		rooms.filter((room) => room.name.includes(roomNameFilter))
-	);
+		rooms
+			?.filter((room) => room.name.includes(roomNameFilter))
+	)
 	const scrollToBottom = () => {
 		messagesEndRef.current?.scrollIntoView({
 			behavior: "smooth",
@@ -230,6 +231,20 @@ export default function SupportChat() {
 					timestamp: new Date(errorPayload.sent),
 				})
 
+				break;
+			case "create_room":
+				console.log("chatroom created");
+				const createRoomPayload = event.payload as createRoomEvent
+				console.log("new room:", createRoomPayload)
+				setRooms(prevRooms => [
+					...(prevRooms ?? []),
+					{
+						id: createRoomPayload.id,
+						name: createRoomPayload.name,
+						lastMessage: "",
+						sent: createRoomPayload.sent, // o null si no hay mensajes aún
+					}
+				]);
 				break;
 			default:
 				alert("unsupported event type");

@@ -18,7 +18,6 @@ func (m *Manager) setupEventHandlers() {
 
 func sendMessage(event Event, c *Client) error {
 	var chatevent SendMessageEvent
-	log.Printf("Revived event: %+v", event)
 	if err := json.Unmarshal(event.Payload, &chatevent); err != nil {
 		errorMessageHandler("Bad payload", time.Now(), c)
 		return fmt.Errorf("Bad payload, %v", err)
@@ -202,4 +201,34 @@ func getRoomsHandler(event Event, c *Client) error {
 	}
 
 	return c.Manager.getRooms(c)
+}
+
+func newRoomHandler(room Room, c *Client) error {
+	roomEvent := RoomEvent{
+		ID:   room.ID,
+		Name: room.Name,
+	}
+
+	roomEvent.LastMessage = ""
+	roomEvent.LastMessageAt = time.Now()
+
+	data, err := json.Marshal(&roomEvent)
+	if err != nil {
+		errorMessageHandler("Couldnt sent the chatrooms", time.Now(), c)
+
+		return fmt.Errorf("Couldnt parse the rooms: %v", err)
+	}
+
+	outgoingEvent := Event{
+		Type:    EventCreateRoom,
+		Payload: data,
+	}
+
+	for client := range c.Manager.Clients {
+		if client.Rol == RoleRecep || client.Rol == RoleAdmin {
+			client.egress <- outgoingEvent
+		}
+	}
+
+	return nil
 }
