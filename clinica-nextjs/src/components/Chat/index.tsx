@@ -253,7 +253,8 @@ export default function FloatingChat() {
 	};
 	const handleExitForm = () => {
 		setIsOpen(false);
-		setIsSurveyActive(false)
+		setIsSurveyActive(false);
+		setRecptionist(null)
 	};
 
 	return (

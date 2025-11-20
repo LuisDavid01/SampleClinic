@@ -240,7 +240,8 @@ export default function SupportChat() {
 						id: createRoomPayload.id,
 						name: createRoomPayload.name,
 						lastMessage: "",
-						sent: createRoomPayload.sent, 					}
+						sent: createRoomPayload.sent,
+					}
 				]);
 				break;
 			default:

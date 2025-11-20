@@ -86,7 +86,7 @@ func errorMessageHandler(message string, sent time.Time, c *Client) error {
 }
 
 func chatRoomHandler(event Event, c *Client) error {
-	if c.Rol != RoleAdmin && c.Rol != RoleFisio {
+	if c.Rol != RoleAdmin && c.Rol != RoleRecep {
 		errorMessageHandler("Unauthorized", time.Now(), c)
 		return fmt.Errorf("Authorized action")
 	}
@@ -195,7 +195,7 @@ func (m *Manager) getRooms(c *Client) error {
 }
 
 func getRoomsHandler(event Event, c *Client) error {
-	if c.Rol != RoleAdmin {
+	if c.Rol != RoleAdmin && c.Rol != RoleRecep {
 		errorMessageHandler("Unauthorized", time.Now(), c)
 		return fmt.Errorf("Unauthorized action")
 	}
