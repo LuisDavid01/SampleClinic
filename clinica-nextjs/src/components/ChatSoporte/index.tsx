@@ -233,17 +233,14 @@ export default function SupportChat() {
 
 				break;
 			case "create_room":
-				console.log("chatroom created");
 				const createRoomPayload = event.payload as createRoomEvent
-				console.log("new room:", createRoomPayload)
 				setRooms(prevRooms => [
 					...(prevRooms ?? []),
 					{
 						id: createRoomPayload.id,
 						name: createRoomPayload.name,
 						lastMessage: "",
-						sent: createRoomPayload.sent, // o null si no hay mensajes aún
-					}
+						sent: createRoomPayload.sent, 					}
 				]);
 				break;
 			default:
@@ -363,7 +360,7 @@ export default function SupportChat() {
 							chatroom === null ? (
 								// Vista de lista de chats
 								<>
-									<CardHeader className="pb-3">
+									<CardHeader >
 										<CardTitle className="flex justify-between text-lg gap-1 mb-2">
 											<div className="flex items-center gap-1">
 												<MessageCircle className="h-5 w-5" />
@@ -424,7 +421,7 @@ export default function SupportChat() {
 												<Button variant="ghost" size="sm" className="m-4" onClick={getChatRooms}><Users className="h-4 w-4 mr-2" />Recargar</Button>
 											</div>
 										) : (
-											<ScrollArea className="h-full">
+											<ScrollArea className="h-full border-t">
 												{filteredChats.map((chat, index) => (
 													<div key={chat.id}>
 														<div
