@@ -1,3 +1,6 @@
+# Docker Compose para Clínica API
+# Para configurar variables de entorno, crea un archivo .env o edita las variables directamente
+
 services:
   # Base de datos PostgreSQL
   postgres:
@@ -37,6 +40,21 @@ services:
       PORT: 3001
       NODE_ENV: "production"
       CORS_ORIGIN: "http://localhost:3000"
+      # Email Configuration
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@clinicaestebanporras.com}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Clínica Esteban Porras}
+      # Frontend URL (para links de confirmación)
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      # Configuración de Recordatorios
+      RECORDATORIO_DIAS_ANTES: ${RECORDATORIO_DIAS_ANTES:-2}
+      CRON_SCHEDULE_RECORDATORIOS: ${CRON_SCHEDULE_RECORDATORIOS:-0 9 * * *}
+      # Timezone para cron jobs
+      TZ: ${TZ:-America/Costa_Rica}
     depends_on:
       postgres:
         condition: service_healthy
