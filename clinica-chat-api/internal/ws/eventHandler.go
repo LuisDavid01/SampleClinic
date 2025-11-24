@@ -17,6 +17,9 @@ func (m *Manager) setupEventHandlers() {
 }
 
 func sendMessage(event Event, c *Client) error {
+	if c.Rol == "" {
+		return fmt.Errorf("UnAuthenticated user %s", c.Username)
+	}
 	var chatevent SendMessageEvent
 	if err := json.Unmarshal(event.Payload, &chatevent); err != nil {
 		errorMessageHandler("Bad payload", time.Now(), c)
@@ -25,12 +28,9 @@ func sendMessage(event Event, c *Client) error {
 
 	var broadMessage NewMessageEvent
 	var role string
-	if c.Rol == RolePacient {
-		role = RolePacient
-	} else {
-		role = c.Rol
-	}
-	log.Printf("Client role: %s, username: %s, message sent role: %s", c.Rol, c.Username, role)
+
+	role = c.Rol
+	log.Printf("Client role: %s, username: %s", c.Rol, c.Username)
 	broadMessage.Sent = time.Now()
 	broadMessage.Message = chatevent.Message
 	broadMessage.From = c.Username
@@ -59,7 +59,32 @@ func sendMessage(event Event, c *Client) error {
 			room.History = room.History[len(room.History)-50:]
 		}
 	}
+	var updatedRoom updateRoomEvent
+	if len(room.History) > 0 {
+		lastMsg := room.History[len(room.History)-1]
+		updatedRoom.LastMessage = lastMsg.Message
+		updatedRoom.LastMessageAt = lastMsg.Sent
+		updatedRoom.ID = room.ID
+	} else {
+		updatedRoom.LastMessage = ""
+		updatedRoom.LastMessageAt = time.Now()
+		updatedRoom.ID = room.ID
+	}
 
+	data, err = json.Marshal(updatedRoom)
+	if err != nil {
+		log.Printf("Couldnt update %s room, %v+", updatedRoom.ID, err)
+	}
+	updateOutgoingEvent := Event{
+		Type:    EventUpdateRoom,
+		Payload: data,
+	}
+
+	for client := range c.Manager.Clients {
+		if client.Rol == RoleRecep || client.Rol == RoleAdmin {
+			client.egress <- updateOutgoingEvent
+		}
+	}
 	return nil
 }
 

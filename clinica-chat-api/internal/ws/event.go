@@ -68,5 +68,7 @@ type CreateRoomEvent struct {
 }
 
 type updateRoomEvent struct {
-	Room RoomEvent `json:"room"`
+	ID            string    `json:"id"`
+	LastMessage   string    `json:"lastMessage"`
+	LastMessageAt time.Time `json:"sent"`
 }

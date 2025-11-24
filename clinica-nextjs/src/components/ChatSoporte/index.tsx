@@ -19,7 +19,7 @@ import {
 	LogOut,
 	Users,
 } from "lucide-react";
-import { chatEvent, chatRoomEvent, errorMessageEvent, GetHistoryEvent, NewMessageEvent, SendMessageEvent, rooms, GetChatRoomsEvent, createRoomEvent } from "@/types/chat";
+import { chatEvent, chatRoomEvent, errorMessageEvent, GetHistoryEvent, NewMessageEvent, SendMessageEvent, rooms, GetChatRoomsEvent, createRoomEvent, updateRoomEvent } from "@/types/chat";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { useAuth } from "@clerk/nextjs";
@@ -67,8 +67,11 @@ export default function SupportChat() {
 	useEffect(() => {
 
 
-		if (typeof window !== 'undefined' && window.WebSocket) {
+		if (typeof window !== 'undefined' && window.WebSocket ) {
 			console.log("WebSocket supported");
+			if (wsRef.current != null) {
+
+			}
 
 
 		} else {
@@ -111,7 +114,6 @@ export default function SupportChat() {
 				return data.otp;
 			})
 			wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8080/ws"}?otp=` + otp);
-
 			wsRef.current.onerror = (error) => {
 				console.log("WebSocket error:", error);
 				setConnectionStatus('error');
@@ -133,7 +135,7 @@ export default function SupportChat() {
 			wsRef.current.onmessage = (event) => {
 				const eventData = JSON.parse(event.data);
 				const evnt = Object.assign(new chatEvent('', ''), eventData);
-
+				console.log("Event: ", evnt)
 				routeEvents(evnt);
 			};
 
@@ -152,7 +154,7 @@ export default function SupportChat() {
 				}
 
 			};
-
+			
 
 		} catch (err) {
 			showNotification({
@@ -243,6 +245,26 @@ export default function SupportChat() {
 						sent: createRoomPayload.sent,
 					}
 				]);
+				break;
+			case "update_room":
+				console.log("attemting to update a room - timestamp:", Date.now());
+				const updatePayload = event.payload as updateRoomEvent;
+				console.log("Payload recibido:", updatePayload);
+				// hay un bug aqui por alguna razon se actualiza dos veces?????
+				// Sospecho que es el setRooms
+				setRooms(prevRooms => {
+					const roomIndex = prevRooms.findIndex(r => r.id === updatePayload.id);
+					console.log("Room index", roomIndex)
+					if (roomIndex >= 0) {
+						const newRooms = [...prevRooms];
+						newRooms[roomIndex] = { ...newRooms[roomIndex], ...updatePayload };
+						console.log("Updated room at index:", roomIndex);
+						return newRooms;
+					} else {
+						console.log("Room with id", updatePayload.id, "not found. Cannot update.");
+						return prevRooms;
+					}
+				});
 				break;
 			default:
 				alert("unsupported event type");

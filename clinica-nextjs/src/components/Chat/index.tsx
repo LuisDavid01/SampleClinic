@@ -168,7 +168,7 @@ export default function FloatingChat() {
 				]);
 
 				if (!isOpenRef.current && (messageEvent.role === 'admin' ||
-										  messageEvent.role === 'recepcionista')) {
+					messageEvent.role === 'recepcionista')) {
 					showNotification({
 						type: "newMessage",
 						title: `Nuevo mensaje de ${messageEvent.from}`,
@@ -177,9 +177,6 @@ export default function FloatingChat() {
 					})
 				}
 
-				break;
-			case "change_chatroom":
-				console.log("change chatroom");
 				break;
 			case "error_message":
 				console.log("Error message");

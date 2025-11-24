@@ -98,3 +98,9 @@ export type joinRoomEvent = {
 	userid: string;
 	username: string;
 }
+
+export type updateRoomEvent = {
+	id: string;
+	lastMessage: string;
+	sent: Date;
+}
