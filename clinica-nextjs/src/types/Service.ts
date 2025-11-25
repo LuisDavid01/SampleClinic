@@ -14,3 +14,12 @@ export type Servicio = {
   estado: ServiceStatus
   fechaModificacion?: string | Date
 }
+
+export interface Service {
+  id: number
+  nombre: string
+  detalle: string
+  precio: number
+  estado: ServiceStatus
+}
+

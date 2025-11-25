@@ -5,6 +5,7 @@ import { clerkAuth, requireClerkRole } from '../middleware/clerkAuth.js';
 import { ROLES } from '../constants/roles.js';
 import { validateUsuario, validateUsuarioUpdate, validateId } from '../middleware/validation.js';
 import { hashPassword } from '../utils/password.js';
+import { auditMiddleware } from '../middleware/audit.js';
 
 const router = express.Router();
 
@@ -276,7 +277,7 @@ router.get('/', async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/usuarios - Crear nuevo usuario (solo admin)
-router.post('/', clerkAuth, requireClerkRole(['admin']), validateUsuario, async (req, res) => {
+router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin']), validateUsuario, async (req, res) => {
   try {
     const {
       nombre,
@@ -546,7 +547,7 @@ router.get('/:clerkId', async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // PUT /api/usuarios/:id - Actualizar usuario
-router.put('/:id', clerkAuth, requireClerkRole(['admin']), validateId, validateUsuarioUpdate, async (req, res) => {
+router.put('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin']), validateId, validateUsuarioUpdate, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -650,7 +651,7 @@ router.put('/:id', clerkAuth, requireClerkRole(['admin']), validateId, validateU
  *               $ref: '#/components/schemas/Error'
  */
 // DELETE /api/usuarios/:id - Desactivar usuario (soft delete)
-router.delete('/:id', clerkAuth, requireClerkRole(['admin']), validateId, async (req, res) => {
+router.delete('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin']), validateId, async (req, res) => {
   try {
     const { id } = req.params;
 

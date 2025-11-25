@@ -66,7 +66,6 @@ export async function setRoleWithoutForm(userId: string, role: string) {
 		},
 	});
 
-	revalidatePath("/pacientes");
 	// Don't return anything
 }
 

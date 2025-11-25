@@ -1,8 +1,12 @@
 # Usar Node.js 18 como imagen base con Debian para mejor compatibilidad con Prisma
 FROM node:18-slim
 
-# Instalar dependencias del sistema necesarias para Prisma y healthcheck
-RUN apt-get update && apt-get install -y openssl wget && rm -rf /var/lib/apt/lists/*
+# Instalar dependencias del sistema necesarias para Prisma, healthcheck y timezone
+RUN apt-get update && apt-get install -y openssl wget tzdata && rm -rf /var/lib/apt/lists/*
+
+# Configurar timezone (se puede sobrescribir con variable de entorno TZ)
+ENV TZ=America/Costa_Rica
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Establecer directorio de trabajo
 WORKDIR /app

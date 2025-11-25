@@ -30,7 +30,7 @@ export class chatRoomEvent {
 export class chatEvent {
 	type: string;
 	payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | GetHistoryEvent | errorMessageEvent |
-		GetChatRoomsEvent | joinRoomEvent | string;
+		GetChatRoomsEvent | joinRoomEvent | createRoomEvent | string;
 	constructor(type: string, payload: SendMessageEvent |
 		NewMessageEvent | chatRoomEvent | GetHistoryEvent |
 		errorMessageEvent | GetChatRoomsEvent | joinRoomEvent | string) {
@@ -87,7 +87,20 @@ export type errorMessageEvent = {
 	sent: Date;
 }
 
+export type createRoomEvent = {
+	id: string;
+	name: string;
+	lastMessage: string;
+	sent: Date;
+}
+
 export type joinRoomEvent = {
 	userid: string;
 	username: string;
+}
+
+export type updateRoomEvent = {
+	id: string;
+	lastMessage: string;
+	sent: Date;
 }

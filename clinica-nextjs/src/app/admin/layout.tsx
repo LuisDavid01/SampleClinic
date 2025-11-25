@@ -12,7 +12,8 @@ import {
 	Shield,
 	Users,
 	UserPlus,
-	Stethoscope
+	Stethoscope,
+	SearchCheck
 } from "lucide-react";
 import Link from "next/link";
 
@@ -131,6 +132,8 @@ export default async function dasboardLayout({
 							</Link>
 						</Button>
 
+						
+
 
 
 
@@ -144,8 +147,19 @@ export default async function dasboardLayout({
 								Cuenta
 							</Link>
 						</Button>
-
-
+						{await checkRoles(['admin']) &&
+							<>
+						<Button
+							variant="ghost"
+							className="w-full justify-start  hover:bg-gray-800"
+							asChild
+						>
+							<Link href={"/admin/audit"}>
+								<SearchCheck className="w-4 h-4 mr-3 " />
+								<span>Auditoria de Sistema</span>
+							</Link>
+						</Button>
+							</>}
 						<Button
 							variant="ghost"
 							className="w-full justify-start  hover:bg-gray-800"
