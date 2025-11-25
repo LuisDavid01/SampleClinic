@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useActionState, useState } from "react";
 import {
 	Modal,
 	ModalBody,
@@ -15,9 +15,48 @@ import { Button } from "../ui/button";
 import { MessageSquareShare, Send } from "lucide-react";
 
 import { Checkbox } from "../ui/checkbox";
-import { Form } from "../FormWithActions";
+import { Form, FormError } from "../FormWithActions";
+import { createPacientTestimony, createTestimony } from "@/actions/historiasExito";
 
 export function NewTestimonio() {
+	const [stars, setStars] = useState(0);
+	const initialState: ActionResponse = {
+		success: false,
+		message: '',
+		errors: undefined,
+	}
+	// Use useActionState hook for the Form submission action
+	const [state, formAction, isPending] = useActionState<
+		ActionResponse,
+		FormData
+	>(async (prevState: ActionResponse, formData: FormData) => {
+		// Extract data from Form
+		const data = {
+			rating: stars,
+			experiencia: formData.get('experiencia') as string,
+		}
+
+		try {
+			// Call the appropriate action based on whether we're editing or creating
+			const result = await createPacientTestimony(data)
+
+
+			// Handle successful submission
+			if (result.success) {
+				console.log(result)
+			}
+			console.log(result)
+			return result
+		} catch (err) {
+			return {
+				success: false,
+				message: (err as Error).message || 'An error occurred',
+				errors: undefined
+			}
+		}
+	}, initialState)
+
+
 	return (
 		<div className=" flex items-center justify-center">
 			<Modal>
@@ -28,23 +67,31 @@ export function NewTestimonio() {
 					Comparte tu experiencia!
 				</ModalTrigger>
 				<ModalBody>
-				<Form>
+					<Form action={formAction}>
 
-					<ModalContent>
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.3 }}
-							className="text-center mb-8"
-						>
-							<h4 className="text-2xl md:text-3xl font-bold mb-2">
-								Comparte tu Experiencia
-							</h4>
-							<p className="text-muted-foreground text-sm md:text-base">
-								Tu opinión nos ayuda a mejorar nuestros servicios de salud
-							</p>
-						</motion.div>
-													{/* Sistema de Calificación */}
+						<ModalContent>
+							<motion.div
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ duration: 0.3 }}
+								className="text-center mb-8"
+							>
+								{state?.message && (
+									<FormError
+										className={`mb-4 ${state.success ? 'bg-green-100 text-green-800 border-green-300' : ''
+											}`}
+									>
+										{state.message}
+									</FormError>
+								)}
+								<h4 className="text-2xl md:text-3xl font-bold mb-2">
+									Comparte tu Experiencia
+								</h4>
+								<p className="text-muted-foreground text-sm md:text-base">
+									Tu opinión nos ayuda a mejorar nuestros servicios de salud
+								</p>
+							</motion.div>
+							{/* Sistema de Calificación */}
 							<motion.div
 								initial={{ opacity: 0, x: -20 }}
 								animate={{ opacity: 1, x: 0 }}
@@ -54,7 +101,10 @@ export function NewTestimonio() {
 									¿Cómo calificarías nuestro servicio?
 								</label>
 
-
+								<StarRating
+									value={stars}
+									onChange={(value) => setStars(value)}
+								/>
 							</motion.div>
 
 
@@ -67,6 +117,8 @@ export function NewTestimonio() {
 									Cuéntanos sobre tu experiencia
 								</label>
 								<Textarea
+									name="experiencia"
+									id="experiencia"
 									placeholder="Comparte tu experiencia con nosotros..."
 									className="min-h-[120px] bg-input border-input text-text-primary placeholder:text-muted-foreground resize-none"
 								/>
@@ -96,20 +148,20 @@ export function NewTestimonio() {
 								</label>
 							</motion.div>
 
-											</ModalContent>
-					<ModalFooter className="gap-4 pt-6 border-t border-muted">
-						<Button
-							type="submit"
-							disabled
-							className="px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
-						>
+						</ModalContent>
+						<ModalFooter className="gap-4 pt-6 border-t border-muted">
+							<Button
+								type="submit"
+								disabled={isPending}
+								className="px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
+							>
 
-							<>
-								<Send className="w-4 h-4" />
-								Enviar Testimonio
-							</>
-						</Button>
-					</ModalFooter>
+								<>
+									<Send className="w-4 h-4" />
+									Enviar Testimonio
+								</>
+							</Button>
+						</ModalFooter>
 					</Form>
 
 				</ModalBody>

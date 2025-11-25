@@ -160,7 +160,7 @@ export default function FilesPage() {
 									<TableRow >
 										<TableHead>Usuario</TableHead>
 										<TableHead>Estado</TableHead>
-										<TableHead>Servicio brindado</TableHead>
+										<TableHead>Rating</TableHead>
 										<TableHead>Fecha de tratmiento</TableHead>
 										<TableHead>resumen</TableHead>
 										<TableHead>Acciones</TableHead>
@@ -187,7 +187,9 @@ export default function FilesPage() {
 													<TableRow key={review.idHistoria + review.fechaTratamiento + review.idPaciente} className="hover:bg-muted/50">
 														<TableCell className="font-medium">
 															<div className="flex items-center gap-2">
-																{review.paciente.nombre + ' ' + review.paciente.apellido1 + ' ' + review.paciente.apellido2}
+																{
+																	`${review.paciente?.nombre ?? 'anonimo'} ${review.paciente?.apellido1 ?? ''} ${review.paciente?.apellido2 ?? ''}`
+																}
 															</div>
 														</TableCell>
 														<TableCell>
@@ -199,8 +201,13 @@ export default function FilesPage() {
 																{review.publicado ? "Activo" : "Inactivo"}
 															</Badge>
 														</TableCell>
-														<TableCell className="text-sm">
-															{review.servicio.nombre}
+														<TableCell>
+															<div className="flex items-center gap-1">
+																<Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+																<span className="font-mono text-sm whitespace-nowrap">
+																	{review.rating}
+																</span>
+															</div>
 														</TableCell>
 														<TableCell className="text-sm">
 															{formatRelativeTime(review.fechaTratamiento)}
@@ -266,7 +273,9 @@ export default function FilesPage() {
 													<User className="h-4 w-4 text-muted-foreground" />
 												</div>
 												<div>
-													<h3 className="font-medium">{review.paciente.nombre + ' ' + review.paciente.apellido1}</h3>
+													<h3 className="font-medium">
+													{`${review.paciente?.nombre ?? 'anonimo'} ${review.paciente?.apellido1} ${review.paciente?.apellido2}`}
+													</h3>
 
 												</div>
 											</div>
@@ -318,7 +327,7 @@ export default function FilesPage() {
 									<div className="flex items-center gap-2">
 										<span className="text-sm text-muted-foreground">Mostrar</span>
 										<Select
-											value={limit.toString()} 
+											value={limit.toString()}
 											onValueChange={(value) => {
 												setLimit(Number(value));
 												setPage(1);

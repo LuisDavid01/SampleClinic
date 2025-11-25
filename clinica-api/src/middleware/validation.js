@@ -216,15 +216,11 @@ const validatePerfil = [
 
 // Validaciones para historias de éxito
 const validateHistoriaExito = [
-	body('idServicio')
-		.optional()
-		.isInt({ min: 1 })
-		.withMessage('El ID del servicio debe ser un número entero positivo'),
 
-	body('idMedico')
+	body('rating')
 		.optional()
-		.isInt({ min: 1 })
-		.withMessage('El ID del médico debe ser un número entero positivo'),
+		.isInt({ min: 1 ,max: 5})
+		.withMessage('El rating debe ser un numero entre 1 y 5'),
 
 	body('idPaciente')
 		.optional()

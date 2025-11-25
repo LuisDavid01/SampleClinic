@@ -17,37 +17,36 @@ model Rol {
 }
 
 model Usuario {
-  idUsuario                  Int                  @id @default(autoincrement()) @map("id_usuario")
-  nombre                     String               @db.VarChar(100)
-  apellido1                  String               @map("apellido1") @db.VarChar(100)
-  apellido2                  String?              @map("apellido2") @db.VarChar(100)
-  fechaNacimiento            DateTime?            @map("fecha_nacimiento") @db.Date
-  fechaRegistro              DateTime             @default(now()) @map("fecha_registro") @db.Date
-  telefonoPrincipal          String?              @map("telefono_principal") @db.VarChar(20)
-  telefonoSecundario         String?              @map("telefono_secundario") @db.VarChar(20)
-  correoElectronico          String               @unique @map("correo_electronico") @db.VarChar(150)
-  contrasena                 String               @map("contrasena") @db.VarChar(255)
-  direccionResidencia        String?              @map("direccion_residencia") @db.VarChar(255)
-  clerkId                    String?              @unique @map("clerk_id") @db.VarChar(100)
-  idRol                      Int?                 @map("id_rol")
-  activo                     Boolean              @default(true)
-  antecedentesRegistrados    AntecedenteClinico[] @relation("AntecedenteMedico")
+  idUsuario                  Int                     @id @default(autoincrement()) @map("id_usuario")
+  nombre                     String                  @db.VarChar(100)
+  apellido1                  String                  @map("apellido1") @db.VarChar(100)
+  apellido2                  String?                 @map("apellido2") @db.VarChar(100)
+  fechaNacimiento            DateTime?               @map("fecha_nacimiento") @db.Date
+  fechaRegistro              DateTime                @default(now()) @map("fecha_registro") @db.Date
+  telefonoPrincipal          String?                 @map("telefono_principal") @db.VarChar(20)
+  telefonoSecundario         String?                 @map("telefono_secundario") @db.VarChar(20)
+  correoElectronico          String                  @unique @map("correo_electronico") @db.VarChar(150)
+  contrasena                 String                  @map("contrasena") @db.VarChar(255)
+  direccionResidencia        String?                 @map("direccion_residencia") @db.VarChar(255)
+  clerkId                    String?                 @unique @map("clerk_id") @db.VarChar(100)
+  idRol                      Int?                    @map("id_rol")
+  activo                     Boolean                 @default(true)
+  antecedentesRegistrados    AntecedenteClinico[]    @relation("AntecedenteMedico")
   antecedenteClinico         AntecedenteClinico?
   auditoriaAntecedentes      AuditoriaAntecedentes[] @relation("AuditoriaUsuario")
   auditorias                 Auditoria[]
-  citasComoMedico            Cita[]               @relation("CitaMedico")
-  citasComoPaciente          Cita[]               @relation("CitaPaciente")
+  citasComoMedico            Cita[]                  @relation("CitaMedico")
+  citasComoPaciente          Cita[]                  @relation("CitaPaciente")
   evaluacionesComoDoctor     EvaluacionDiagnostico[] @relation("EvaluacionDoctor")
   evaluacionesComoPaciente   EvaluacionDiagnostico[] @relation("EvaluacionPaciente")
   encuestas                  Encuesta[]
-  expedientesComoMedico      Expediente[]         @relation("ExpedienteMedico")
-  expedientesComoPaciente    Expediente[]         @relation("ExpedientePaciente")
-  historiasExitoComoMedico   HistoriaExito[]      @relation("HistoriaMedico")
-  historiasExitoComoPaciente HistoriaExito[]      @relation("HistoriaPaciente")
+  expedientesComoMedico      Expediente[]            @relation("ExpedienteMedico")
+  expedientesComoPaciente    Expediente[]            @relation("ExpedientePaciente")
+  historiasExitoComoPaciente HistoriaExito[]         @relation("HistoriaPaciente")
   perfil                     Perfil?
   sesiones                   Sesion[]
   archivos                   Archivo[]
-  rol                        Rol?                 @relation(fields: [idRol], references: [idRol])
+  rol                        Rol?                    @relation(fields: [idRol], references: [idRol])
 
   @@map("usuarios")
 }
@@ -86,16 +85,15 @@ model PerfilCertificacion {
 }
 
 model Servicio {
-  idServicio       Int              @id @default(autoincrement()) @map("id_servicio")
-  nombreServicio   String           @map("nombre_servicio") @db.VarChar(100)
-  descripcion      String?
-  precio           Decimal?         @db.Decimal(10, 2)
-  activo           Boolean          @default(true)
-  fechaCreacion    DateTime         @default(now()) @map("fecha_creacion")
-  fechaModificacion DateTime        @default(now()) @updatedAt @map("fecha_modificacion")
-  citas            Cita[]
-  historiasExito   HistoriaExito[]
-  perfiles         PerfilServicio[]
+  idServicio        Int              @id @default(autoincrement()) @map("id_servicio")
+  nombreServicio    String           @map("nombre_servicio") @db.VarChar(100)
+  descripcion       String?
+  precio            Decimal?         @db.Decimal(10, 2)
+  activo            Boolean          @default(true)
+  fechaCreacion     DateTime         @default(now()) @map("fecha_creacion")
+  fechaModificacion DateTime         @default(now()) @updatedAt @map("fecha_modificacion")
+  citas             Cita[]
+  perfiles          PerfilServicio[]
 
   @@map("servicios")
 }
@@ -130,6 +128,7 @@ model Cita {
   evaluaciones            EvaluacionDiagnostico[]
   emailLogs                EmailLog[]
 
+
   @@map("citas")
 }
 
@@ -156,16 +155,13 @@ model ResultadoCita {
 
 model HistoriaExito {
   idHistoria       Int       @id @default(autoincrement()) @map("id_historia")
-  idServicio       Int?      @map("id_servicio")
-  idMedico         Int?      @map("id_medico")
   idPaciente       Int?      @map("id_paciente")
+  rating           Int       @default(0) @map("rating") @db.SmallInt
   fechaTratamiento DateTime? @map("fecha_tratamiento") @db.Date
   experiencia      String?
   publicado        Boolean   @default(false)
   fechaPublicacion DateTime? @map("fecha_publicacion") @db.Date
-  medico           Usuario?  @relation("HistoriaMedico", fields: [idMedico], references: [idUsuario])
   paciente         Usuario?  @relation("HistoriaPaciente", fields: [idPaciente], references: [idUsuario])
-  servicio         Servicio? @relation(fields: [idServicio], references: [idServicio])
 
   @@map("historias_exito")
 }
@@ -190,12 +186,12 @@ model Sesion {
 }
 
 model Encuesta {
-  idEncuesta      Int      @id @default(autoincrement()) @map("id_encuesta")
-  calificacion    Int      @db.SmallInt
-  comentario      String?  @db.Text
-  clerkId         String   @map("clerk_id") @db.VarChar(100)
-  fechaRegistro   DateTime @default(now()) @map("fecha_registro")
-  usuario         Usuario  @relation(fields: [clerkId], references: [clerkId], onDelete: Cascade)
+  idEncuesta    Int      @id @default(autoincrement()) @map("id_encuesta")
+  calificacion  Int      @db.SmallInt
+  comentario    String?  @db.Text
+  clerkId       String   @map("clerk_id") @db.VarChar(100)
+  fechaRegistro DateTime @default(now()) @map("fecha_registro")
+  usuario       Usuario  @relation(fields: [clerkId], references: [clerkId], onDelete: Cascade)
 
   @@index([clerkId])
   @@index([fechaRegistro])
@@ -213,18 +209,18 @@ model Auditoria {
 }
 
 model Expediente {
-  idExpediente  Int           @id @default(autoincrement()) @map("id_expediente")
-  idPaciente    Int           @map("id_paciente")
-  cedula        String        @unique @db.VarChar(50)
-  estado        String        @db.VarChar(50)
-  idMedico      Int?          @map("id_medico")
+  idExpediente  Int                     @id @default(autoincrement()) @map("id_expediente")
+  idPaciente    Int                     @map("id_paciente")
+  cedula        String                  @unique @db.VarChar(50)
+  estado        String                  @db.VarChar(50)
+  idMedico      Int?                    @map("id_medico")
   descripcion   String?
-  fechaCreacion DateTime      @default(now()) @map("fecha_creacion")
+  fechaCreacion DateTime                @default(now()) @map("fecha_creacion")
   evaluaciones  EvaluacionDiagnostico[]
   documentos    Documento[]
   archivos      Archivo[]
-  medico        Usuario?      @relation("ExpedienteMedico", fields: [idMedico], references: [idUsuario])
-  paciente      Usuario       @relation("ExpedientePaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
+  medico        Usuario?                @relation("ExpedienteMedico", fields: [idMedico], references: [idUsuario])
+  paciente      Usuario                 @relation("ExpedientePaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
 
   @@map("expediente")
 }
@@ -241,21 +237,21 @@ model Documento {
 }
 
 model EvaluacionDiagnostico {
-  idEvaluacion        Int         @id @default(autoincrement()) @map("id_evaluacion")
-  idPaciente          Int         @map("id_paciente")
-  idCita              Int?        @map("id_cita")
-  fecha               DateTime    @default(now()) @db.Date
-  idDoctor            Int?        @map("id_doctor")
-  diagnosticoPrincipal String     @map("diagnostico_principal")
-  sintomasReportados  String?     @map("sintomas_reportados")
-  evaluacionFisica    String?     @map("evaluacion_fisica")
-  planTratamiento     String?     @map("plan_tratamiento")
-  recomendaciones     String?     @map("recomendaciones")
-  idExpediente        Int?        @map("id_expediente")
-  doctor              Usuario?    @relation("EvaluacionDoctor", fields: [idDoctor], references: [idUsuario])
-  expediente          Expediente? @relation(fields: [idExpediente], references: [idExpediente])
-  paciente            Usuario     @relation("EvaluacionPaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
-  cita                Cita?       @relation(fields: [idCita], references: [idCita])
+  idEvaluacion         Int         @id @default(autoincrement()) @map("id_evaluacion")
+  idPaciente           Int         @map("id_paciente")
+  idCita               Int?        @map("id_cita")
+  fecha                DateTime    @default(now()) @db.Date
+  idDoctor             Int?        @map("id_doctor")
+  diagnosticoPrincipal String      @map("diagnostico_principal")
+  sintomasReportados   String?     @map("sintomas_reportados")
+  evaluacionFisica     String?     @map("evaluacion_fisica")
+  planTratamiento      String?     @map("plan_tratamiento")
+  recomendaciones      String?     @map("recomendaciones")
+  idExpediente         Int?        @map("id_expediente")
+  doctor               Usuario?    @relation("EvaluacionDoctor", fields: [idDoctor], references: [idUsuario])
+  expediente           Expediente? @relation(fields: [idExpediente], references: [idExpediente])
+  paciente             Usuario     @relation("EvaluacionPaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
+  cita                 Cita?       @relation(fields: [idCita], references: [idCita])
 
   @@map("evaluacion_diagnostico")
 }
@@ -295,22 +291,22 @@ model AntecedenteClinico {
 }
 
 model AuditoriaAntecedentes {
-  id                Int       @id @default(autoincrement()) @map("id")
-  accion            String    @map("accion") // CREAR, ACTUALIZAR, CONSULTAR, ELIMINAR
-  recurso           String    @map("recurso") // ANTECEDENTES_CLINICOS
-  recursoId         Int?      @map("recurso_id") // ID del paciente
-  metodo            String    @map("metodo") // GET, POST, PUT, DELETE
-  url               String    @map("url")
-  statusCode        Int       @map("status_code")
-  usuarioId         Int?      @map("usuario_id")
-  usuarioInfo       Json?     @map("usuario_info") // Información del usuario de Clerk
-  ipAddress         String?   @map("ip_address")
-  userAgent         String?   @map("user_agent")
-  timestamp         DateTime  @default(now()) @map("timestamp")
-  detalles          Json?     @map("detalles") // Request/Response sanitizados
+  id          Int      @id @default(autoincrement()) @map("id")
+  accion      String   @map("accion") // CREAR, ACTUALIZAR, CONSULTAR, ELIMINAR
+  recurso     String   @map("recurso") // ANTECEDENTES_CLINICOS
+  recursoId   Int?     @map("recurso_id") // ID del paciente
+  metodo      String   @map("metodo") // GET, POST, PUT, DELETE
+  url         String   @map("url")
+  statusCode  Int      @map("status_code")
+  usuarioId   Int?     @map("usuario_id")
+  usuarioInfo Json?    @map("usuario_info") // Información del usuario de Clerk
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  timestamp   DateTime @default(now()) @map("timestamp")
+  detalles    Json?    @map("detalles") // Request/Response sanitizados
 
   // Relación con usuario
-  usuario           Usuario?  @relation("AuditoriaUsuario", fields: [usuarioId], references: [idUsuario])
+  usuario Usuario? @relation("AuditoriaUsuario", fields: [usuarioId], references: [idUsuario])
 
   @@index([accion])
   @@index([recurso])
@@ -321,26 +317,26 @@ model AuditoriaAntecedentes {
 }
 
 model Archivo {
-  idArchivo        Int      @id @default(autoincrement()) @map("id_archivo")
-  nombreOriginal   String   @map("nombre_original") @db.VarChar(255)
-  nombreArchivo    String   @map("nombre_archivo") @db.VarChar(255)
-  rutaArchivo      String   @map("ruta_archivo") @db.VarChar(500)
-  tipoMime         String   @map("tipo_mime") @db.VarChar(100)
-  tamanoArchivo    Int      @map("tamano_archivo")
-  extension        String   @db.VarChar(10)
-  descripcion      String?  @db.VarChar(500)
-  categoria        String?  @db.VarChar(100)
-  etiquetas        String?  @db.VarChar(500)
-  esPublico        Boolean  @default(false) @map("es_publico")
-  fechaSubida      DateTime @default(now()) @map("fecha_subida")
+  idArchivo         Int      @id @default(autoincrement()) @map("id_archivo")
+  nombreOriginal    String   @map("nombre_original") @db.VarChar(255)
+  nombreArchivo     String   @map("nombre_archivo") @db.VarChar(255)
+  rutaArchivo       String   @map("ruta_archivo") @db.VarChar(500)
+  tipoMime          String   @map("tipo_mime") @db.VarChar(100)
+  tamanoArchivo     Int      @map("tamano_archivo")
+  extension         String   @db.VarChar(10)
+  descripcion       String?  @db.VarChar(500)
+  categoria         String?  @db.VarChar(100)
+  etiquetas         String?  @db.VarChar(500)
+  esPublico         Boolean  @default(false) @map("es_publico")
+  fechaSubida       DateTime @default(now()) @map("fecha_subida")
   fechaModificacion DateTime @updatedAt @map("fecha_modificacion")
-  idUsuario        Int      @map("id_usuario")
-  idExpediente     Int?     @map("id_expediente")
-  activo           Boolean  @default(true)
-  
-  usuario          Usuario   @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
-  expediente       Expediente? @relation(fields: [idExpediente], references: [idExpediente], onDelete: SetNull)
-  
+  idUsuario         Int      @map("id_usuario")
+  idExpediente      Int?     @map("id_expediente")
+  activo            Boolean  @default(true)
+
+  usuario    Usuario     @relation(fields: [idUsuario], references: [idUsuario], onDelete: Cascade)
+  expediente Expediente? @relation(fields: [idExpediente], references: [idExpediente], onDelete: SetNull)
+
   @@index([idUsuario])
   @@index([idExpediente])
   @@index([categoria])
