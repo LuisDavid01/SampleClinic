@@ -211,7 +211,7 @@ const router = Router();
  *               $ref: '#/components/schemas/Error'
  */
 // GET /api/citas/:id/detalles-completos - Obtener detalles completos de una cita
-router.get('/:id/detalles-completos', clerkAuth ,validateId, async (req, res) => {
+router.get('/:id/detalles-completos' , clerkAuth,validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -260,11 +260,6 @@ router.get('/:id/detalles-completos', clerkAuth ,validateId, async (req, res) =>
     const isPacienteCita = cita.idPaciente === req.user.idUsuario;
     const isMedicoCita = cita.idMedico === req.user.idUsuario;
     const isAdmin = isAdministrador(req.user);
-    console.log('🔍 Debug permisos cita:', {
-      isPacienteCita,
-      isMedicoCita,
-      isAdmin
-    });
 
     if (!isPacienteCita && !isMedicoCita && !isAdmin) {
       return res.status(403).json({

@@ -67,7 +67,6 @@ async function logAuditAction(req, res, data) {
       }
     });
     
-    console.log(`🔍 Auditoría registrada: ${action} en ${resource} por usuario ${userId}`);
     
   } catch (error) {
     console.error('Error en auditoría:', error);

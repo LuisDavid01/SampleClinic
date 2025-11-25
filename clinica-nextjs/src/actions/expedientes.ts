@@ -30,8 +30,12 @@ export type ExpedienteData = z.infer<typeof ExpedienteSchema>
 export async function getExpedientes(page: number, search?: string, limit: number = 10) {
 
 	const user = await auth();
-	if (!user.userId && !checkRole('admin')) {
-		return [];
+	if (!user.userId) {
+		return {
+			success: false,
+			message: 'Unauthorized access',
+			error: 'Unauthorized',
+		}
 	}
 
 	const params = new URLSearchParams({
@@ -49,6 +53,7 @@ export async function getExpedientes(page: number, search?: string, limit: numbe
 		}
 	});
 	if (!res.ok) {
+		console.error(res.ok, res.status, res.statusText);
 		throw new Error('Failed to fetch expedientes');
 	}
 	return res.json();
@@ -59,7 +64,11 @@ export async function getExpedienteByID(id: number) {
 
 	const user = await auth();
 	if (!user.userId && !checkRole('admin')) {
-		return [];
+		return {
+			success: false,
+			message: 'Unauthorized access',
+			error: 'Unauthorized',
+		}
 	}
 
 
@@ -101,7 +110,7 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 
 		// Create expediente with validated data
 		const validatedData = validationResult.data
-		
+
 		// Transform idDoctor to idMedico for the API
 		const apiData = {
 			...validatedData,
@@ -124,7 +133,7 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 		// Check if the response is not ok
 		if (!response.ok) {
 			const errorData = await response.json()
-			
+
 			// Handle specific error cases
 			if (errorData.error === 'El paciente ya tiene un expediente activo') {
 				return {
@@ -133,7 +142,7 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 					error: 'Expediente duplicado',
 				}
 			}
-			
+
 			if (errorData.error === 'Ya existe un expediente con esta cédula') {
 				return {
 					success: false,
@@ -141,7 +150,7 @@ export async function createExpediente(data: ExpedienteData): Promise<ActionResp
 					error: 'Cédula duplicada',
 				}
 			}
-			
+
 			// Handle other API errors
 			return {
 				success: false,
@@ -230,7 +239,7 @@ export async function updateExpediente(
 		// Check if the response is not ok
 		if (!response.ok) {
 			const errorData = await response.json()
-			
+
 			// Handle specific error cases
 			if (errorData.error === 'El paciente ya tiene un expediente activo') {
 				return {
@@ -239,7 +248,7 @@ export async function updateExpediente(
 					error: 'Expediente duplicado',
 				}
 			}
-			
+
 			if (errorData.error === 'Ya existe un expediente con esta cédula') {
 				return {
 					success: false,
@@ -247,7 +256,7 @@ export async function updateExpediente(
 					error: 'Cédula duplicada',
 				}
 			}
-			
+
 			// Handle other API errors
 			return {
 				success: false,
@@ -276,20 +285,30 @@ export async function deleteExpediente(id: number) {
 			throw new Error('Unauthorized')
 		}
 
-		// Delete Expediente
-		await fetch(`${baseUrl}/expedientes/${id}`, {
+		// Inactivar Expediente (cambia estado a 'inactivo')
+		const response = await fetch(`${baseUrl}/expedientes/${id}`, {
 			method: 'DELETE',
 			headers: {
 				authorization: `Bearer ${await user.getToken()}`
 			}
 		})
-		return { success: true, message: 'Expediente eliminado correctamente' }
+
+		if (!response.ok) {
+			const errorData = await response.json()
+			return {
+				success: false,
+				message: errorData.error || 'Un error ocurrió al inactivar el expediente',
+				error: 'Failed to deactivate expediente',
+			}
+		}
+
+		return { success: true, message: 'Expediente inactivado correctamente' }
 	} catch (error) {
-		console.error('Error eliminando el expediente:', error)
+		console.error('Error inactivando el expediente:', error)
 		return {
 			success: false,
-			message: 'Un error ocurrio al eliminar el expediente',
-			error: 'Failed to delete issue',
+			message: 'Un error ocurrió al inactivar el expediente',
+			error: 'Failed to deactivate expediente',
 		}
 	}
 }

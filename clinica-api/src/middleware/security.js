@@ -220,12 +220,6 @@ export const securityLogging = (req, res, next) => {
     
     // Log de seguridad para operaciones sensibles
     if (url.includes('/antecedentes') && [200, 201, 400, 403, 404, 500].includes(statusCode)) {
-      console.log(`🔒 Security Log: ${method} ${url} - ${statusCode} - ${duration}ms - IP: ${ip}`);
-      
-      // Log adicional para operaciones de escritura
-      if (['POST', 'PUT', 'DELETE'].includes(method)) {
-        console.log(`⚠️  Sensitive Operation: ${method} ${url} by user ${req.user?.id || 'unknown'}`);
-      }
     }
   });
   

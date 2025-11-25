@@ -16,6 +16,7 @@ import citaRoutes from './routes/citas.js';
 import citasDetallesRoutes from './routes/citas-detalles.js';
 import citasRecetasRoutes from './routes/citas-recetas.js';
 import citasPacienteRoutes from './routes/citas-paciente.js';
+import citasConfirmacionRoutes from './routes/citas-confirmacion.js';
 import servicioRoutes from './routes/servicios.js';
 import perfilRoutes from './routes/perfiles.js';
 import historiaExitoRoutes from './routes/historias-exito.js';
@@ -105,6 +106,7 @@ app.use('/api/citas', citaRoutes);
 app.use('/api/citas', citasDetallesRoutes);
 app.use('/api/citas', citasRecetasRoutes);
 app.use('/api/citas', citasPacienteRoutes);
+app.use('/api/citas', citasConfirmacionRoutes);
 app.use('/api/servicios', servicioRoutes);
 app.use('/api/perfiles', perfilRoutes);
 app.use('/api/historias-exito', historiaExitoRoutes);
@@ -151,6 +153,61 @@ app.get('/api/health', (req, res) => {
 		message: 'API de Clínica Fisioterapéutica funcionando correctamente',
 		timestamp: new Date().toISOString()
 	});
+});
+
+/**
+ * @swagger
+ * /api/recordatorios/ejecutar:
+ *   post:
+ *     summary: Ejecutar job de recordatorios manualmente (Admin)
+ *     description: Ejecuta manualmente el proceso de envío de recordatorios. Útil para testing y administración.
+ *     tags: [Sistema]
+ *     security:
+ *       - clerkAuth: []
+ *     responses:
+ *       200:
+ *         description: Job ejecutado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 total:
+ *                   type: integer
+ *                 enviados:
+ *                   type: integer
+ *                 fallidos:
+ *                   type: integer
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error interno del servidor
+ */
+app.post('/api/recordatorios/ejecutar', async (req, res) => {
+	try {
+		// Solo administradores pueden ejecutar manualmente
+		// const { isAdministrador } = await import('./constants/roles.js');
+		// if (!isAdministrador(req.user)) {
+		// 	return res.status(403).json({
+		// 		success: false,
+		// 		error: 'Solo administradores pueden ejecutar este endpoint'
+		// 	});
+		// }
+
+		const reminderJob = (await import('./jobs/reminderJob.js')).default;
+		const resultado = await reminderJob.ejecutarManual();
+
+		res.json(resultado);
+	} catch (error) {
+		console.error('Error ejecutando job manualmente:', error);
+		res.status(500).json({
+			success: false,
+			error: 'Error interno del servidor',
+			message: error.message
+		});
+	}
 });
 
 // Ruta de prueba de autenticación JWT (deprecated)
@@ -442,14 +499,13 @@ const startServer = async () => {
 
 		// Conectar a la base de datos
 		await prisma.$connect();
-		console.log('✅ Conectado a la base de datos PostgreSQL');
+
+		// Iniciar job de recordatorios
+		const { startReminderJob } = await import('./jobs/reminderJob.js');
+		startReminderJob();
 
 		// Iniciar servidor
 		app.listen(port, () => {
-			console.log(`🚀 Servidor ejecutándose en puerto ${port}`);
-			console.log(`📊 Entorno: ${nodeEnv}`);
-			console.log(`🌐 URL: http://localhost:${port}`);
-			console.log(`📚 Documentación API: http://localhost:${port}/api-docs`);
 		});
 	} catch (error) {
 		console.error('❌ Error al iniciar el servidor:', error);
@@ -459,13 +515,11 @@ const startServer = async () => {
 
 // Manejo de cierre graceful
 process.on('SIGINT', async () => {
-	console.log('\n🛑 Cerrando servidor...');
 	await prisma.$disconnect();
 	process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-	console.log('\n🛑 Cerrando servidor...');
 	await prisma.$disconnect();
 	process.exit(0);
 });

@@ -3,6 +3,7 @@ import { useAuth } from '@clerk/nextjs';
 /**
  * Cliente API para hacer llamadas autenticadas con Clerk
  */
+export const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 export class ApiClient {
 	private baseUrl: string;
 	private getToken: () => Promise<string | null>;

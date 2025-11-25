@@ -31,7 +31,7 @@ export default function NuevoTestimonio(){
                   <div className="flex items-center gap-2">
               <Edit className="w-5 h-5 text-text-primary" />
               <h2 className="text-lg lg:text-2xl font-semibold text-text-primary">
-                Editar Testimonio
+                Crear Testimonio
               </h2>
             </div>
                 </CardTitle>

@@ -22,7 +22,7 @@ export const ExpedienteByID = ({ id, isReadOnly = false }: ExpedienteByIDProps) 
 
 	if (isLoading) return (<div> Cargando...</div >)
 	if (data) {
-		return <NewExpediente expediente={data} isEditing={!isReadOnly} isReadOnly={isReadOnly} />
+		return <NewExpediente expediente={data} isEditing={!isReadOnly} />
 	}
 
 	return <div>No encontre el expediente</div>

@@ -86,14 +86,16 @@ model PerfilCertificacion {
 }
 
 model Servicio {
-  idServicio     Int              @id @default(autoincrement()) @map("id_servicio")
-  nombreServicio String           @map("nombre_servicio") @db.VarChar(100)
-  descripcion    String?
-  precio         Decimal?         @db.Decimal(10, 2)
-  activo         Boolean          @default(true)
-  citas          Cita[]
-  historiasExito HistoriaExito[]
-  perfiles       PerfilServicio[]
+  idServicio       Int              @id @default(autoincrement()) @map("id_servicio")
+  nombreServicio   String           @map("nombre_servicio") @db.VarChar(100)
+  descripcion      String?
+  precio           Decimal?         @db.Decimal(10, 2)
+  activo           Boolean          @default(true)
+  fechaCreacion    DateTime         @default(now()) @map("fecha_creacion")
+  fechaModificacion DateTime        @default(now()) @updatedAt @map("fecha_modificacion")
+  citas            Cita[]
+  historiasExito   HistoriaExito[]
+  perfiles         PerfilServicio[]
 
   @@map("servicios")
 }
@@ -109,19 +111,24 @@ model PerfilServicio {
 }
 
 model Cita {
-  idCita      Int             @id @default(autoincrement()) @map("id_cita")
-  fechaCita   DateTime?       @map("fecha_cita") @db.Date
-  idPaciente  Int             @map("id_paciente")
-  idMedico    Int             @map("id_medico")
-  idServicio  Int?            @map("id_servicio")
-  descripcion String?
-  estadoCita  String?         @map("estado_cita") @db.VarChar(50)
-  medico      Usuario         @relation("CitaMedico", fields: [idMedico], references: [idUsuario], onDelete: Cascade)
-  paciente    Usuario         @relation("CitaPaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
-  servicio    Servicio?       @relation(fields: [idServicio], references: [idServicio])
-  notas       NotaCita[]
-  resultados  ResultadoCita[]
-  evaluaciones EvaluacionDiagnostico[]
+  idCita                   Int             @id @default(autoincrement()) @map("id_cita")
+  fechaCita                DateTime?       @map("fecha_cita") @db.Date
+  idPaciente               Int             @map("id_paciente")
+  idMedico                 Int             @map("id_medico")
+  idServicio               Int?            @map("id_servicio")
+  descripcion              String?
+  estadoCita               String?         @map("estado_cita") @db.VarChar(50)
+  recordatorioEnviado      Boolean?        @default(false) @map("recordatorio_enviado")
+  fechaRecordatorioEnviado DateTime?       @map("fecha_recordatorio_enviado")
+  tokenConfirmacion        String?         @unique @map("token_confirmacion") @db.VarChar(255)
+  fechaConfirmacion        DateTime?       @map("fecha_confirmacion")
+  medico                   Usuario         @relation("CitaMedico", fields: [idMedico], references: [idUsuario], onDelete: Cascade)
+  paciente                 Usuario         @relation("CitaPaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
+  servicio                 Servicio?       @relation(fields: [idServicio], references: [idServicio])
+  notas                    NotaCita[]
+  resultados              ResultadoCita[]
+  evaluaciones            EvaluacionDiagnostico[]
+  emailLogs                EmailLog[]
 
   @@map("citas")
 }
@@ -339,4 +346,23 @@ model Archivo {
   @@index([categoria])
   @@index([fechaSubida])
   @@map("archivos")
+}
+
+model EmailLog {
+  idLog            Int      @id @default(autoincrement()) @map("id_log")
+  idCita           Int      @map("id_cita")
+  tipoEmail        String   @map("tipo_email") @db.VarChar(50)
+  destinatario     String   @db.VarChar(150)
+  asunto           String   @db.VarChar(255)
+  fechaEnvio       DateTime @default(now()) @map("fecha_envio")
+  estado           String   @db.VarChar(50)
+  errorMessage     String?  @map("error_message")
+  tokenConfirmacion String?  @map("token_confirmacion") @db.VarChar(255)
+  cita             Cita     @relation(fields: [idCita], references: [idCita], onDelete: Cascade)
+
+  @@index([idCita])
+  @@index([tipoEmail])
+  @@index([fechaEnvio])
+  @@index([estado])
+  @@map("email_logs")
 }

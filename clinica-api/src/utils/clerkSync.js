@@ -9,7 +9,6 @@ async function initializeRoles() {
     const rolesCount = await prisma.rol.count();
     
     if (rolesCount === 0) {
-      console.log('🔄 Inicializando roles básicos...');
       
       const basicRoles = [
         { idRol: 1, nombreRol: 'Administrador', descripcion: 'Administrador del sistema' },
@@ -22,7 +21,6 @@ async function initializeRoles() {
         await prisma.rol.create({
           data: role
         });
-        console.log(`✅ Rol creado: ${role.nombreRol}`);
       }
     }
   } catch (error) {
@@ -104,23 +102,7 @@ async function syncClerkUser(clerkUser) {
     await initializeRoles();
     
     // Obtener datos completos del usuario desde Clerk
-    console.log('🔄 Obteniendo datos completos de Clerk para usuario:', clerkUser.id);
     const fullClerkUser = await getClerkUserData(clerkUser.id);
-    
-    console.log('👤 Datos completos obtenidos:', {
-      id: fullClerkUser.id,
-      email: fullClerkUser.email,
-      firstName: fullClerkUser.firstName,
-      lastName: fullClerkUser.lastName,
-      apellido1: fullClerkUser.apellido1,
-      apellido2: fullClerkUser.apellido2
-    });
-    
-    // Buscar usuario existente por email o por clerk_id
-    console.log('🔍 Buscando usuario existente con:', {
-      email: fullClerkUser.email,
-      clerkId: fullClerkUser.id
-    });
     
     let usuario = await prisma.usuario.findFirst({
       where: {
@@ -134,27 +116,9 @@ async function syncClerkUser(clerkUser) {
       }
     });
     
-    console.log('🔍 Usuario encontrado:', usuario ? {
-      id: usuario.idUsuario,
-      nombre: usuario.nombre,
-      apellido1: usuario.apellido1,
-      apellido2: usuario.apellido2,
-      email: usuario.correoElectronico,
-      clerkId: usuario.clerkId
-    } : 'No encontrado');
 
     if (usuario) {
       // Actualizar usuario existente
-      console.log('🔄 Actualizando usuario existente:', {
-        id: usuario.idUsuario,
-        nombreActual: usuario.nombre,
-        apellido1Actual: usuario.apellido1,
-        apellido2Actual: usuario.apellido2,
-        rolActual: usuario.rol?.nombreRol,
-        nombreNuevo: fullClerkUser.firstName,
-        apellido1Nuevo: fullClerkUser.apellido1,
-        apellido2Nuevo: fullClerkUser.apellido2
-      });
       
       // Determinar nuevo rol basado en metadatos de Clerk
       const nuevoRolId = await determineUserRole(fullClerkUser);
@@ -167,9 +131,6 @@ async function syncClerkUser(clerkUser) {
       if (!rolExiste) {
         console.error(`❌ El rol con ID ${nuevoRolId} no existe en la base de datos`);
         // Mantener el rol actual si el nuevo no es válido
-        console.log('🔄 Manteniendo rol actual del usuario');
-      } else {
-        console.log(`🎯 Actualizando rol del usuario: ${usuario.rol?.nombreRol} (ID: ${usuario.idRol}) → Rol ID: ${nuevoRolId}`);
       }
       
       // Forzar la actualización de apellidos y rol
@@ -182,7 +143,6 @@ async function syncClerkUser(clerkUser) {
         ...(rolExiste && { idRol: nuevoRolId }) // Solo actualizar rol si es válido
       };
       
-      console.log('📝 Datos a actualizar:', updateData);
       
       usuario = await prisma.usuario.update({
         where: { idUsuario: usuario.idUsuario },
@@ -192,26 +152,8 @@ async function syncClerkUser(clerkUser) {
         }
       });
       
-      console.log('✅ Usuario actualizado exitosamente:', {
-        id: usuario.idUsuario,
-        nombre: usuario.nombre,
-        apellido1: usuario.apellido1,
-        apellido2: usuario.apellido2,
-        email: usuario.correoElectronico,
-        clerkId: usuario.clerkId,
-        rol: usuario.rol?.nombreRol,
-        idRol: usuario.idRol
-      });
     } else {
       // Crear nuevo usuario
-      console.log('🔄 Creando nuevo usuario de Clerk:', {
-        id: fullClerkUser.id,
-        email: fullClerkUser.email,
-        firstName: fullClerkUser.firstName,
-        lastName: fullClerkUser.lastName,
-        apellido1: fullClerkUser.apellido1,
-        apellido2: fullClerkUser.apellido2
-      });
       
       // Validar que el email existe
       if (!fullClerkUser.email) {
@@ -237,11 +179,8 @@ async function syncClerkUser(clerkUser) {
           throw new Error('No se pudo encontrar un rol válido para el usuario');
         }
         
-        console.log('🔄 Usando rol de paciente como fallback');
         rolId = 4;
       }
-      
-      console.log(`🎯 Creando usuario con rol ID: ${rolId}`);
       
       usuario = await prisma.usuario.upsert({
         where: {
@@ -285,11 +224,6 @@ async function syncClerkUser(clerkUser) {
  */
 async function determineUserRole(clerkUser) {
   try {
-    console.log('🔍 Analizando metadatos de Clerk para determinar rol:', {
-      metadata: clerkUser.metadata,
-      publicMetadata: clerkUser.publicMetadata,
-      privateMetadata: clerkUser.privateMetadata
-    });
 
     // Obtener roles de los metadatos públicos
     const publicRoles = clerkUser.publicMetadata?.roles || [];
@@ -302,12 +236,6 @@ async function determineUserRole(clerkUser) {
       allRoles.push(metadataRole);
     }
     
-    console.log('🎯 Roles encontrados en metadatos:', {
-      publicRoles,
-      privateRoles,
-      metadataRole,
-      allRoles
-    });
     
     // Mapear roles de Clerk a roles de la base de datos
     const roleMapping = {
@@ -327,19 +255,14 @@ async function determineUserRole(clerkUser) {
     for (const role of allRoles) {
       const normalizedRole = role?.toLowerCase?.() || role;
       if (roleMapping[normalizedRole]) {
-        console.log(`🎯 Rol encontrado en metadatos: ${role} -> ID: ${roleMapping[normalizedRole]}`);
         return roleMapping[normalizedRole];
       }
     }
 
     // Si no hay roles en metadatos, usar paciente por defecto
-    console.log('⚠️ No se encontraron roles en los metadatos de Clerk, usando paciente por defecto');
-    console.log('💡 Para configurar roles, ve al Dashboard de Clerk → Users → Metadata y agrega:');
-    console.log('   {"role": "admin"} o {"roles": ["fisioterapeuta"]}');
     return 4; // paciente por defecto
   } catch (error) {
     console.error('Error determinando rol de usuario:', error);
-    console.log('🎯 Rol por defecto en caso de error (paciente): 4');
     return 4; // paciente por defecto en caso de error
   }
 }
@@ -373,7 +296,6 @@ async function getOrCreateClerkUser(req) {
       usuario = await syncClerkUser(req.user);
     } else {
       // Si el usuario existe, verificar si necesita actualización de apellidos
-      console.log('🔄 Usuario existente encontrado, verificando si necesita actualización...');
       
       // Obtener datos completos de Clerk para comparar
       const fullClerkUser = await getClerkUserData(req.user.id);
@@ -383,10 +305,7 @@ async function getOrCreateClerkUser(req) {
                          (usuario.apellido1 === fullClerkUser.lastName && !usuario.apellido2);
       
       if (needsUpdate) {
-        console.log('🔄 Actualizando apellidos del usuario existente...');
         usuario = await syncClerkUser(req.user);
-      } else {
-        console.log('✅ Usuario ya tiene apellidos separados correctamente');
       }
     }
 
@@ -405,7 +324,6 @@ async function syncClerkUserMiddleware(req, res, next) {
     if (req.user) {
       const dbUser = await getOrCreateClerkUser(req);
       req.dbUser = dbUser; // Agregar usuario de la DB al request
-      console.log('🔍 Usuario sincronizado:', dbUser);
     }
     next();
   } catch (error) {
@@ -418,35 +336,7 @@ async function syncClerkUserMiddleware(req, res, next) {
  * Función para mostrar información sobre cómo configurar roles en Clerk
  */
 function showClerkRoleConfiguration() {
-  console.log(`
-🔧 CONFIGURACIÓN DE ROLES EN CLERK
-=====================================
-
-Para que los roles funcionen correctamente, debes configurar los metadatos del usuario en Clerk:
-
-1. En el Dashboard de Clerk, ve a "Users" → Selecciona un usuario
-2. En la sección "Metadata", agrega uno de estos campos:
-
-   OPCIÓN 1 - Campo 'role' (recomendado):
-   {
-     "role": "admin"           // o "fisioterapeuta", "recepcionista", "paciente"
-   }
-
-   OPCIÓN 2 - Campo 'roles' (array):
-   {
-     "roles": ["admin"]         // o ["fisioterapeuta"], ["recepcionista"], ["paciente"]
-   }
-
-3. Roles válidos:
-   - "admin" o "administrador" → Administrador (ID: 1)
-   - "fisioterapeuta", "medico", "doctor" → Fisioterapeuta (ID: 2)
-   - "recepcionista", "receptionist" → Recepcionista (ID: 3)
-   - "paciente", "patient", "user" → Paciente (ID: 4)
-
-4. Si no se especifica rol, se asignará automáticamente como "paciente"
-
-📝 NOTA: Los metadatos se pueden configurar tanto en publicMetadata como en privateMetadata
-`);
+  // Función mantenida para compatibilidad, pero sin logs
 }
 
 export {

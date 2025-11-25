@@ -14,9 +14,11 @@ import {
 } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-	RefreshCw, Filter, Search, ChevronRight, ChevronLeft, Package
+	RefreshCw, Filter, Search, ChevronRight, ChevronLeft, Package, Plus
 } from "lucide-react"
 import { useNotification } from "@/components/UseNotification"
+import EditServiceDialog from "@/components/EditServiceDialog"
+import NewServiceDialog from "@/components/NewServiceDialog"
 
 // --- util pequeño para moneda y fecha ---
 const formatCRC = (n: number) =>
@@ -43,13 +45,29 @@ export default function ServiceList() {
 	const [page, setPage] = useState(1)
 	const [limit, setLimit] = useState(10)
 	const [search, setSearch] = useState("")
+	const [editingService, setEditingService] = useState<Servicio | null>(null)
+	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+	const [isNewServiceDialogOpen, setIsNewServiceDialogOpen] = useState(false)
+	const [processingServiceId, setProcessingServiceId] = useState<number | null>(null)
 
 	const { isLoading, data = [], refetch } = useQuery<Servicio[]>({
 		queryKey: ['servicios', page, search, limit],
 		queryFn: async () => {
-			// adapta a tu shape: res.servicios || res.items || res
 			const res = await getServicios(page, search, limit)
-			return (res?.servicios)
+			// Transformar los datos del backend al formato esperado por el frontend
+			const servicios = res?.servicios || []
+			return servicios.map((servicio: any) => {
+
+
+				return {
+					id: servicio.idServicio,
+					nombre: servicio.nombreServicio,
+					detalle: servicio.descripcion || '',
+					precio: servicio.precio ? Number(servicio.precio) : 0,
+					estado: servicio.activo ? 'Activo' : 'Inactivo' as 'Activo' | 'Inactivo',
+					fechaModificacion: servicio.fechaModificacion || servicio.fechaActualizacion || servicio.fechaCreacion || null
+				}
+			})
 		},
 		staleTime: 60 * 1000,
 	})
@@ -57,50 +75,71 @@ export default function ServiceList() {
 	return (
 		<>
 			{/* Filters */}
-			<Card>
+			<Card className="w-full overflow-hidden">
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
 						<Filter className="w-5 h-5" />
 						Filtros y Búsqueda
 					</CardTitle>
 				</CardHeader>
-				<CardContent>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-						<div className="lg:col-span-2">
-							<div className="relative">
-								<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground w-4 h-4" />
+				<CardContent className="overflow-visible">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 w-full">
+						{/* Búsqueda - Ocupa 2 columnas en desktop */}
+						<div className="lg:col-span-2 min-w-0">
+							<div className="relative w-full">
+								<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground w-4 h-4" />
 								<input
 									placeholder="Buscar servicios..."
-									className="w-full pl-10 pr-4 py-2.5 bg-background border border-muted rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+									className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-background border border-muted rounded-lg text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200"
 									value={search}
 									onChange={(e) => setSearch(e.target.value)}
 								/>
 							</div>
 						</div>
 
-						<Select defaultValue="all">
-							<SelectTrigger>
-								<SelectValue placeholder="Categoría" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">Todas las categorías</SelectItem>
-							</SelectContent>
-						</Select>
+						{/* Categoría - 1 columna */}
+						<div className="min-w-0">
+							<Select defaultValue="all">
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Categoría" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">Todas las categorías</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
 
-						<Select defaultValue="all">
-							<SelectTrigger>
-								<SelectValue placeholder="Estado" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">Todos los estados</SelectItem>
-								<SelectItem value="activo">Activo</SelectItem>
-								<SelectItem value="inactivo">Inactivo</SelectItem>
-							</SelectContent>
-						</Select>
+						{/* Estado - 1 columna */}
+						<div className="min-w-0">
+							<Select defaultValue="all">
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder="Estado" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">Todos los estados</SelectItem>
+									<SelectItem value="activo">Activo</SelectItem>
+									<SelectItem value="inactivo">Inactivo</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
 
-						<div className="flex gap-2">
-
-							<Button variant="outline" size="icon" onClick={() => refetch()}>
+						{/* Botones de acción - 1 columna, flex en desktop, columna completa en móvil */}
+						<div className="flex flex-col sm:flex-row gap-2 w-full min-w-0">
+							<Button 
+								variant="default" 
+								onClick={() => setIsNewServiceDialogOpen(true)}
+								className="flex items-center justify-center gap-2 w-full sm:flex-1 min-w-0"
+							>
+								<Plus className="w-4 h-4 flex-shrink-0" />
+								<span className="hidden sm:inline truncate">Nuevo Servicio</span>
+								<span className="sm:hidden">Nuevo</span>
+							</Button>
+							<Button 
+								variant="outline" 
+								size="icon" 
+								onClick={() => refetch()}
+								className="flex-shrink-0 aspect-square w-full sm:w-auto"
+							>
 								<RefreshCw className="w-4 h-4" />
 							</Button>
 						</div>
@@ -115,11 +154,11 @@ export default function ServiceList() {
 						<Table className="overflow-x-auto">
 							<TableHeader>
 								<TableRow>
-									<TableHead>Servicio</TableHead>
-									<TableHead>Estado</TableHead>
-									<TableHead>Precio</TableHead>
-									<TableHead>Actualizado</TableHead>
-									<TableHead>Acciones</TableHead>
+									<TableHead className="max-w-[200px]">Servicio</TableHead>
+									<TableHead className="w-[100px]">Estado</TableHead>
+									<TableHead className="w-[120px]">Precio</TableHead>
+									<TableHead className="w-[140px]">Actualizado</TableHead>
+									<TableHead className="w-[180px]">Acciones</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -137,12 +176,12 @@ export default function ServiceList() {
 										const cfg = statusConfig[key]
 										return (
 											<TableRow key={`service-${index}`} className="hover:bg-muted/50">
-												<TableCell className="font-medium">
+												<TableCell className="font-medium max-w-[300px]">
 													<div className="flex items-center gap-2">
-														<Package className="w-4 h-4 text-muted-foreground" />
-														<div>
-															<div>{service.nombre}</div>
-															<div className="text-xs text-muted-foreground">{service.detalle || 'Sin descripción'}</div>
+														<Package className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+														<div className="min-w-0 flex-1">
+															<div className="truncate">{service.nombre}</div>
+															<div className="text-xs text-muted-foreground truncate">{service.detalle || 'Sin descripción'}</div>
 														</div>
 													</div>
 												</TableCell>
@@ -150,25 +189,57 @@ export default function ServiceList() {
 													<Badge className={cfg?.color}>{cfg?.label}</Badge>
 												</TableCell>
 												<TableCell>{formatCRC(service.precio)}</TableCell>
-												<TableCell className="text-sm">{formatRelative((service as any).updatedAt)}</TableCell>
+												<TableCell className="text-sm">{formatRelative(service.fechaModificacion)}</TableCell>
 												<TableCell>
-													<Link href={`/admin/services/${service.id}/edit`}>
-														<Button variant="outline" size="sm" className="mr-3">Editar</Button>
-													</Link>
-													<Button
-														variant="destructive" size="sm"
-														onClick={async () => {
-															await deleteServicio(service.id)
-															await refetch()
-															showNotification?.({
-																title: "Servicio eliminado",
-																message: `Se eliminó "${service.nombre}"`,
-																type: "success",
-															})
-														}}
-													>
-														Inactivar
-													</Button>
+													<div className="flex items-center gap-2">
+														<Button 
+															variant="outline" 
+															size="sm" 
+															className="w-[90px]"
+															onClick={() => {
+																setEditingService(service)
+																setIsEditDialogOpen(true)
+															}}
+														>
+															Editar
+														</Button>
+														<Button
+															variant={service.estado === 'Activo' ? "destructive" : "default"} 
+															size="sm"
+															className="w-[90px]"
+															disabled={processingServiceId === service.id}
+															onClick={async () => {
+																setProcessingServiceId(service.id)
+																try {
+																	const result = await deleteServicio(service.id)
+																	if (result.success) {
+																		showNotification?.({
+																			title: service.estado === 'Activo' ? "Servicio inactivado" : "Servicio activado",
+																			message: result.message || (service.estado === 'Activo' ? `Se inactivó "${service.nombre}"` : `Se activó "${service.nombre}"`),
+																			type: "success",
+																		})
+																	} else {
+																		showNotification?.({
+																			title: "Error",
+																			message: result.message || `Error al ${service.estado === 'Activo' ? 'inactivar' : 'activar'} "${service.nombre}"`,
+																			type: "error",
+																		})
+																	}
+																	await refetch()
+																} finally {
+																	setProcessingServiceId(null)
+																}
+															}}
+														>
+															{processingServiceId === service.id ? (
+																<div className="flex items-center gap-1">
+																	<div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+																</div>
+															) : (
+																service.estado === 'Activo' ? 'Inactivar' : 'Activar'
+															)}
+														</Button>
+													</div>
 												</TableCell>
 											</TableRow>
 										)
@@ -200,7 +271,7 @@ export default function ServiceList() {
 											</div>
 											<div>
 												<h3 className="font-medium">{service.nombre}</h3>
-												<p className="text-sm text-muted-foreground">{service.detalle || 'Sin descripción'}</p>
+												<p className="text-sm text-muted-foreground line-clamp-2">{service.detalle || 'Sin descripción'}</p>
 											</div>
 										</div>
 										<Badge className={cfg?.color}>{cfg?.label}</Badge>
@@ -213,26 +284,55 @@ export default function ServiceList() {
 										</div>
 										<div className="flex items-center justify-between">
 											<p className="text-sm text-muted-foreground">Actualizado</p>
-											<p className="text-sm font-medium">{formatRelative((service as any).updatedAt)}</p>
+											<p className="text-sm font-medium">{formatRelative(service.fechaModificacion)}</p>
 										</div>
 
 										<div className="flex gap-2 pt-2">
-											<Link href={`/admin/services/${service.id}/edit`} className="flex-1">
-												<Button variant="outline" className="w-full mb-3">Editar</Button>
-											</Link>
-											<Button
-												variant="destructive" className="w-full mb-3"
-												onClick={async () => {
-													await deleteServicio(service.id)
-													await refetch()
-													showNotification?.({
-														title: "Servicio eliminado",
-														message: `Se eliminó "${service.nombre}"`,
-														type: "success",
-													})
+											<Button 
+												variant="outline" 
+												className="w-full mb-3"
+												onClick={() => {
+													setEditingService(service)
+													setIsEditDialogOpen(true)
 												}}
 											>
-												Inactivar
+												Editar
+											</Button>
+											<Button
+												variant={service.estado === 'Activo' ? "destructive" : "default"} 
+												className="w-full mb-3"
+												disabled={processingServiceId === service.id}
+												onClick={async () => {
+													setProcessingServiceId(service.id)
+													try {
+														const result = await deleteServicio(service.id)
+														if (result.success) {
+															showNotification?.({
+																title: service.estado === 'Activo' ? "Servicio inactivado" : "Servicio activado",
+																message: result.message || (service.estado === 'Activo' ? `Se inactivó "${service.nombre}"` : `Se activó "${service.nombre}"`),
+																type: "success",
+															})
+														} else {
+															showNotification?.({
+																title: "Error",
+																message: result.message || `Error al ${service.estado === 'Activo' ? 'inactivar' : 'activar'} "${service.nombre}"`,
+																type: "error",
+															})
+														}
+														await refetch()
+													} finally {
+														setProcessingServiceId(null)
+													}
+												}}
+											>
+												{processingServiceId === service.id ? (
+													<div className="flex items-center justify-center gap-2">
+														<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+														<span>Procesando...</span>
+													</div>
+												) : (
+													service.estado === 'Activo' ? 'Inactivar' : 'Activar'
+												)}
 											</Button>
 										</div>
 									</div>
@@ -291,6 +391,32 @@ export default function ServiceList() {
 					</div>
 				</CardContent>
 			</Card>
+
+			{/* Edit Service Dialog */}
+			{editingService && (
+				<EditServiceDialog
+					servicio={editingService}
+					open={isEditDialogOpen}
+					onOpenChange={(open) => {
+						setIsEditDialogOpen(open)
+						if (!open) {
+							setEditingService(null)
+							refetch()
+						}
+					}}
+				/>
+			)}
+
+			{/* New Service Dialog */}
+			<NewServiceDialog
+				open={isNewServiceDialogOpen}
+				onOpenChange={(open) => {
+					setIsNewServiceDialogOpen(open)
+					if (!open) {
+						refetch()
+					}
+				}}
+			/>
 		</>
 	)
 }

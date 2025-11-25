@@ -30,8 +30,10 @@ Microservicio  encargado de manejar alta carga de conexiones de forma eficiente 
 ``` bash
     air
 ```
+## Diagrama
+![Diagrama del chat](./diagrama-chat.png)
 
-## To do:
+#### To do:
 
 - [x] Autorizar acciones dependiendo del rol paciente, recepcionista 
 - [x] Crear salas entre  paciente y recepcionista
@@ -40,4 +42,4 @@ Microservicio  encargado de manejar alta carga de conexiones de forma eficiente 
 - [x] Enviar notificaciones en tiempo real
 - [x] Enviar errores al cliente
 - [ ] enviar  chats activos  y actualizarlos
-- [ ] Encuestas de satisfaccion
+- [x] Encuestas de satisfaccion

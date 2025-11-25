@@ -125,7 +125,6 @@ router.get('/paciente/:pacienteId', async (req, res) => {
     const hasAuth = req.headers.authorization && req.headers.authorization !== 'Bearer mock-token';
     
     if (!hasAuth && isDevelopment) {
-      console.log('🛠️ Modo desarrollo: Sin autenticación, obteniendo datos reales');
       
       // Obtener datos reales de la base de datos
       // Buscar por clerkId en lugar de idUsuario
@@ -172,18 +171,6 @@ router.get('/paciente/:pacienteId', async (req, res) => {
           resultados: {
             orderBy: { fechaRegistro: 'desc' },
             take: 1
-          },
-          evaluaciones: {
-            include: {
-              doctor: {
-                select: {
-                  idUsuario: true,
-                  nombre: true,
-                  apellido1: true,
-                  apellido2: true
-                }
-              }
-            }
           }
         },
         orderBy: { fechaCita: 'desc' }
@@ -261,12 +248,16 @@ router.get('/paciente/:pacienteId', async (req, res) => {
       });
     }
 
-    const userId = req.user?.idUsuario;
-    const userRole = req.user?.idRol || 3; // Rol paciente por defecto
+    // Usar req.dbUser para obtener datos de la base de datos (incluye rol)
+    // Si no existe req.dbUser, intentar usar req.user como fallback
+    const dbUser = req.dbUser || req.user;
+    const userId = dbUser?.idUsuario;
+    const userRole = dbUser?.idRol || 3; // Rol paciente por defecto
 
     // Verificar permisos: solo el paciente, sus médicos o admin pueden ver las citas
     const isOwner = usuarioPaciente.idUsuario === userId;
-    const isAdmin = isAdministrador(req.user);
+    // Usar dbUser para validar roles (tiene la estructura rol.idRol)
+    const isAdmin = isAdministrador(dbUser);
 
     // Verificar si el usuario es médico del paciente
     let isMedicoDelPaciente = false;
@@ -333,7 +324,7 @@ router.get('/paciente/:pacienteId', async (req, res) => {
         };
       })
     );
-
+    
     res.json({
       citas: citasConDiagnosticos,
       total: citasConDiagnosticos.length,

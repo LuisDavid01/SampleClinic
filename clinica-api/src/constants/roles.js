@@ -34,12 +34,19 @@ const getRoleDescription = (roleId) => {
 
 // Función para verificar si un usuario tiene un rol específico
 const hasRole = (user, roleId) => {
-	return user.rol?.idRol === roleId;
+	if (!user) return false;
+	// Validar si tiene la estructura rol.idRol (usuario de BD)
+	if (user.rol?.idRol === roleId) return true;
+	// Fallback: validar si tiene idRol directo (caso alternativo)
+	if (user.idRol === roleId) return true;
+	return false;
 };
 
 // Funciones específicas para cada rol
 const isAdministrador = (user) => {
-	return hasRole(user, ROLES.Admin);
+	if (!user) return false;
+	// Validar con ROLES.ADMINISTRADOR (constante correcta)
+	return hasRole(user, ROLES.ADMINISTRADOR);
 };
 
 const isFisioterapeuta = (user) => {

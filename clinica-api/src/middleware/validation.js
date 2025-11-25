@@ -4,10 +4,6 @@ import { body, param, query, validationResult } from 'express-validator';
 const handleValidationErrors = (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
-		console.log('=== VALIDATION ERRORS ===');
-		console.log('Request body:', req.body);
-		console.log('Validation errors:', errors.array());
-		console.log('========================');
 		return res.status(400).json({
 			error: 'Datos de entrada inválidos',
 			message: 'Por favor, revise los datos enviados',
@@ -165,7 +161,7 @@ const validateCita = [
 
 // Validaciones para servicios
 const validateServicio = [
-	body('nombreServicio')
+	body('nombre')
 		.notEmpty()
 		.withMessage('El nombre del servicio es requerido')
 		.isLength({ min: 2, max: 100 })
@@ -481,12 +477,13 @@ const validateEncuesta = [
 		.isLength({ max: 2000 })
 		.withMessage('El comentario no puede exceder 2000 caracteres'),
 
-	body('ClerkId')
+	body('idUsuario')
 		.notEmpty()
 		.withMessage('El Id de Clerk es requerido'),
 
 	handleValidationErrors
 ];
+
 
 export {
 	handleValidationErrors,

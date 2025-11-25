@@ -12,6 +12,7 @@ export type Servicio = {
   detalle: string
   precio: number
   estado: ServiceStatus
+  fechaModificacion?: string | Date
 }
 
 export interface Service {

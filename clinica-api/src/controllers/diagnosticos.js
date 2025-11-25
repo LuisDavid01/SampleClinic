@@ -190,15 +190,6 @@ export const createDiagnostico = async (req, res) => {
     const { idPaciente, idDoctor, diagnostico, idExpediente, fecha } = req.body;
     const userId = req.user.id;
 
-    // Debug: Log los datos recibidos
-    console.log('createDiagnostico - Datos recibidos:', {
-      idPaciente,
-      idDoctor,
-      diagnostico,
-      idExpediente,
-      fecha,
-      userId
-    });
 
     // Validar datos requeridos
     if (!idPaciente || !diagnostico || !fecha) {
@@ -215,14 +206,6 @@ export const createDiagnostico = async (req, res) => {
       include: { rol: true }
     });
 
-    console.log('createDiagnostico - Paciente encontrado:', {
-      paciente,
-      idPaciente: parseInt(idPaciente),
-      rol: paciente?.rol,
-      rolId: paciente?.rol?.idRol,
-      ROLES_PACIENTE: ROLES.PACIENTE,
-      comparison: paciente?.rol?.idRol === ROLES.PACIENTE
-    });
 
     if (!paciente) {
       return res.status(404).json({
@@ -234,11 +217,6 @@ export const createDiagnostico = async (req, res) => {
 
     // Verificar que el paciente tiene rol de paciente
     if (paciente.rol?.idRol !== ROLES.PACIENTE) {
-      console.log('createDiagnostico - Error de rol:', {
-        pacienteRol: paciente.rol?.idRol,
-        expectedRol: ROLES.PACIENTE,
-        paciente: paciente
-      });
       return res.status(400).json({
         success: false,
         error: 'Usuario inválido',

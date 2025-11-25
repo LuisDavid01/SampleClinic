@@ -6,177 +6,180 @@ import { AntecedenteClinico, AntecedenteFormData } from '@/types/Antecedentes';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 
 async function fetchWithAuth(url: string, options?: RequestInit) {
-  try {
-    console.log('🌐 [FETCH] fetchWithAuth INICIADO');
-    console.log('🌐 [FETCH] URL:', url);
-    console.log('🌐 [FETCH] Options recibidos:', options);
-    console.log('🌐 [FETCH] Options type:', typeof options);
-    console.log('🌐 [FETCH] Method:', options?.method);
-    console.log('🌐 [FETCH] Body:', options?.body);
-    console.log('🌐 [FETCH] Body type:', typeof options?.body);
-    
-    const user = await auth();
-    const token = await user.getToken();
-    
-    if (!token) {
-      throw new Error('Token de autorización requerido');
-    }
+	try {
 
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      ...options?.headers,
-    };
 
-    console.log('📡 [FETCH] Enviando petición HTTP...');
-    console.log('📡 [FETCH] Body que se va a enviar:', options?.body);
-    console.log('📡 [FETCH] Body type:', typeof options?.body);
-    
-    // Verificar el contenido del body antes de enviarlo
-    if (options?.body && typeof options.body === 'string') {
-      try {
-        const bodyData = JSON.parse(options.body);
-        console.log('📡 [FETCH] Datos del body parseados:');
-        console.log('- urgenciasMedicas en body:', bodyData.urgenciasMedicas, typeof bodyData.urgenciasMedicas);
-        console.log('- contactoEmergenciaTelefono en body:', bodyData.contactoEmergenciaTelefono, typeof bodyData.contactoEmergenciaTelefono);
-        console.log('- notasAdicionales en body:', bodyData.notasAdicionales, typeof bodyData.notasAdicionales);
-        
-        // Verificar si los campos están vacíos en el JSON
-        console.log('📡 [FETCH] Verificación de campos en JSON:');
-        console.log('- urgenciasMedicas está vacío:', !bodyData.urgenciasMedicas || bodyData.urgenciasMedicas.trim() === '');
-        console.log('- contactoEmergenciaTelefono está vacío:', !bodyData.contactoEmergenciaTelefono || bodyData.contactoEmergenciaTelefono.trim() === '');
-        console.log('- notasAdicionales está vacío:', !bodyData.notasAdicionales || bodyData.notasAdicionales.trim() === '');
-      } catch (e) {
-        console.log('📡 [FETCH] Error parseando body:', e);
-      }
-    }
-    
-    const response = await fetch(url, { ...options, headers });
-    
-    console.log('📡 [FETCH] Respuesta recibida:', response.status, response.statusText);
+		const user = await auth();
+		const token = await user.getToken();
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('❌ [FETCH] Error en respuesta:', errorData);
-      throw new Error(errorData.error || 'Error en la solicitud');
-    }
-    
-    const responseData = await response.json();
-    console.log('✅ [FETCH] Datos de respuesta:', responseData);
-    return responseData;
-  } catch (error) {
-    console.error('💥 [FETCH] Error en fetchWithAuth:', error);
-    throw error;
-  }
+		if (!token) {
+			throw new Error('Token de autorización requerido');
+		}
+
+		const headers = {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${token}`,
+			...options?.headers,
+		};
+
+
+		// Verificar el contenido del body antes de enviarlo
+		if (options?.body && typeof options.body === 'string') {
+			try {
+				const bodyData = JSON.parse(options.body);
+				console.log('📡 [FETCH] Datos del body parseados:');
+				console.log('- urgenciasMedicas en body:', bodyData.urgenciasMedicas, typeof bodyData.urgenciasMedicas);
+				console.log('- contactoEmergenciaTelefono en body:', bodyData.contactoEmergenciaTelefono, typeof bodyData.contactoEmergenciaTelefono);
+				console.log('- notasAdicionales en body:', bodyData.notasAdicionales, typeof bodyData.notasAdicionales);
+
+				// Verificar si los campos están vacíos en el JSON
+				console.log('📡 [FETCH] Verificación de campos en JSON:');
+				console.log('- urgenciasMedicas está vacío:', !bodyData.urgenciasMedicas || bodyData.urgenciasMedicas.trim() === '');
+				console.log('- contactoEmergenciaTelefono está vacío:', !bodyData.contactoEmergenciaTelefono || bodyData.contactoEmergenciaTelefono.trim() === '');
+				console.log('- notasAdicionales está vacío:', !bodyData.notasAdicionales || bodyData.notasAdicionales.trim() === '');
+			} catch (e) {
+				console.log('📡 [FETCH] Error parseando body:', e);
+			}
+		}
+
+		const response = await fetch(url, { ...options, headers });
+
+		// Manejar respuesta no exitosa
+		if (!response.ok) {
+			const errorData = await response.json();
+			// Si es un 404 con el mensaje específico de "no se encontraron antecedentes", 
+			// no es un error, solo significa que no hay datos registrados
+			if (response.status === 404 && 
+				errorData.error === 'No se encontraron antecedentes clínicos para este paciente') {
+				// Retornar un objeto especial que indica "no encontrado" pero no es un error
+				return { notFound: true, data: null };
+			}
+			throw new Error(errorData.error || 'Error en la solicitud');
+		}
+
+		const responseData = await response.json();
+		return responseData;
+	} catch (error) {
+		console.error('💥 [FETCH] Error en fetchWithAuth:', error);
+		throw error;
+	}
 }
 
 export interface ActionResponse {
-  success: boolean;
-  data?: any;
-  error?: string;
-  details?: string;
+	success: boolean;
+	data?: any;
+	error?: string;
+	details?: string;
 }
 
 /**
  * Obtener antecedentes clínicos de un paciente
  */
 export async function getAntecedentes(pacienteId: number): Promise<ActionResponse> {
-  try {
-    const response = await fetchWithAuth(`${API_BASE_URL}/pacientes/${pacienteId}/antecedentes`);
-    
-    return {
-      success: true,
-      data: response.data
-    };
-  } catch (error: any) {
-    console.error('Error obteniendo antecedentes:', error);
-    return {
-      success: false,
-      error: 'Error obteniendo antecedentes clínicos',
-      details: error.message
-    };
-  }
+	try {
+		const response = await fetchWithAuth(`${API_BASE_URL}/pacientes/${pacienteId}/antecedentes`);
+
+		// Si no se encontraron antecedentes, retornar éxito pero sin datos
+		if (response.notFound) {
+			return {
+				success: true,
+				data: null
+			};
+		}
+
+		return {
+			success: true,
+			data: response.data
+		};
+	} catch (error: any) {
+		console.error('Error obteniendo antecedentes:', error);
+		return {
+			success: false,
+			error: 'Error obteniendo antecedentes clínicos',
+			details: error.message
+		};
+	}
 }
 
 /**
  * Crear antecedentes clínicos para un paciente
  */
 export async function createAntecedentes(
-  pacienteId: number, 
-  data: AntecedenteFormData
+	pacienteId: number,
+	data: AntecedenteFormData
 ): Promise<ActionResponse> {
-  try {
-    const response = await fetchWithAuth(`${API_BASE_URL}/pacientes/${pacienteId}/antecedentes`, {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-    
-    return {
-      success: true,
-      data: response.data,
-      details: 'Antecedentes clínicos creados exitosamente'
-    };
-  } catch (error: any) {
-    console.error('Error creando antecedentes:', error);
-    return {
-      success: false,
-      error: 'Error creando antecedentes clínicos',
-      details: error.message
-    };
-  }
+	try {
+		const response = await fetchWithAuth(`${API_BASE_URL}/pacientes/${pacienteId}/antecedentes`, {
+			method: 'POST',
+			body: JSON.stringify(data)
+		});
+
+		return {
+			success: true,
+			data: response.data,
+			details: 'Antecedentes clínicos creados exitosamente'
+		};
+	} catch (error: any) {
+		console.error('Error creando antecedentes:', error);
+		return {
+			success: false,
+			error: 'Error creando antecedentes clínicos',
+			details: error.message
+		};
+	}
 }
 
 /**
  * Actualizar antecedentes clínicos de un paciente
  */
 export async function updateAntecedentes(
-  pacienteId: number, 
-  data: AntecedenteFormData
+	pacienteId: number,
+	data: AntecedenteFormData
 ): Promise<ActionResponse> {
-  try {
-    
-    // Preparar las opciones de la petición
-    const requestOptions = {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    };
-    
-    
-    // Usar los datos directamente sin procesamiento adicional
-    const response = await fetchWithAuth(`${API_BASE_URL}/pacientes/${pacienteId}/antecedentes`, requestOptions);
-    
-    return {
-      success: true,
-      data: response.data,
-      details: 'Antecedentes clínicos actualizados exitosamente'
-    };
-  } catch (error: any) {
-    console.error('Error actualizando antecedentes:', error);
-    return {
-      success: false,
-      error: 'Error actualizando antecedentes clínicos',
-      details: error.message
-    };
-  }
+	try {
+
+		// Preparar las opciones de la petición
+		const requestOptions = {
+			method: 'PUT',
+			body: JSON.stringify(data)
+		};
+
+
+		// Usar los datos directamente sin procesamiento adicional
+		const response = await fetchWithAuth(`${API_BASE_URL}/pacientes/${pacienteId}/antecedentes`, requestOptions);
+
+		return {
+			success: true,
+			data: response.data,
+			details: 'Antecedentes clínicos actualizados exitosamente'
+		};
+	} catch (error: any) {
+		console.error('Error actualizando antecedentes:', error);
+		return {
+			success: false,
+			error: 'Error actualizando antecedentes clínicos',
+			details: error.message
+		};
+	}
 }
 
 /**
  * Obtener historial de cambios de antecedentes
  */
 export async function getHistorialAntecedentes(pacienteId: number): Promise<ActionResponse> {
-  try {
-    const response = await fetchWithAuth(`${API_BASE_URL}/pacientes/${pacienteId}/antecedentes/historial`);
-    
-    return {
-      success: true,
-      data: response.data
-    };
-  } catch (error: any) {
-    console.error('Error obteniendo historial de antecedentes:', error);
-    return {
-      success: false,
-      error: 'Error obteniendo historial de antecedentes',
-      details: error.message
-    };
-  }
+	try {
+		const response = await fetchWithAuth(`${API_BASE_URL}/pacientes/${pacienteId}/antecedentes/historial`);
+
+		return {
+			success: true,
+			data: response.data
+		};
+	} catch (error: any) {
+		console.error('Error obteniendo historial de antecedentes:', error);
+		return {
+			success: false,
+			error: 'Error obteniendo historial de antecedentes',
+			details: error.message
+		};
+	}
 }

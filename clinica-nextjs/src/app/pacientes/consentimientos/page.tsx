@@ -20,55 +20,13 @@ import {
 	FileCheck
 } from "lucide-react";
 import { Consentimiento } from "@/types/PacienteTypes";
+import { Archivo } from "@/types/Consent";
 import Link from "next/link";
-
-// Datos de ejemplo - en producción vendrían de una API
-const consentimientosEjemplo: Consentimiento[] = [
-	{
-		id: "1",
-		pacienteId: "paciente1",
-		tipo: "tratamiento",
-		titulo: "Consentimiento Informado para Tratamiento de Fisioterapia",
-		contenido: "Consiento en recibir tratamiento de fisioterapia para mi condición médica. Entiendo los riesgos y beneficios asociados con este tratamiento.",
-		fechaFirma: new Date("2024-01-10"),
-		estado: "firmado",
-		archivoUrl: "/consentimientos/consentimiento-tratamiento-2024-01-10.pdf",
-		version: "1.0"
-	},
-	{
-		id: "2",
-		pacienteId: "paciente1",
-		tipo: "confidencialidad",
-		titulo: "Acuerdo de Confidencialidad y Privacidad",
-		contenido: "Autorizo el uso de mi información médica para fines de tratamiento, manteniendo la confidencialidad según las leyes vigentes.",
-		fechaFirma: new Date("2024-01-10"),
-		estado: "firmado",
-		archivoUrl: "/consentimientos/acuerdo-confidencialidad-2024-01-10.pdf",
-		version: "2.1"
-	},
-	{
-		id: "3",
-		pacienteId: "paciente1",
-		tipo: "procedimiento",
-		titulo: "Consentimiento para Terapia Manual",
-		contenido: "Consiento en recibir terapia manual como parte de mi tratamiento de fisioterapia, comprendiendo las técnicas que se utilizarán.",
-		fechaFirma: new Date("2024-01-15"),
-		estado: "firmado",
-		archivoUrl: "/consentimientos/consentimiento-terapia-manual-2024-01-15.pdf",
-		version: "1.2"
-	},
-	{
-		id: "4",
-		pacienteId: "paciente1",
-		tipo: "tratamiento",
-		titulo: "Consentimiento para Ejercicios de Rehabilitación",
-		contenido: "Autorizo la realización de ejercicios de rehabilitación bajo supervisión profesional, comprometiéndome a seguir las instrucciones.",
-		fechaFirma: new Date("2024-01-22"),
-		estado: "firmado",
-		archivoUrl: "/consentimientos/consentimiento-ejercicios-2024-01-22.pdf",
-		version: "1.0"
-	}
-];
+import { useQuery } from "@tanstack/react-query";
+import { useApiClient, apiEndpoints, baseUrl } from "@/utils/apiClient";
+import { getConsentimientosByExpediente } from "@/actions/consentimientos";
+import { getExpedientes } from "@/actions/expedientes";
+import { downloadConsentimiento } from "@/actions/consentimientos";
 
 const getTipoColor = (tipo: Consentimiento['tipo']) => {
 	switch (tipo) {
@@ -156,10 +114,73 @@ const getEstadoText = (estado: Consentimiento['estado']) => {
 
 export default function ConsentimientosPage() {
 	const { user } = useUser();
-	const [consentimientos, setConsentimientos] = useState<Consentimiento[]>(consentimientosEjemplo);
+	const apiClient = useApiClient();
 	const [filtroTipo, setFiltroTipo] = useState<string>('todos');
 	const [filtroEstado, setFiltroEstado] = useState<string>('todos');
 	const [busqueda, setBusqueda] = useState<string>('');
+
+	// Obtener usuario actual
+	const { data: currentUser, isLoading: isLoadingUser } = useQuery({
+		queryKey: ['currentUser', user?.id],
+		queryFn: async () => {
+			const res = await apiClient.get(apiEndpoints.getUsuarios());
+			return res.usuarios.find((u: any) => u.clerkId === user?.id);
+		},
+		enabled: !!user?.id,
+		staleTime: 10 * 60 * 1000,
+	});
+
+	// Obtener expediente del paciente
+	const { data: expedientesData, isLoading: isLoadingExpedientes } = useQuery({
+		queryKey: ['expedientes', currentUser?.idUsuario],
+		queryFn: async () => {
+			const res = await getExpedientes(1, '', 100);
+			// Filtrar expedientes del paciente actual
+			return res.expedientes?.find((exp: any) => exp.idPaciente === currentUser?.idUsuario) || null;
+		},
+		enabled: !!currentUser?.idUsuario,
+		staleTime: 5 * 60 * 1000,
+	});
+
+	// Obtener archivos de consentimiento del expediente
+	const { data: consentimientosData, isLoading: isLoadingConsentimientos } = useQuery({
+		queryKey: ['consentimientos', expedientesData?.idExpediente, currentUser?.idUsuario],
+		queryFn: async () => {
+			if (!expedientesData?.idExpediente || !currentUser?.idUsuario) {
+				return { success: false, data: [], pagination: {} };
+			}
+			return await getConsentimientosByExpediente(
+				currentUser.idUsuario,
+				expedientesData.idExpediente,
+				1,
+				100
+			);
+		},
+		enabled: !!expedientesData?.idExpediente && !!currentUser?.idUsuario,
+		staleTime: 2 * 60 * 1000,
+	});
+
+	// Convertir archivos a formato Consentimiento
+	const consentimientos: Consentimiento[] = (consentimientosData?.data || [])
+		.filter((archivo: Archivo) => archivo.activo !== false)
+		.map((archivo: Archivo) => {
+			// Extraer tipo de las etiquetas o descripción
+			const tipo = archivo.categoria?.toLowerCase().includes('tratamiento') ? 'tratamiento' :
+				archivo.categoria?.toLowerCase().includes('procedimiento') ? 'procedimiento' :
+				archivo.categoria?.toLowerCase().includes('consentimiento') ? 'confidencialidad' :
+				'otros';
+			return {
+				id: archivo.idArchivo.toString(),
+				pacienteId: archivo.idUsuario.toString(),
+				tipo: tipo as Consentimiento['tipo'],
+				titulo: archivo.descripcion || archivo.nombreOriginal || 'Consentimiento',
+				contenido: archivo.descripcion || 'Consentimiento informado',
+				fechaFirma: new Date(archivo.fechaSubida),
+				estado: 'firmado' as Consentimiento['estado'],
+				archivoUrl: `${baseUrl}/files/${archivo.idUsuario}/${archivo.idArchivo}/serve`,
+				version: '1.0'
+			};
+		});
 
 	// Filtrar consentimientos
 	const consentimientosFiltrados = consentimientos.filter(consentimiento => {
@@ -185,24 +206,71 @@ export default function ConsentimientosPage() {
 		}).format(fecha);
 	};
 
-	const handleDownload = (consentimiento: Consentimiento) => {
-		console.log('Descargando consentimiento:', consentimiento.titulo);
+	const handleDownload = async (consentimiento: Consentimiento) => {
+		try {
+			const archivoId = parseInt(consentimiento.id);
+			const usuarioId = parseInt(consentimiento.pacienteId);
+			const result = await downloadConsentimiento(usuarioId, archivoId);
+			
+			if (result.success && result.data) {
+				// Crear un enlace temporal para descargar
+				const url = window.URL.createObjectURL(result.data);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = consentimiento.titulo + '.pdf';
+				document.body.appendChild(a);
+				a.click();
+				window.URL.revokeObjectURL(url);
+				document.body.removeChild(a);
+			}
+		} catch (error) {
+			console.error('Error al descargar:', error);
+		}
+	};
+
+	const handleView = (consentimiento: Consentimiento) => {
 		if (consentimiento.archivoUrl) {
 			window.open(consentimiento.archivoUrl, '_blank');
 		}
 	};
 
-	const handleView = (consentimiento: Consentimiento) => {
-		console.log('Viendo consentimiento:', consentimiento.titulo);
-		if (consentimiento.archivoUrl) {
-			window.open(consentimiento.archivoUrl, '_blank');
-		}
-	};
+	const isLoading = isLoadingUser || isLoadingExpedientes || isLoadingConsentimientos;
 
 	// Estadísticas
 	const totalConsentimientos = consentimientos.length;
 	const consentimientosFirmados = consentimientos.filter(c => c.estado === 'firmado').length;
 	const consentimientosPendientes = consentimientos.filter(c => c.estado === 'pendiente').length;
+
+	if (isLoading) {
+		return (
+			<div className="min-h-screen bg-background flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+					<p className="text-muted-foreground">Cargando consentimientos...</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (!expedientesData) {
+		return (
+			<div className="min-h-screen bg-background">
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+					<Card className="bg-card border-0 shadow-sm">
+						<CardContent className="p-12 text-center">
+							<FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+							<h3 className="text-xl font-semibold text-muted-foreground mb-2">
+								No se encontró expediente
+							</h3>
+							<p className="text-muted-foreground">
+								No tienes un expediente activo. Por favor contacta con tu médico.
+							</p>
+						</CardContent>
+					</Card>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -223,7 +291,7 @@ export default function ConsentimientosPage() {
 								</p>
 							</div>
 						</div>
-						<div className="flex gap-3">
+						{/* <div className="flex gap-3">
 							<Button
 								variant="outline"
 								size="sm"
@@ -232,7 +300,7 @@ export default function ConsentimientosPage() {
 								<Download className="w-4 h-4 mr-2" />
 								Exportar Todos
 							</Button>
-						</div>
+						</div> */}
 					</div>
 				</div>
 
@@ -299,6 +367,7 @@ export default function ConsentimientosPage() {
 								className="px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-input text-foreground"
 								value={filtroTipo}
 								onChange={(e) => setFiltroTipo(e.target.value)}
+								aria-label="Filtrar por tipo de consentimiento"
 							>
 								<option value="todos">Todos los tipos</option>
 								<option value="tratamiento">Tratamiento</option>
@@ -310,6 +379,7 @@ export default function ConsentimientosPage() {
 								className="px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-input text-foreground"
 								value={filtroEstado}
 								onChange={(e) => setFiltroEstado(e.target.value)}
+								aria-label="Filtrar por estado del consentimiento"
 							>
 								<option value="todos">Todos los estados</option>
 								<option value="pendiente">Pendiente</option>

@@ -85,7 +85,6 @@ router.get('/', async (req, res) => {
     const { page = 1, limit = 10, search, rol, activo } = req.query;
     const skip = (page - 1) * limit;
     
-    console.log('🔍 Parámetros de consulta:', { page, limit, search, rol, activo });
 
     // Construir filtros
     const where = {};
@@ -119,7 +118,6 @@ router.get('/', async (req, res) => {
       where.activo = activo === 'true';
     }
 
-    console.log('🔍 Filtros aplicados:', where);
 
     const [usuarios, total] = await Promise.all([
       prisma.usuario.findMany({
@@ -135,7 +133,6 @@ router.get('/', async (req, res) => {
     // Remover contraseñas de la respuesta
     const usuariosSinContrasena = usuarios.map(({ contrasena, ...usuario }) => usuario);
 
-    console.log('✅ Usuarios encontrados:', usuariosSinContrasena.length, 'de', total, 'total');
 
     res.json({
       usuarios: usuariosSinContrasena,
@@ -555,16 +552,6 @@ router.put('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin']), vali
     const { id } = req.params;
     const updateData = { ...req.body };
     
-    console.log('🔍 Actualizando usuario:', { id, updateData });
-    console.log('🔍 Usuario autenticado:', req.user?.id, req.user?.email);
-    console.log('🔍 Roles del usuario:', req.user?.metadata?.role, req.user?.metadata?.roles);
-    console.log('🔍 Datos recibidos del body:', req.body);
-    console.log('🔍 Campos específicos:', {
-      nombre: updateData.nombre,
-      apellido1: updateData.apellido1,
-      correoElectronico: updateData.correoElectronico,
-      activo: updateData.activo
-    });
 
     // Si se está actualizando la contraseña, hashearla
     if (updateData.contrasena) {
@@ -577,7 +564,6 @@ router.put('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin']), vali
       include: { rol: true }
     });
 
-    console.log('✅ Usuario actualizado exitosamente:', usuario.idUsuario);
 
     // Remover contraseña de la respuesta
     const { contrasena, ...usuarioSinContrasena } = usuario;
@@ -669,16 +655,61 @@ router.delete('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin']), v
   try {
     const { id } = req.params;
 
+    // Verificar que el usuario existe
+    const usuarioExistente = await prisma.usuario.findUnique({
+      where: { idUsuario: parseInt(id) }
+    });
+
+    if (!usuarioExistente) {
+      return res.status(404).json({
+        error: 'Usuario no encontrado',
+        message: 'No existe un usuario con el ID proporcionado'
+      });
+    }
+
+    // Verificar si el usuario ya está inactivo
+    if (!usuarioExistente.activo) {
+      return res.status(400).json({
+        error: 'Usuario ya inactivo',
+        message: 'El usuario ya está inactivo'
+      });
+    }
+
+    // Verificar si el usuario tiene citas activas (como paciente o como médico)
+    const citasActivas = await prisma.cita.count({
+      where: {
+        OR: [
+          { idPaciente: parseInt(id) },
+          { idMedico: parseInt(id) }
+        ],
+        estadoCita: { not: 'cancelada' }
+      }
+    });
+
+    if (citasActivas > 0) {
+      return res.status(400).json({
+        error: 'No se puede inactivar',
+        message: 'El usuario tiene citas activas. Primero cancele o complete las citas antes de inactivarlo.'
+      });
+    }
+
     const usuario = await prisma.usuario.update({
       where: { idUsuario: parseInt(id) },
       data: { activo: false }
     });
 
     res.json({
-      message: 'Usuario desactivado exitosamente'
+      message: 'Usuario inactivado exitosamente',
+      usuario
     });
 
   } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({
+        error: 'Usuario no encontrado',
+        message: 'No existe un usuario con el ID proporcionado'
+      });
+    }
     console.error('Error al desactivar usuario:', error);
     res.status(500).json({
       error: 'Error interno del servidor',
