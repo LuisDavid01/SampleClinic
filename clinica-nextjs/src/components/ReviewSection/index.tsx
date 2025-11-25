@@ -22,8 +22,10 @@ export const ReviewsSection = () => {
 					<Loader2 className="w-4 h-4 animate-spin" />
 					<span>Cargando...</span>
 				</div>
-			) : data?.length === 0 ? (
-				<p>no hay testimonios en este momento</p>
+			) : (!data || data?.length === 0 ) ? (
+				<p className="text-center">
+				no hay testimonios en este momento
+				</p>
 
 			) : (
 
