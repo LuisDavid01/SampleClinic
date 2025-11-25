@@ -26,7 +26,7 @@ export default function FloatingChat() {
 	const wsRef = useRef<WebSocket | null>(null);
 	const { getToken } = useAuth();
 	const [messages, setMessages] = useState<Array<{
-		id: string; text: string; sender: string; role: 'Pacient' | 'Support'; timestamp: string
+		id: string; text: string; sender: string; role: string; timestamp: string
 	}>>([]);
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -167,7 +167,8 @@ export default function FloatingChat() {
 					}
 				]);
 
-				if (!isOpenRef.current && messageEvent.role === 'Support') {
+				if (!isOpenRef.current && (messageEvent.role === 'admin' ||
+					messageEvent.role === 'recepcionista')) {
 					showNotification({
 						type: "newMessage",
 						title: `Nuevo mensaje de ${messageEvent.from}`,
@@ -176,9 +177,6 @@ export default function FloatingChat() {
 					})
 				}
 
-				break;
-			case "change_chatroom":
-				console.log("change chatroom");
 				break;
 			case "error_message":
 				console.log("Error message");
@@ -252,7 +250,8 @@ export default function FloatingChat() {
 	};
 	const handleExitForm = () => {
 		setIsOpen(false);
-		setIsSurveyActive(false)
+		setIsSurveyActive(false);
+		setRecptionist(null)
 	};
 
 	return (
@@ -326,8 +325,8 @@ export default function FloatingChat() {
 								<ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
 									<div className="space-y-3">
 										{messages.map(msg => (
-											<div key={msg.id} className={`flex ${msg.role === 'Pacient' ? 'justify-end' : 'justify-start'}`}>
-												<div className={`max-w-[80%] p-3 rounded-lg text-sm  ${msg.role === 'Pacient'
+											<div key={msg.id} className={`flex ${msg.role === 'paciente' ? 'justify-end' : 'justify-start'}`}>
+												<div className={`max-w-[80%] p-3 rounded-lg text-sm  ${msg.role === 'paciente'
 													? 'bg-card '
 													: 'bg-blue-500 text-white'
 													}`}>

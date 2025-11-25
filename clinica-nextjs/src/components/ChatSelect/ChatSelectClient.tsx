@@ -8,5 +8,4 @@ const ChatSelectClient = async () => {
 
 	return <>{isSupport ? <SupportChat /> : <FloatingChat />}</>;
 };
-
 export default ChatSelectClient;

@@ -12,6 +12,11 @@ export interface Chat {
 	messages: Message[];
 }
 */
+const RoleAdmin = "admin"
+const RolePacient = "paciente"
+const RoleFisio = "fisioterapeuta"
+const RoleRecep = "recepcionista"
+
 export class chatRoomEvent {
 	name: string;
 	constructor(name: string) {
@@ -25,7 +30,7 @@ export class chatRoomEvent {
 export class chatEvent {
 	type: string;
 	payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | GetHistoryEvent | errorMessageEvent |
-		GetChatRoomsEvent | joinRoomEvent | string;
+		GetChatRoomsEvent | joinRoomEvent | createRoomEvent | string;
 	constructor(type: string, payload: SendMessageEvent |
 		NewMessageEvent | chatRoomEvent | GetHistoryEvent |
 		errorMessageEvent | GetChatRoomsEvent | joinRoomEvent | string) {
@@ -38,9 +43,9 @@ export class chatEvent {
 export class NewMessageEvent {
 	message: string;
 	from: string;
-	role: "Pacient" | "Support";
+	role: string;
 	sent: Date
-	constructor(message: string, from: string, role: "Pacient" | "Support", sent: Date) {
+	constructor(message: string, from: string, role: string, sent: Date) {
 		this.message = message;
 		this.from = from;
 		this.sent = sent;
@@ -82,7 +87,20 @@ export type errorMessageEvent = {
 	sent: Date;
 }
 
+export type createRoomEvent = {
+	id: string;
+	name: string;
+	lastMessage: string;
+	sent: Date;
+}
+
 export type joinRoomEvent = {
 	userid: string;
 	username: string;
+}
+
+export type updateRoomEvent = {
+	id: string;
+	lastMessage: string;
+	sent: Date;
 }

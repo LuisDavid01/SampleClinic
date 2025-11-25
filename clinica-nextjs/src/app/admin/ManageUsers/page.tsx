@@ -6,47 +6,38 @@ import ManageUser from "@/components/ManageUser";
 import { Card, CardContent } from "@/components/ui/card";
 import { SearchUsers } from "@/components/SearchUsers";
 import {
-  User,
+	User,
 } from "lucide-react";
-export default function AdminUsersPage(params: {
-  searchParams: Promise<{ search?: string }>;
-}) {
-  if (!checkRole("admin")) {
-    redirect("/");
-  }
+export default function AdminUsersPage() {
+	if (!checkRole("admin")) {
+		redirect("/");
+	}
 
-  
 
-  return (
+	return (
 
-    
-    <main className="min-h-screen bg-background">
-      <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
-      {/* Encabezado minimalista */}
-      <div className="flex items-center gap-3">
-             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-card">
-              <User className="h-6 w-6 text-accent" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Gestionar usuarios</h1>
-              <p className="text-muted-foreground">
-                Gestiona los permisos de los usuarios
-              </p>
-            </div>
-          </div>
 
-      {/* Barra de búsqueda con Buscar y Limpiar */}
-      <Card className="my-6 border-input bg-card">
-        <CardContent className="p-4 sm:p-6">
-          <SearchUsers />
-        </CardContent>
-      </Card>
-      <Suspense fallback={<ManageUserSkeleton/>}>
-      <ManageUser searchParams={params.searchParams} />
-      </Suspense>
-      </div>
-    </main>
-    
-  );
+		<main className="min-h-screen bg-background">
+			<div className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
+				{/* Encabezado minimalista */}
+				<div className="flex items-center gap-3">
+					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-card">
+						<User className="h-6 w-6 text-accent" />
+					</div>
+					<div>
+						<h1 className="text-3xl font-bold">Gestionar usuarios</h1>
+						<p className="text-muted-foreground">
+							Gestiona los permisos de los usuarios
+						</p>
+					</div>
+				</div>
+
+				<Suspense fallback={<ManageUserSkeleton />}>
+					<ManageUser />
+				</Suspense>
+			</div>
+		</main>
+
+	);
 }
 
