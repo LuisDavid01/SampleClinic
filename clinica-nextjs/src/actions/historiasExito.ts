@@ -343,7 +343,6 @@ export async function unpublishTestimony(id: number) {
 export const createPacientTestimony = async (data: TestimonyData) => {
 	// No se como sacar el id del usuario si el cliente solo tiene acceso
 	// al clerk id y no tiene permisos para traer todos los usuarios
-	let currUserId: number | undefined = undefined;
 	try {
 		const user = await auth()
 		if (!user.userId) {
