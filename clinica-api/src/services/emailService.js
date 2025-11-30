@@ -133,6 +133,275 @@ class EmailService {
 	}
 
 	/**
+	 * Enviar email de confirmación de agendamiento de cita
+	 * @param {Object} cita - Objeto de cita con información del paciente
+	 * @returns {Promise<Object>} Resultado del envío
+	 */
+	async enviarEmailAgendamiento(cita) {
+		try {
+			if (!this.transporter || !config.smtp.auth.user || !config.smtp.auth.pass) {
+				console.warn('⚠️  SMTP no configurado. Email no enviado para cita:', cita.idCita);
+				return { success: false, error: 'SMTP no configurado' };
+			}
+
+			// Validar que el paciente tenga email
+			if (!cita.paciente?.correoElectronico) {
+				console.warn(`⚠️  Cita #${cita.idCita} no tiene email de paciente`);
+				return { success: false, error: 'Email de paciente no disponible' };
+			}
+
+			const paciente = cita.paciente;
+			const medico = cita.medico;
+			const servicio = cita.servicio;
+
+			// Formatear fecha
+			const fechaCita = cita.fechaCita ? new Date(cita.fechaCita) : null;
+			const fechaFormateada = fechaCita 
+				? fechaCita.toLocaleDateString('es-ES', {
+						weekday: 'long',
+						year: 'numeric',
+						month: 'long',
+						day: 'numeric'
+					})
+				: 'Por confirmar';
+			const horaFormateada = fechaCita 
+				? fechaCita.toLocaleTimeString('es-ES', {
+						hour: '2-digit',
+						minute: '2-digit'
+					})
+				: 'Por confirmar';
+
+			// Plantilla HTML del email
+			const htmlContent = this.generarPlantillaAgendamiento({
+				nombrePaciente: `${paciente.nombre} ${paciente.apellido1}`,
+				fechaFormateada,
+				horaFormateada,
+				nombreMedico: `${medico.nombre} ${medico.apellido1}`,
+				nombreServicio: servicio?.nombreServicio || 'Consulta general',
+				descripcion: cita.descripcion || null
+			});
+
+			const mailOptions = {
+				from: `"${config.email.fromName}" <${config.email.from}>`,
+				to: paciente.correoElectronico,
+				subject: `Cita agendada exitosamente - ${fechaFormateada}`,
+				html: htmlContent,
+				text: this.generarTextoAgendamiento({
+					nombrePaciente: `${paciente.nombre} ${paciente.apellido1}`,
+					fechaFormateada,
+					horaFormateada,
+					nombreMedico: `${medico.nombre} ${medico.apellido1}`,
+					nombreServicio: servicio?.nombreServicio || 'Consulta general',
+					descripcion: cita.descripcion || null
+				})
+			};
+
+			const info = await this.transporter.sendMail(mailOptions);
+
+			// Registrar en log
+			await this.registrarEmailLog({
+				idCita: cita.idCita,
+				tipoEmail: 'agendamiento',
+				destinatario: paciente.correoElectronico,
+				asunto: mailOptions.subject,
+				estado: 'enviado'
+			});
+
+			console.log(`✅ Email de agendamiento enviado a ${paciente.correoElectronico} para cita #${cita.idCita}`);
+			return { success: true, messageId: info.messageId };
+		} catch (error) {
+			console.error('Error enviando email de agendamiento:', error);
+
+			// Registrar error en log
+			await this.registrarEmailLog({
+				idCita: cita.idCita,
+				tipoEmail: 'agendamiento',
+				destinatario: cita.paciente?.correoElectronico || 'desconocido',
+				asunto: 'Cita agendada exitosamente',
+				estado: 'fallido',
+				errorMessage: error.message
+			});
+
+			return { success: false, error: error.message };
+		}
+	}
+
+	/**
+	 * Generar plantilla HTML para agendamiento
+	 */
+	generarPlantillaAgendamiento({ nombrePaciente, fechaFormateada, horaFormateada, nombreMedico, nombreServicio, descripcion }) {
+		return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Confirmación de Cita - Clínica Esteban Porras</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+	<table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+		<tr>
+			<td align="center" style="padding: 40px 20px;">
+				<table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+					<!-- Header -->
+					<tr>
+						<td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+							<h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: 0.5px;">✓ Cita Agendada</h1>
+							<p style="color: #d1fae5; margin: 8px 0 0 0; font-size: 14px; font-weight: 300;">Clínica Esteban Porras</p>
+						</td>
+					</tr>
+					
+					<!-- Content -->
+					<tr>
+						<td style="padding: 40px 30px;">
+							<p style="font-size: 16px; color: #1f2937; margin: 0 0 20px 0; line-height: 1.6;">
+								Estimado/a <strong style="color: #059669;">${nombrePaciente}</strong>,
+							</p>
+							
+							<p style="font-size: 15px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.7;">
+								Nos complace confirmar que su cita ha sido agendada exitosamente en nuestra clínica. A continuación encontrará los detalles de su cita:
+							</p>
+							
+							<!-- Appointment Details Card -->
+							<table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; margin: 30px 0;">
+								<tr>
+									<td style="padding: 25px;">
+										<table role="presentation" style="width: 100%; border-collapse: collapse;">
+											<tr>
+												<td style="padding: 8px 0; border-bottom: 1px solid #bbf7d0;">
+													<table role="presentation" style="width: 100%; border-collapse: collapse;">
+														<tr>
+															<td style="width: 40px; vertical-align: top;">
+																<div style="width: 32px; height: 32px; background-color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+																	<span style="color: #ffffff; font-size: 16px;">📅</span>
+																</div>
+															</td>
+															<td style="vertical-align: middle;">
+																<p style="margin: 0; font-size: 13px; color: #047857; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">Fecha</p>
+																<p style="margin: 4px 0 0 0; font-size: 16px; color: #065f46; font-weight: 600;">${fechaFormateada}</p>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+											<tr>
+												<td style="padding: 8px 0; border-bottom: 1px solid #bbf7d0;">
+													<table role="presentation" style="width: 100%; border-collapse: collapse;">
+														<tr>
+															<td style="width: 40px; vertical-align: top;">
+																<div style="width: 32px; height: 32px; background-color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+																	<span style="color: #ffffff; font-size: 16px;">🕐</span>
+																</div>
+															</td>
+															<td style="vertical-align: middle;">
+																<p style="margin: 0; font-size: 13px; color: #047857; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">Hora</p>
+																<p style="margin: 4px 0 0 0; font-size: 16px; color: #065f46; font-weight: 600;">${horaFormateada}</p>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+											<tr>
+												<td style="padding: 8px 0; border-bottom: 1px solid #bbf7d0;">
+													<table role="presentation" style="width: 100%; border-collapse: collapse;">
+														<tr>
+															<td style="width: 40px; vertical-align: top;">
+																<div style="width: 32px; height: 32px; background-color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+																	<span style="color: #ffffff; font-size: 16px;">👨‍⚕️</span>
+																</div>
+															</td>
+															<td style="vertical-align: middle;">
+																<p style="margin: 0; font-size: 13px; color: #047857; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">Fisioterapeuta</p>
+																<p style="margin: 4px 0 0 0; font-size: 16px; color: #065f46; font-weight: 600;">${nombreMedico}</p>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+											<tr>
+												<td style="padding: 8px 0;">
+													<table role="presentation" style="width: 100%; border-collapse: collapse;">
+														<tr>
+															<td style="width: 40px; vertical-align: top;">
+																<div style="width: 32px; height: 32px; background-color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+																	<span style="color: #ffffff; font-size: 16px;">🏥</span>
+																</div>
+															</td>
+															<td style="vertical-align: middle;">
+																<p style="margin: 0; font-size: 13px; color: #047857; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">Servicio</p>
+																<p style="margin: 4px 0 0 0; font-size: 16px; color: #065f46; font-weight: 600;">${nombreServicio}</p>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+							
+							${descripcion ? `
+							<p style="font-size: 14px; color: #4b5563; margin: 20px 0; line-height: 1.6;">
+								<strong>Notas:</strong> ${descripcion}
+							</p>
+							` : ''}
+							
+							<p style="font-size: 14px; color: #4b5563; margin: 30px 0 20px 0; line-height: 1.6;">
+								<strong>Importante:</strong> Recibirá un recordatorio por correo electrónico 2 días antes de su cita para confirmar su asistencia.
+							</p>
+							
+							<p style="font-size: 14px; color: #4b5563; margin: 20px 0; line-height: 1.6;">
+								Si necesita modificar o cancelar su cita, por favor contáctenos con anticipación.
+							</p>
+						</td>
+					</tr>
+					
+					<!-- Footer -->
+					<tr>
+						<td style="background-color: #f8fafc; padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e2e8f0;">
+							<p style="margin: 0 0 10px 0; font-size: 13px; color: #64748b; font-weight: 500;">Clínica Esteban Porras</p>
+							<p style="margin: 0; font-size: 12px; color: #94a3b8;">
+								Este es un correo electrónico automático. Por favor, no responda a este mensaje.<br>
+								Si tiene alguna consulta, comuníquese con nosotros a través de nuestros canales oficiales.
+							</p>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
+		`.trim();
+	}
+
+	/**
+	 * Generar versión texto plano del agendamiento
+	 */
+	generarTextoAgendamiento({ nombrePaciente, fechaFormateada, horaFormateada, nombreMedico, nombreServicio, descripcion }) {
+		return `
+Confirmación de Cita Agendada
+
+Hola ${nombrePaciente},
+
+Nos complace confirmar que su cita ha sido agendada exitosamente.
+
+Detalles de la cita:
+Fecha: ${fechaFormateada}
+Hora: ${horaFormateada}
+Fisioterapeuta: ${nombreMedico}
+Servicio: ${nombreServicio}
+${descripcion ? `Notas: ${descripcion}` : ''}
+
+Importante: Recibirá un recordatorio por correo electrónico 2 días antes de su cita para confirmar su asistencia.
+
+Si necesita modificar o cancelar su cita, por favor contáctenos con anticipación.
+
+Este es un email automático, por favor no respondas a este mensaje.
+		`.trim();
+	}
+
+	/**
 	 * Generar plantilla HTML para recordatorio
 	 */
 	generarPlantillaRecordatorio({ nombrePaciente, fechaFormateada, horaFormateada, nombreMedico, nombreServicio, urlConfirmar, urlRechazar }) {
@@ -340,6 +609,254 @@ Este es un email automático, por favor no respondas a este mensaje.
 		} catch (error) {
 			console.error('Error registrando log de email:', error);
 		}
+	}
+
+	/**
+	 * Enviar email de notificación de solicitud de cita (borrador)
+	 * @param {Object} cita - Objeto de cita con información del paciente
+	 * @returns {Promise<Object>} Resultado del envío
+	 */
+	async enviarNotificacionSolicitudCita(cita) {
+		try {
+			if (!this.transporter || !config.smtp.auth.user || !config.smtp.auth.pass) {
+				console.warn('⚠️  SMTP no configurado. Email no enviado para cita:', cita.idCita);
+				return { success: false, error: 'SMTP no configurado' };
+			}
+
+			// Validar que el paciente tenga email
+			if (!cita.paciente?.correoElectronico) {
+				console.warn(`⚠️  Cita #${cita.idCita} no tiene email de paciente`);
+				return { success: false, error: 'Email de paciente no disponible' };
+			}
+
+			const paciente = cita.paciente;
+			const servicio = cita.servicio;
+
+			// Formatear fecha
+			const fechaCita = cita.fechaCita ? new Date(cita.fechaCita) : null;
+			const fechaFormateada = fechaCita 
+				? fechaCita.toLocaleDateString('es-ES', {
+						weekday: 'long',
+						year: 'numeric',
+						month: 'long',
+						day: 'numeric'
+					})
+				: 'Por confirmar';
+			const horaFormateada = fechaCita 
+				? fechaCita.toLocaleTimeString('es-ES', {
+						hour: '2-digit',
+						minute: '2-digit'
+					})
+				: 'Por confirmar';
+
+			// Plantilla HTML del email
+			const htmlContent = this.generarPlantillaSolicitudCita({
+				nombrePaciente: `${paciente.nombre} ${paciente.apellido1}`,
+				fechaFormateada,
+				horaFormateada,
+				nombreServicio: servicio?.nombreServicio || 'Consulta general',
+				descripcion: cita.descripcion || null
+			});
+
+			const mailOptions = {
+				from: `"${config.email.fromName}" <${config.email.from}>`,
+				to: paciente.correoElectronico,
+				subject: `Solicitud de cita recibida - ${fechaFormateada}`,
+				html: htmlContent,
+				text: this.generarTextoSolicitudCita({
+					nombrePaciente: `${paciente.nombre} ${paciente.apellido1}`,
+					fechaFormateada,
+					horaFormateada,
+					nombreServicio: servicio?.nombreServicio || 'Consulta general',
+					descripcion: cita.descripcion || null
+				})
+			};
+
+			const info = await this.transporter.sendMail(mailOptions);
+
+			// Registrar en log
+			await this.registrarEmailLog({
+				idCita: cita.idCita,
+				tipoEmail: 'solicitud',
+				destinatario: paciente.correoElectronico,
+				asunto: mailOptions.subject,
+				estado: 'enviado'
+			});
+
+			console.log(`✅ Email de solicitud de cita enviado a ${paciente.correoElectronico} para cita #${cita.idCita}`);
+			return { success: true, messageId: info.messageId };
+		} catch (error) {
+			console.error('Error enviando email de solicitud de cita:', error);
+
+			// Registrar error en log
+			await this.registrarEmailLog({
+				idCita: cita.idCita,
+				tipoEmail: 'solicitud',
+				destinatario: cita.paciente?.correoElectronico || 'desconocido',
+				asunto: 'Solicitud de cita recibida',
+				estado: 'fallido',
+				errorMessage: error.message
+			});
+
+			return { success: false, error: error.message };
+		}
+	}
+
+	/**
+	 * Generar plantilla HTML para solicitud de cita
+	 */
+	generarPlantillaSolicitudCita({ nombrePaciente, fechaFormateada, horaFormateada, nombreServicio, descripcion }) {
+		return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Solicitud de Cita - Clínica Esteban Porras</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+	<table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+		<tr>
+			<td align="center" style="padding: 40px 20px;">
+				<table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+					<!-- Header -->
+					<tr>
+						<td style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+							<h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: 0.5px;">📋 Solicitud Recibida</h1>
+							<p style="color: #fef3c7; margin: 8px 0 0 0; font-size: 14px; font-weight: 300;">Clínica Esteban Porras</p>
+						</td>
+					</tr>
+					
+					<!-- Content -->
+					<tr>
+						<td style="padding: 40px 30px;">
+							<p style="font-size: 16px; color: #1f2937; margin: 0 0 20px 0; line-height: 1.6;">
+								Estimado/a <strong style="color: #d97706;">${nombrePaciente}</strong>,
+							</p>
+							
+							<p style="font-size: 15px; color: #4b5563; margin: 0 0 30px 0; line-height: 1.7;">
+								Hemos recibido su solicitud de cita exitosamente. Nuestro equipo la revisará y se pondrá en contacto con usted para confirmar los detalles.
+							</p>
+							
+							<!-- Request Details Card -->
+							<table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; margin: 30px 0;">
+								<tr>
+									<td style="padding: 25px;">
+										<table role="presentation" style="width: 100%; border-collapse: collapse;">
+											<tr>
+												<td style="padding: 8px 0; border-bottom: 1px solid #fde68a;">
+													<table role="presentation" style="width: 100%; border-collapse: collapse;">
+														<tr>
+															<td style="width: 40px; vertical-align: top;">
+																<div style="width: 32px; height: 32px; background-color: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+																	<span style="color: #ffffff; font-size: 16px;">📅</span>
+																</div>
+															</td>
+															<td style="vertical-align: middle;">
+																<p style="margin: 0; font-size: 13px; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">Fecha Solicitada</p>
+																<p style="margin: 4px 0 0 0; font-size: 16px; color: #78350f; font-weight: 600;">${fechaFormateada}</p>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+											<tr>
+												<td style="padding: 8px 0; border-bottom: 1px solid #fde68a;">
+													<table role="presentation" style="width: 100%; border-collapse: collapse;">
+														<tr>
+															<td style="width: 40px; vertical-align: top;">
+																<div style="width: 32px; height: 32px; background-color: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+																	<span style="color: #ffffff; font-size: 16px;">🕐</span>
+																</div>
+															</td>
+															<td style="vertical-align: middle;">
+																<p style="margin: 0; font-size: 13px; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">Hora Solicitada</p>
+																<p style="margin: 4px 0 0 0; font-size: 16px; color: #78350f; font-weight: 600;">${horaFormateada}</p>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+											<tr>
+												<td style="padding: 8px 0;">
+													<table role="presentation" style="width: 100%; border-collapse: collapse;">
+														<tr>
+															<td style="width: 40px; vertical-align: top;">
+																<div style="width: 32px; height: 32px; background-color: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+																	<span style="color: #ffffff; font-size: 16px;">🏥</span>
+																</div>
+															</td>
+															<td style="vertical-align: middle;">
+																<p style="margin: 0; font-size: 13px; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">Servicio</p>
+																<p style="margin: 4px 0 0 0; font-size: 16px; color: #78350f; font-weight: 600;">${nombreServicio}</p>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+							
+							${descripcion ? `
+							<p style="font-size: 14px; color: #4b5563; margin: 20px 0; line-height: 1.6;">
+								<strong>Razón de la cita:</strong> ${descripcion}
+							</p>
+							` : ''}
+							
+							<p style="font-size: 14px; color: #4b5563; margin: 30px 0 20px 0; line-height: 1.6;">
+								<strong>Próximos pasos:</strong> Nuestro equipo revisará su solicitud y se pondrá en contacto con usted a la brevedad posible para confirmar la disponibilidad y finalizar el agendamiento de su cita.
+							</p>
+							
+							<p style="font-size: 14px; color: #4b5563; margin: 20px 0; line-height: 1.6;">
+								Una vez confirmada, recibirá un correo electrónico con todos los detalles de su cita, incluyendo la hora exacta y el fisioterapeuta asignado.
+							</p>
+						</td>
+					</tr>
+					
+					<!-- Footer -->
+					<tr>
+						<td style="background-color: #f8fafc; padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e2e8f0;">
+							<p style="margin: 0 0 10px 0; font-size: 13px; color: #64748b; font-weight: 500;">Clínica Esteban Porras</p>
+							<p style="margin: 0; font-size: 12px; color: #94a3b8;">
+								Este es un correo electrónico automático. Por favor, no responda a este mensaje.<br>
+								Si tiene alguna consulta, comuníquese con nosotros a través de nuestros canales oficiales.
+							</p>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
+		`.trim();
+	}
+
+	/**
+	 * Generar versión texto plano de la solicitud de cita
+	 */
+	generarTextoSolicitudCita({ nombrePaciente, fechaFormateada, horaFormateada, nombreServicio, descripcion }) {
+		return `
+Solicitud de Cita Recibida
+
+Hola ${nombrePaciente},
+
+Hemos recibido su solicitud de cita exitosamente. Nuestro equipo la revisará y se pondrá en contacto con usted para confirmar los detalles.
+
+Detalles de la solicitud:
+Fecha solicitada: ${fechaFormateada}
+Hora solicitada: ${horaFormateada}
+Servicio: ${nombreServicio}
+${descripcion ? `Razón de la cita: ${descripcion}` : ''}
+
+Próximos pasos: Nuestro equipo revisará su solicitud y se pondrá en contacto con usted a la brevedad posible para confirmar la disponibilidad y finalizar el agendamiento de su cita.
+
+Una vez confirmada, recibirá un correo electrónico con todos los detalles de su cita, incluyendo la hora exacta y el fisioterapeuta asignado.
+
+Este es un email automático, por favor no respondas a este mensaje.
+		`.trim();
 	}
 
 	/**

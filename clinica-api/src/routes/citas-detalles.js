@@ -308,17 +308,17 @@ router.get('/:id/detalles-completos' , clerkAuth,validateId, async (req, res) =>
       cita: {
         idCita: cita.idCita,
         fechaCita: cita.fechaCita,
-        descripcion: cita.descripcion,
+        descripcion: cita.descripcion, // Razón de la cita
         estadoCita: cita.estadoCita,
         paciente: cita.paciente,
-        medico: cita.medico,
+        medico: cita.medico, // Doctor que realizó el tratamiento
         servicio: cita.servicio,
         notas: cita.notas,
         resultados: cita.resultados
       },
       diagnosticos: diagnosticos.map(diag => ({
         idEvaluacion: diag.idEvaluacion,
-        diagnostico: diag.diagnostico,
+        diagnostico: diag.diagnosticoPrincipal,
         fecha: diag.fecha,
         doctor: diag.doctor
       })),

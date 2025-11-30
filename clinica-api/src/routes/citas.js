@@ -5,8 +5,196 @@ import { clerkAuth, requireClerkRole } from '../middleware/clerkAuth.js';
 import { ROLES, isPaciente, isFisioterapeuta, isAdministrador, canManageAppointments } from '../constants/roles.js';
 import { validateCita, validateId } from '../middleware/validation.js';
 import { auditMiddleware } from '../middleware/audit.js';
+import emailService from '../services/emailService.js';
 
 const router = Router();
+
+/**
+ * @swagger
+ * /citas/solicitar:
+ *   post:
+ *     summary: Solicitar cita (público)
+ *     description: Endpoint público para que los usuarios soliciten una cita. Crea o busca el usuario y crea una cita borrador.
+ *     tags: [Citas]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *               - email
+ *               - telefono
+ *               - fecha
+ *               - hora
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *                 description: Nombre completo del paciente
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Correo electrónico del paciente
+ *               telefono:
+ *                 type: string
+ *                 description: Teléfono del paciente
+ *               fecha:
+ *                 type: string
+ *                 format: date
+ *                 description: Fecha preferida para la cita
+ *               hora:
+ *                 type: string
+ *                 description: Hora preferida (formato HH:mm)
+ *               servicio:
+ *                 type: string
+ *                 description: Nombre del servicio de interés
+ *               mensaje:
+ *                 type: string
+ *                 description: Mensaje adicional o razón de la cita
+ *     responses:
+ *       201:
+ *         description: Solicitud de cita creada exitosamente
+ *       400:
+ *         description: Datos inválidos
+ *       500:
+ *         description: Error interno del servidor
+ */
+// POST /api/citas/solicitar - Solicitar cita (público, sin autenticación)
+router.post('/solicitar', async (req, res) => {
+	try {
+		const { nombre, email, telefono, fecha, hora, servicio, mensaje } = req.body;
+
+		// Validar datos requeridos
+		if (!nombre || !email || !telefono || !fecha || !hora) {
+			return res.status(400).json({
+				error: 'Datos incompletos',
+				message: 'Por favor complete todos los campos requeridos'
+			});
+		}
+
+		// Validar formato de email
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			return res.status(400).json({
+				error: 'Email inválido',
+				message: 'Por favor proporcione un email válido'
+			});
+		}
+
+		// Buscar o crear usuario (paciente)
+		let paciente = await prisma.usuario.findUnique({
+			where: { correoElectronico: email }
+		});
+
+		if (!paciente) {
+			// Separar nombre en nombre y apellidos
+			const nombres = nombre.trim().split(' ');
+			const nombreUsuario = nombres[0] || nombre;
+			const apellido1 = nombres[1] || '';
+			const apellido2 = nombres.slice(2).join(' ') || null;
+
+			// Crear nuevo usuario (paciente)
+			paciente = await prisma.usuario.create({
+				data: {
+					nombre: nombreUsuario,
+					apellido1: apellido1,
+					apellido2: apellido2,
+					correoElectronico: email,
+					telefonoPrincipal: telefono,
+					contrasena: 'temp_password_' + Date.now(), // Contraseña temporal, el usuario deberá cambiarla
+					idRol: 4, // Rol de paciente
+					activo: true
+				}
+			});
+		} else {
+			// Actualizar teléfono si es diferente
+			if (telefono && paciente.telefonoPrincipal !== telefono) {
+				paciente = await prisma.usuario.update({
+					where: { idUsuario: paciente.idUsuario },
+					data: { telefonoPrincipal: telefono }
+				});
+			}
+		}
+
+		// Buscar servicio por ID o nombre si se proporciona
+		let idServicio = null;
+		if (servicio) {
+			// Si es un número, buscar por ID
+			const servicioId = parseInt(servicio);
+			if (!isNaN(servicioId)) {
+				const servicioEncontrado = await prisma.servicio.findUnique({
+					where: { idServicio: servicioId }
+				});
+				if (servicioEncontrado && servicioEncontrado.activo) {
+					idServicio = servicioEncontrado.idServicio;
+				}
+			} else {
+				// Si es texto, buscar por nombre
+				const servicioEncontrado = await prisma.servicio.findFirst({
+					where: {
+						nombreServicio: {
+							contains: servicio,
+							mode: 'insensitive'
+						},
+						activo: true
+					}
+				});
+				if (servicioEncontrado) {
+					idServicio = servicioEncontrado.idServicio;
+				}
+			}
+		}
+
+		// Combinar fecha y hora
+		const fechaHora = new Date(`${fecha}T${hora}:00`);
+
+		// Crear cita borrador
+		const cita = await prisma.cita.create({
+			data: {
+				fechaCita: fechaHora,
+				idPaciente: paciente.idUsuario,
+				idMedico: null, // Sin médico asignado aún (borrador)
+				idServicio: idServicio,
+				descripcion: mensaje || `Solicitud de cita para ${servicio || 'consulta general'}`,
+				estadoCita: 'borrador'
+			},
+			include: {
+				paciente: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true,
+						correoElectronico: true
+					}
+				},
+				servicio: true
+			}
+		});
+
+		// Enviar email de notificación (asíncrono)
+		emailService.enviarNotificacionSolicitudCita(cita).catch(error => {
+			console.error('Error al enviar email de solicitud (no crítico):', error);
+		});
+
+		res.status(201).json({
+			message: 'Solicitud de cita recibida exitosamente. Recibirá una notificación por correo electrónico.',
+			cita: {
+				idCita: cita.idCita,
+				fechaCita: cita.fechaCita,
+				estadoCita: cita.estadoCita
+			}
+		});
+
+	} catch (error) {
+		console.error('Error al procesar solicitud de cita:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo procesar la solicitud de cita. Por favor, intente nuevamente.'
+		});
+	}
+});
 
 /**
  * @swagger
@@ -423,18 +611,45 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
 router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateCita, async (req, res) => {
   try {
     const { fechaCita, idPaciente, idMedico, idServicio, descripcion, estadoCita } = req.body;
+		const estadoFinal = estadoCita || 'programada';
+		const esBorrador = estadoFinal === 'borrador';
 
-		// Verificar que el paciente y médico existen
-		const [paciente, medico] = await Promise.all([
-			prisma.usuario.findUnique({ where: { idUsuario: idPaciente } }),
-			prisma.usuario.findUnique({ where: { idUsuario: idMedico } })
-		]);
-
-		if (!paciente || !medico) {
+		// Verificar que el paciente existe
+		const paciente = await prisma.usuario.findUnique({ where: { idUsuario: idPaciente } });
+		if (!paciente) {
 			return res.status(400).json({
 				error: 'Datos inválidos',
-				message: 'El paciente o médico especificado no existe'
+				message: 'El paciente especificado no existe'
 			});
+		}
+
+		// Si no es borrador, el médico es requerido
+		if (!esBorrador) {
+			if (!idMedico) {
+				return res.status(400).json({
+					error: 'Datos inválidos',
+					message: 'El médico es requerido para citas programadas'
+				});
+			}
+
+			const medico = await prisma.usuario.findUnique({ where: { idUsuario: idMedico } });
+			if (!medico) {
+				return res.status(400).json({
+					error: 'Datos inválidos',
+					message: 'El médico especificado no existe'
+				});
+			}
+		} else {
+			// Para borradores, el médico es opcional pero si se proporciona debe existir
+			if (idMedico) {
+				const medico = await prisma.usuario.findUnique({ where: { idUsuario: idMedico } });
+				if (!medico) {
+					return res.status(400).json({
+						error: 'Datos inválidos',
+						message: 'El médico especificado no existe'
+					});
+				}
+			}
 		}
 
 		// Verificar que el servicio existe si se proporciona
@@ -452,10 +667,10 @@ router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RE
 			data: {
 				fechaCita: fechaCita ? new Date(fechaCita) : null,
 				idPaciente,
-				idMedico,
+				idMedico: esBorrador ? (idMedico || null) : idMedico,
 				idServicio,
 				descripcion,
-				estadoCita: estadoCita || 'programada'
+				estadoCita: estadoFinal
 			},
 			include: {
 				paciente: {
@@ -463,7 +678,8 @@ router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RE
 						idUsuario: true,
 						nombre: true,
 						apellido1: true,
-						apellido2: true
+						apellido2: true,
+						correoElectronico: true
 					}
 				},
 				medico: {
@@ -478,8 +694,23 @@ router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RE
 			}
 		});
 
+		// Enviar email según el estado de la cita
+		if (esBorrador) {
+			// Email de notificación de solicitud (borrador)
+			emailService.enviarNotificacionSolicitudCita(cita).catch(error => {
+				console.error('Error al enviar email de solicitud (no crítico):', error);
+			});
+		} else {
+			// Email de confirmación de agendamiento (programada)
+			emailService.enviarEmailAgendamiento(cita).catch(error => {
+				console.error('Error al enviar email de agendamiento (no crítico):', error);
+			});
+		}
+
 		res.status(201).json({
-			message: 'Cita creada exitosamente',
+			message: esBorrador 
+				? 'Solicitud de cita creada exitosamente. El usuario recibirá una notificación por correo.'
+				: 'Cita creada exitosamente',
 			cita
 		});
 
@@ -588,7 +819,7 @@ router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RE
  *               $ref: '#/components/schemas/Error'
  */
 // PUT /api/citas/:id - Actualizar cita
-router.put('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
+router.put('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin',ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = { ...req.body };
@@ -605,15 +836,47 @@ router.put('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.
 			});
 		}
 
-		// Verificar permisos: solo el médico o admin pueden actualizar la cita
-		const isMedico = citaExistente.idMedico === req.user.idUsuario;
-		const isAdmin = isAdministrador(req.user);
+		// Validar cambio de borrador a programada
+		const esCambioABorrador = updateData.estadoCita === 'borrador';
+		const esCambioAProgramada = updateData.estadoCita === 'programada';
+		const eraBorrador = citaExistente.estadoCita === 'borrador';
+		const estaConfirmandoBorrador = eraBorrador && esCambioAProgramada;
 
-		if (!isMedico && !isAdmin) {
-			return res.status(403).json({
-				error: 'Acceso denegado',
-				message: 'Solo el médico asignado o un administrador pueden actualizar la cita'
+		// Si se está confirmando un borrador (cambiando a programada), el médico es obligatorio
+		if (estaConfirmandoBorrador) {
+			if (!updateData.idMedico && !citaExistente.idMedico) {
+				return res.status(400).json({
+					error: 'Datos inválidos',
+					message: 'Debe asignar un médico para confirmar la cita borrador'
+				});
+			}
+			// Asegurar que el médico esté en updateData
+			if (!updateData.idMedico) {
+				updateData.idMedico = citaExistente.idMedico;
+			}
+		}
+
+		// Si se está cambiando a programada (no desde borrador), validar médico
+		if (esCambioAProgramada && !estaConfirmandoBorrador) {
+			if (!updateData.idMedico && !citaExistente.idMedico) {
+				return res.status(400).json({
+					error: 'Datos inválidos',
+					message: 'El médico es requerido para citas programadas'
+				});
+			}
+		}
+
+		// Validar que el médico existe si se proporciona
+		if (updateData.idMedico) {
+			const medico = await prisma.usuario.findUnique({ 
+				where: { idUsuario: updateData.idMedico } 
 			});
+			if (!medico) {
+				return res.status(400).json({
+					error: 'Datos inválidos',
+					message: 'El médico especificado no existe'
+				});
+			}
 		}
 
 		// Convertir fecha si se proporciona
@@ -630,7 +893,8 @@ router.put('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.
 						idUsuario: true,
 						nombre: true,
 						apellido1: true,
-						apellido2: true
+						apellido2: true,
+						correoElectronico: true
 					}
 				},
 				medico: {
@@ -645,8 +909,17 @@ router.put('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.
 			}
 		});
 
+		// Si se confirmó un borrador, enviar email de agendamiento
+		if (estaConfirmandoBorrador) {
+			emailService.enviarEmailAgendamiento(cita).catch(error => {
+				console.error('Error al enviar email de agendamiento (no crítico):', error);
+			});
+		}
+
 		res.json({
-			message: 'Cita actualizada exitosamente',
+			message: estaConfirmandoBorrador 
+				? 'Cita confirmada exitosamente. El paciente recibirá una notificación por correo.'
+				: 'Cita actualizada exitosamente',
 			cita
 		});
 

@@ -1063,6 +1063,7 @@ const localizer = dateFnsLocalizer({
 
 // 🔹 Colores y etiquetas de estado
 const statusColors = {
+  borrador: "bg-amber-400 text-black",
   programada: "bg-primary text-black",
   completada: "bg-accent text-accent-foreground",
   cancelada: "bg-muted text-muted-foreground",
@@ -1070,6 +1071,7 @@ const statusColors = {
 };
 
 const statusLabels = {
+  borrador: "Borrador",
   programada: "Programada",
   completada: "Completada",
   cancelada: "Cancelada",
@@ -1088,6 +1090,7 @@ export default function CalendarAdmin() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | null>(null);
 
   // 🔹 Nuevo: estado del modal de creación
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -1118,14 +1121,20 @@ export default function CalendarAdmin() {
         start: new Date(cita.fechaCita),
         end: new Date(new Date(cita.fechaCita).getTime() + 30 * 60000),
         status: cita.estadoCita?.toLowerCase() || "programada",
+        idMedico: cita.idMedico || null,
+        idPaciente: cita.idPaciente,
+        idServicio: cita.idServicio || null,
         patient: {
           name: `${cita.paciente?.nombre || ""} ${cita.paciente?.apellido1 || ""}`,
           phone: cita.paciente?.telefonoPrincipal || "Sin teléfono",
           email: cita.paciente?.correoElectronico || "Sin correo",
         },
         doctor: {
-          name: `${cita.medico?.nombre || ""} ${cita.medico?.apellido1 || ""}`,
+          name: cita.medico 
+            ? `${cita.medico.nombre || ""} ${cita.medico.apellido1 || ""}`.trim() || "Sin asignar"
+            : "Sin asignar",
           specialty: cita.servicio?.nombreServicio || "General",
+          id: cita.medico?.idUsuario || null,
         },
         notes: cita.descripcion,
       }));
@@ -1147,10 +1156,13 @@ export default function CalendarAdmin() {
   const loadUsersAndServices = async () => {
     try {
       const [usersRes, servicesRes] = await Promise.all([
-        apiClient.get(apiEndpoints.getUsuarios()),
+        apiClient.get(`${apiEndpoints.getUsuarios()}?limit=1000&activo=true`), // Cargar todos los usuarios activos
         apiClient.get(apiEndpoints.getServicios()),
       ]);
-      setUsuarios(usersRes.usuarios || []);
+      const usuariosCargados = usersRes.usuarios || [];
+      console.log("📋 Usuarios cargados:", usuariosCargados.length);
+      console.log("👨‍⚕️ Médicos encontrados:", usuariosCargados.filter((u: any) => u.idRol === 2 || u.rol?.idRol === 2).length);
+      setUsuarios(usuariosCargados);
       setServicios(servicesRes.servicios || []);
     } catch (error) {
       console.error("❌ Error cargando datos:", error);
@@ -1241,6 +1253,9 @@ export default function CalendarAdmin() {
     //     break;
     // }
       switch (event.status) {
+        case "borrador":
+          backgroundColor = "#FBBF24"; // bg-amber-400 - Color amarillo para borrador
+          break;
         case "programada":
           backgroundColor = "#27786B"; // bg-primary
           break;
@@ -1337,6 +1352,7 @@ export default function CalendarAdmin() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="borrador">Borrador</SelectItem>
                   <SelectItem value="programada">Programada</SelectItem>
                   <SelectItem value="completada">Completada</SelectItem>
                   <SelectItem value="cancelada">Cancelada</SelectItem>
@@ -1380,6 +1396,10 @@ export default function CalendarAdmin() {
             {/* Legend - Minimalista */}
 					<div className="flex items-center justify-end gap-3 text-xs">
 						<div className="flex items-center gap-1.5">
+							<div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+							<span>Borrador</span>
+						</div>
+						<div className="flex items-center gap-1.5">
 							<div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
 							<span>Programada</span>
 						</div>
@@ -1411,6 +1431,7 @@ export default function CalendarAdmin() {
                   onView={setCurrentView}
                   onSelectEvent={(e) => {
                     setSelectedAppointment(e);
+                    setSelectedDoctorId(e.idMedico || null);
                     setIsDialogOpen(true);
                   }}
                   eventPropGetter={eventStyleGetter}
@@ -1444,8 +1465,9 @@ export default function CalendarAdmin() {
 
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-1">Paciente</label>
+                <label htmlFor="paciente-select" className="block text-sm font-medium mb-1">Paciente</label>
                 <select
+                  id="paciente-select"
                   className="border rounded-md px-2 py-1 w-full"
                   value={newAppointment.idPaciente}
                   onChange={(e) =>
@@ -1454,6 +1476,7 @@ export default function CalendarAdmin() {
                       idPaciente: Number(e.target.value),
                     })
                   }
+                  aria-label="Seleccionar paciente"
                 >
                   <option value="">Seleccione un paciente</option>
                   {usuarios.map((u) => (
@@ -1465,8 +1488,9 @@ export default function CalendarAdmin() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Médico</label>
+                <label htmlFor="medico-select" className="block text-sm font-medium mb-1">Médico</label>
                 <select
+                  id="medico-select"
                   className="border rounded-md px-2 py-1 w-full"
                   value={newAppointment.idMedico}
                   onChange={(e) =>
@@ -1475,6 +1499,7 @@ export default function CalendarAdmin() {
                       idMedico: Number(e.target.value),
                     })
                   }
+                  aria-label="Seleccionar médico"
                 >
                   <option value="">Seleccione un médico</option>
                   {usuarios
@@ -1488,8 +1513,9 @@ export default function CalendarAdmin() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Servicio</label>
+                <label htmlFor="servicio-select" className="block text-sm font-medium mb-1">Servicio</label>
                 <select
+                  id="servicio-select"
                   className="border rounded-md px-2 py-1 w-full"
                   value={newAppointment.idServicio}
                   onChange={(e) =>
@@ -1498,6 +1524,7 @@ export default function CalendarAdmin() {
                       idServicio: Number(e.target.value),
                     })
                   }
+                  aria-label="Seleccionar servicio"
                 >
                   <option value="">Seleccione un servicio</option>
                   {servicios.map((s) => (
@@ -1509,8 +1536,9 @@ export default function CalendarAdmin() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Fecha y hora</label>
+                <label htmlFor="fecha-cita-input" className="block text-sm font-medium mb-1">Fecha y hora</label>
                 <input
+                  id="fecha-cita-input"
                   type="datetime-local"
                   className="border rounded-md px-2 py-1 w-full"
                   value={newAppointment.fechaCita}
@@ -1521,12 +1549,14 @@ export default function CalendarAdmin() {
                       fechaCita: e.target.value,
                     })
                   }
+                  aria-label="Fecha y hora de la cita"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Descripción</label>
+                <label htmlFor="descripcion-textarea" className="block text-sm font-medium mb-1">Descripción</label>
                 <textarea
+                  id="descripcion-textarea"
                   className="border rounded-md px-2 py-1 w-full"
                   rows={2}
                   value={newAppointment.descripcion}
@@ -1536,6 +1566,7 @@ export default function CalendarAdmin() {
                       descripcion: e.target.value,
                     })
                   }
+                  aria-label="Descripción de la cita"
                 />
               </div>
 
@@ -1761,11 +1792,53 @@ export default function CalendarAdmin() {
                 {/* Doctor */}
                 <div className="flex items-start gap-3">
                   <Stethoscope className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="font-medium">{selectedAppointment.doctor.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedAppointment.doctor.specialty}
-                    </p>
+                  <div className="flex-1">
+                    {selectedAppointment.status === "borrador" ? (
+                      <div>
+                        <label htmlFor="doctor-select" className="text-sm font-medium mb-1 block">
+                          Asignar Médico *
+                        </label>
+                        <select
+                          id="doctor-select"
+                          className="border rounded-md px-2 py-1 w-full text-sm"
+                          value={selectedDoctorId || selectedAppointment.idMedico || ""}
+                          onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
+                          required
+                          aria-label="Seleccionar médico para confirmar la cita"
+                        >
+                          <option value="">Seleccione un médico</option>
+                          {usuarios.length === 0 ? (
+                            <option value="" disabled>Cargando médicos...</option>
+                          ) : (
+                            usuarios
+                              .filter((u: any) => {
+                                const esMedico = u.idRol === 2 || u.rol?.idRol === 2;
+                                return esMedico && u.activo !== false;
+                              })
+                              .map((u: any) => (
+                                <option key={u.idUsuario} value={u.idUsuario}>
+                                  {u.nombre} {u.apellido1}
+                                </option>
+                              ))
+                          )}
+                          {usuarios.length > 0 && usuarios.filter((u: any) => u.idRol === 2 || u.rol?.idRol === 2).length === 0 && (
+                            <option value="" disabled>No hay médicos disponibles</option>
+                          )}
+                        </select>
+                        {!selectedDoctorId && !selectedAppointment.idMedico && (
+                          <p className="text-xs text-red-500 mt-1">
+                            Debe seleccionar un médico para confirmar la cita
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="font-medium">{selectedAppointment.doctor.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedAppointment.doctor.specialty}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1773,8 +1846,9 @@ export default function CalendarAdmin() {
                 <div className="flex items-start gap-3">
                   <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium mb-1">Fecha y hora:</p>
+                    <label htmlFor="fecha-cita-edit-input" className="text-sm font-medium mb-1 block">Fecha y hora:</label>
                     <input
+                      id="fecha-cita-edit-input"
                       type="datetime-local"
                       className="border rounded-md px-2 py-1 w-full text-sm"
                       value={dfFormat(selectedAppointment.start, "yyyy-MM-dd'T'HH:mm")}
@@ -1786,6 +1860,7 @@ export default function CalendarAdmin() {
                           end: new Date(new Date(e.target.value).getTime() + 30 * 60000),
                         })
                       }
+                      aria-label="Fecha y hora de la cita"
                     />
                   </div>
                 </div>
@@ -1800,14 +1875,36 @@ export default function CalendarAdmin() {
                   </div>
                 )}
 
-                {/* Botón guardar cambios */}
+                {/* Botón guardar cambios / confirmar cita */}
                 <div className="pt-3 flex justify-end">
                   <Button
                     onClick={async () => {
                       try {
-                        const updated = {
+                        const isBorrador = selectedAppointment.status === "borrador";
+                        const doctorId = selectedDoctorId || selectedAppointment.idMedico;
+
+                        // Validar que si es borrador, debe tener médico asignado
+                        if (isBorrador && !doctorId) {
+                          showNotification({
+                            type: "error",
+                            title: "Error de validación",
+                            message: "Debe seleccionar un médico para confirmar la cita.",
+                          });
+                          return;
+                        }
+
+                        const updated: any = {
                           fechaCita: selectedAppointment.start.toISOString(),
                         };
+
+                        // Si es borrador, cambiar estado a programada y asignar médico
+                        if (isBorrador) {
+                          updated.estadoCita = "programada";
+                          updated.idMedico = doctorId;
+                        } else if (selectedDoctorId) {
+                          // Si no es borrador pero se cambió el médico, actualizarlo
+                          updated.idMedico = selectedDoctorId;
+                        }
 
                         await apiClient.put(
                           apiEndpoints.updateCita(String(selectedAppointment.id)),
@@ -1816,11 +1913,14 @@ export default function CalendarAdmin() {
 
                         showNotification({
                           type: "success",
-                          title: "Cita actualizada",
-                          message: "La fecha de la cita fue modificada correctamente.",
+                          title: isBorrador ? "Cita confirmada" : "Cita actualizada",
+                          message: isBorrador
+                            ? "La cita ha sido confirmada y el médico asignado correctamente."
+                            : "La cita fue modificada correctamente.",
                         });
 
                         setIsDialogOpen(false);
+                        setSelectedDoctorId(null);
                         await loadAppointments(); // recarga el calendario
                       } catch (err: any) {
                         console.error("❌ Error al actualizar cita:", err);
@@ -1829,12 +1929,12 @@ export default function CalendarAdmin() {
                           title: "Error al actualizar",
                           message:
                             err.message ||
-                            "No se pudo actualizar la fecha de la cita.",
+                            "No se pudo actualizar la cita.",
                         });
                       }
                     }}
                   >
-                    Guardar cambios
+                    {selectedAppointment.status === "borrador" ? "Confirmar cita" : "Guardar cambios"}
                   </Button>
                 </div>
               </div>
