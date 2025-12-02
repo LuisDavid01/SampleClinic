@@ -137,24 +137,53 @@ const validateCita = [
 		.isInt({ min: 1 })
 		.withMessage('El ID del paciente debe ser un número entero positivo'),
 
+	body('estadoCita')
+		.optional()
+		.isIn(['borrador', 'programada', 'confirmada', 'en_progreso', 'completada', 'cancelada'])
+		.withMessage('El estado de la cita debe ser uno de: borrador, programada, confirmada, en_progreso, completada, cancelada'),
+
 	body('idMedico')
-		.isInt({ min: 1 })
-		.withMessage('El ID del médico debe ser un número entero positivo'),
+		.custom((value, { req }) => {
+			const estadoCita = req.body.estadoCita || 'programada';
+			const esBorrador = estadoCita === 'borrador';
+			
+			// Si es borrador, el médico es opcional
+			if (esBorrador) {
+				// Si se proporciona, debe ser un número entero positivo
+				if (value !== null && value !== undefined) {
+					return Number.isInteger(Number(value)) && Number(value) > 0;
+				}
+				return true; // null o undefined está permitido para borradores
+			}
+			
+			// Si NO es borrador, el médico es obligatorio
+			if (value === null || value === undefined) {
+				throw new Error('El médico es requerido para citas programadas');
+			}
+			
+			// Debe ser un número entero positivo
+			return Number.isInteger(Number(value)) && Number(value) > 0;
+		})
+		.withMessage('El ID del médico debe ser un número entero positivo. Es obligatorio para citas programadas.'),
 
 	body('idServicio')
 		.optional()
-		.isInt({ min: 1 })
-		.withMessage('El ID del servicio debe ser un número entero positivo'),
+		.custom((value) => {
+			// Permitir null, undefined o número entero positivo
+			if (value === null || value === undefined) return true;
+			return Number.isInteger(Number(value)) && Number(value) > 0;
+		})
+		.withMessage('El ID del servicio debe ser un número entero positivo o null'),
+
+	body('duracionMinutos')
+		.optional()
+		.isInt({ min: 1, max: 480 })
+		.withMessage('La duración debe ser un número entero entre 1 y 480 minutos'),
 
 	body('descripcion')
 		.optional()
 		.isLength({ max: 1000 })
 		.withMessage('La descripción no puede exceder 1000 caracteres'),
-
-	body('estadoCita')
-		.optional()
-		.isIn(['borrador', 'programada', 'confirmada', 'en_progreso', 'completada', 'cancelada'])
-		.withMessage('El estado de la cita debe ser uno de: borrador, programada, confirmada, en_progreso, completada, cancelada'),
 
 	handleValidationErrors
 ];

@@ -8,7 +8,9 @@ import {
   updateDiagnostico,
   deleteDiagnostico,
   getDiagnosticosByPaciente,
-  getDiagnosticosByExpediente
+  getDiagnosticosByExpediente,
+  createDiagnosticoCita,
+  updateDiagnosticoCita
 } from '../controllers/diagnosticos.js';
 
 const router = express.Router();
@@ -274,6 +276,12 @@ router.post('/',
   createDiagnostico
 );
 
+router.post('/diagCita', 
+  clerkAuth, 
+  requireClerkRole(['fisioterapeuta', 'admin']), 
+  createDiagnosticoCita
+);
+
 /**
  * @swagger
  * /diagnosticos/{id}:
@@ -337,6 +345,12 @@ router.put('/:id',
   requireClerkRole(['fisioterapeuta', 'admin']), 
   validateId, 
   updateDiagnostico
+);
+
+router.put('/diagCita/:id', 
+  clerkAuth, 
+  requireClerkRole(['fisioterapeuta', 'admin']), 
+  updateDiagnosticoCita
 );
 
 /**

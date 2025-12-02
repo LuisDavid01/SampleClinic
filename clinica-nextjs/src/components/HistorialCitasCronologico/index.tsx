@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, JSX } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Calendar,
   Clock,
   User,
-  FileText,
   Eye,
   ChevronDown,
   ChevronRight,
@@ -22,257 +23,342 @@ import {
   Search,
   Expand,
   Minimize,
-  Pill,
-  FileImage,
-  FileVideo,
-  FileAudio,
-  File
+  Edit,
+  Save,
+  X,
+  FileText,
 } from "lucide-react";
-import { Cita, Diagnostico, Medicamento, Archivo } from "@/types/PacienteTypes";
-import { useCitasCronologicas } from "@/hooks/useCitasCronologicas";
+
 import { downloadHistorialPDF, printHistorial } from "@/components/PDFGenerator/PDFGenerator";
+import { useApiClient } from "@/utils/apiClient";
+import { useUser } from "@clerk/nextjs";
 
-// Función para obtener datos de diagnóstico desde la cita
-const obtenerDatosDiagnostico = (cita: Cita): Diagnostico | null => {
-  console.log('🔍 obtenerDatosDiagnostico - Analizando cita:', cita.id);
-  console.log('   - evaluacionCompleta:', cita.evaluacionCompleta);
-  
-  if (!cita.evaluacionCompleta) {
-    console.log('   ❌ No tiene evaluacionCompleta - retornando null');
-    return null;
-  }
-  
-  console.log('   ✅ Tiene evaluacionCompleta:', cita.evaluacionCompleta);
+export interface Expediente {
+  idExpediente: number;
+  idPaciente: number;
+  cedula: string;
+  estado: string;
+  idMedico: number;
+  descripcion?: string;
+  fechaCreacion: string;
+  evaluaciones: Evaluacion[];
+  documentos: any[]; // puedes tipar si tienes estructura
+  archivos: any[];   // idem
+}
 
-  return {
-    id: cita.evaluacionCompleta.idEvaluacion.toString(),
-    citaId: cita.id,
-    pacienteId: cita.pacienteId,
-    fisioterapeutaId: cita.fisioterapeutaId,
-    fisioterapeutaNombre: cita.evaluacionCompleta.doctorEvaluacion,
-    fecha: cita.evaluacionCompleta.fechaEvaluacion,
-    sintomas: cita.evaluacionCompleta.sintomasReportados || '',
-    evaluacion: cita.evaluacionCompleta.evaluacionFisica || '',
-    diagnostico: cita.evaluacionCompleta.diagnosticoPrincipal || '',
-    diagnosticoPrincipal: cita.evaluacionCompleta.diagnosticoPrincipal || '', // Agregar propiedad requerida
-    planTratamiento: cita.evaluacionCompleta.planTratamiento || '',
-    recomendaciones: cita.evaluacionCompleta.recomendaciones || '',
-    medicamentos: [], // Se puede implementar más adelante
-    archivos: [] // Se puede implementar más adelante
-  };
-};
+export interface Paciente {
+  idUsuario: number;
+  nombre: string;
+  apellido1: string;
+  apellido2?: string | null;
+  fechaNacimiento: string;
+  fechaRegistro: string;
+  telefonoPrincipal: string;
+  telefonoSecundario?: string | null;
+  correoElectronico: string;
+  contrasena: string;
+  direccionResidencia?: string | null;
+  clerkId?: string | null;
+  idRol: number;
+  activo: boolean;
+  expedientesComoPaciente?: Expediente[];
+}
 
-// Funciones auxiliares
-const getArchivoIcon = (extension: string) => {
-  const ext = extension.toLowerCase().replace('.', '');
-  
-  if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) {
-    return <FileImage className="w-5 h-5 text-green-600 dark:text-green-400" />;
-  }
-  if (['mp4', 'avi', 'mov', 'wmv', 'flv'].includes(ext)) {
-    return <FileVideo className="w-5 h-5 text-purple-600 dark:text-purple-400" />;
-  }
-  if (['mp3', 'wav', 'flac', 'aac'].includes(ext)) {
-    return <FileAudio className="w-5 h-5 text-orange-600 dark:text-orange-400" />;
-  }
-  if (['pdf'].includes(ext)) {
-    return <File className="w-5 h-5 text-red-600 dark:text-red-400" />;
-  }
-  if (['doc', 'docx'].includes(ext)) {
-    return <File className="w-5 h-5 text-blue-600 dark:text-blue-400" />;
-  }
-  if (['txt', 'rtf'].includes(ext)) {
-    return <File className="w-5 h-5 text-gray-600 dark:text-gray-400" />;
-  }
-  return <File className="w-5 h-5 text-gray-500 dark:text-gray-400" />;
-};
+interface Evaluacion {
+  idEvaluacion?: number;
+  idCita?: number;
+  idPaciente: number;
+  idDoctor?: number | null;
+  fecha?: string;
+  sintomasReportados?: string;
+  evaluacionFisica?: string;
+  diagnosticoPrincipal?: string;
+  planTratamiento?: string;
+  recomendaciones?: string;
+  idExpediente?: number | null;
+}
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
-
-// Funciones para exportar e imprimir
-const handleExportPDF = (citas: Cita[], paciente: any) => {
-  try {
-    const nombrePaciente = paciente ? `${paciente.nombre} ${paciente.apellido1}`.trim() : 'Paciente';
-    downloadHistorialPDF(citas, nombrePaciente);
-    console.log('✅ PDF generado exitosamente');
-  } catch (error) {
-    console.error('❌ Error generando PDF:', error);
-  }
-};
-
-const handlePrint = (citas: Cita[], paciente: any) => {
-  try {
-    const nombrePaciente = paciente ? `${paciente.nombre} ${paciente.apellido1}`.trim() : 'Paciente';
-    printHistorial(citas, nombrePaciente);
-    console.log('✅ Impresión iniciada');
-  } catch (error) {
-    console.error('❌ Error iniciando impresión:', error);
-  }
-};
-
-const getEstadoColor = (estado: Cita['estado']) => {
-  switch (estado) {
-    case 'programada':
-      return 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800';
-    case 'confirmada':
-      return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800';
-    case 'en_proceso':
-      return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
-    case 'completada':
-      return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700';
-    case 'cancelada':
-      return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800';
-    default:
-      return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700';
-  }
-};
-
-const getEstadoText = (estado: Cita['estado']) => {
-  switch (estado) {
-    case 'programada':
-      return 'Programada';
-    case 'confirmada':
-      return 'Confirmada';
-    case 'en_proceso':
-      return 'En Proceso';
-    case 'completada':
-      return 'Completada';
-    case 'cancelada':
-      return 'Cancelada';
-    default:
-      return estado;
-  }
-};
-
-const getTipoText = (tipo: Cita['tipo']) => {
-  switch (tipo) {
-    case 'consulta':
-      return 'Consulta';
-    case 'tratamiento':
-      return 'Tratamiento';
-    case 'evaluacion':
-      return 'Evaluación';
-    case 'seguimiento':
-      return 'Seguimiento';
-    default:
-      return tipo;
-  }
-};
-
-const getTipoIcon = (tipo: Cita['tipo']) => {
-  switch (tipo) {
-    case 'consulta':
-      return <Stethoscope className="w-5 h-5" />;
-    case 'tratamiento':
-      return <Activity className="w-5 h-5" />;
-    case 'evaluacion':
-      return <FileText className="w-5 h-5" />;
-    case 'seguimiento':
-      return <TrendingUp className="w-5 h-5" />;
-    default:
-      return <Calendar className="w-5 h-5" />;
-  }
-};
-
-const getEstadoIcon = (estado: Cita['estado']) => {
-  switch (estado) {
-    case 'programada':
-      return <Calendar className="w-4 h-4" />;
-    case 'confirmada':
-      return <CheckCircle className="w-4 h-4" />;
-    case 'en_proceso':
-      return <Activity className="w-4 h-4" />;
-    case 'completada':
-      return <CheckCircle className="w-4 h-4" />;
-    case 'cancelada':
-      return <AlertCircle className="w-4 h-4" />;
-    default:
-      return <Calendar className="w-4 h-4" />;
-  }
-};
-
+interface Cita {
+  idCita: number;
+  fechaCita: string;
+  duracionMinutos: number;
+  estadoCita: string;
+  idMedico: number;
+  tipo?: string;
+  descripcion?: string;
+  idPaciente: number;
+  paciente: Paciente;
+  evaluaciones: Evaluacion[];
+}
 
 export default function HistorialCitasCronologico() {
-  const {
-    citas,
-    paciente,
-    loading,
-    error,
-    filtroEstado,
-    filtroTipo,
-    busqueda,
-    setFiltroEstado,
-    setFiltroTipo,
-    setBusqueda,
-    toggleExpansion,
-    expandirTodas,
-    colapsarTodas,
-    citasFiltradas,
-    estadisticas
-  } = useCitasCronologicas();
+  const api = useApiClient();
+  const { user } = useUser();
 
-  const [mostrarFiltros, setMostrarFiltros] = useState<boolean>(false);
+  const [citas, setCitas] = useState<Cita[]>([]);
+  const [doctor, setDoctor] = useState<{ nombre?: string; apellido1?: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Debug: Log de datos para verificar datos reales
+  const [expandedCitas, setExpandedCitas] = useState<Set<number>>(new Set());
+  const [editingCitaId, setEditingCitaId] = useState<number | null>(null);
+  const [formData, setFormData] = useState<Evaluacion>({
+    idPaciente: 0,
+    sintomasReportados: "",
+    evaluacionFisica: "",
+    diagnosticoPrincipal: "",
+    planTratamiento: "",
+    recomendaciones: "",
+  });
+
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [filtroEstado, setFiltroEstado] = useState("todos");
+  const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [busqueda, setBusqueda] = useState("");
+
+  // Cargar citas del día
   useEffect(() => {
-    if (citas.length > 0) {
-      console.log('🔍 Datos de citas en el componente:', citas.map(c => ({
-        id: c.id,
-        fisioterapeutaNombre: c.fisioterapeutaNombre,
-        fecha: c.fecha,
-        hora: c.hora,
-        estado: c.estado,
-        tipo: c.tipo
-      })));
+    if (!user || !api) return;
+
+    let isMounted = true;
+
+    const cargarCitas = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await api.get("/citas/hoy/mis-citas");
+
+        if (!isMounted) return;
+
+        const citasConEvaluaciones = (response.citas || []).map((c: any) => {
+          const eva =
+            c.evaluaciones && Array.isArray(c.evaluaciones)
+              ? c.evaluaciones
+              : c.diagnosticos && Array.isArray(c.diagnosticos)
+              ? c.diagnosticos
+              : c.diagnostico
+              ? [c.diagnostico] 
+              : [];
+
+          return {
+            ...c,
+            evaluaciones: eva,
+          };
+        });
+
+        setCitas(citasConEvaluaciones);
+
+        setDoctor({
+          nombre: user.firstName || "Fisioterapeuta",
+          apellido1: user.lastName || "",
+        });
+      } catch (err) {
+        if (isMounted) {
+          setError("Error al cargar las citas del día");
+          console.error(err);
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    cargarCitas();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
+  // const toggleExpansion = (id: number) => {
+  //   setExpandedCitas((prev) => {
+  //     const nuevo = new Set(prev);
+  //     nuevo.has(id) ? nuevo.delete(id) : nuevo.add(id);
+  //     return nuevo;
+  //   });
+  // };
+
+
+  const toggleExpansion = (id: number) => {
+    setExpandedCitas((prev) => {
+      const nuevo = new Set(prev);
+      const expanded = nuevo.has(id);
+
+      if (expanded) {
+        // Si estaba expandida → colapsar
+        nuevo.delete(id);
+      } else {
+        // Si se va a expandir → cargar evaluación si existe
+        nuevo.add(id);
+
+        const cita = citas.find((c) => c.idCita === id);
+        if (cita && !editingCitaId) {
+          const evaluacion = obtenerEvaluacion(cita);
+
+          if (evaluacion) {
+            setFormData({
+              idEvaluacion: evaluacion.idEvaluacion,
+              idCita: cita.idCita,
+              idPaciente: cita.idPaciente,
+              fecha: evaluacion.fecha || new Date().toISOString().split("T")[0],
+              sintomasReportados: evaluacion.sintomasReportados || "",
+              evaluacionFisica: evaluacion.evaluacionFisica || "",
+              diagnosticoPrincipal: evaluacion.diagnosticoPrincipal || "",
+              planTratamiento: evaluacion.planTratamiento || "",
+              recomendaciones: evaluacion.recomendaciones || "",
+            });
+          }
+        }
+      }
+
+      return nuevo;
+    });
+  };
+
+
+  const obtenerEvaluacion = (cita: Cita): Evaluacion | null => {
+    return cita.evaluaciones.length > 0 ? cita.evaluaciones[0] : null;
+  };
+
+  const evaluacionCompleta = (evalData: Evaluacion | null): boolean => {
+    if (!evalData) return false;
+    return !!(
+      evalData.sintomasReportados?.trim() &&
+      evalData.evaluacionFisica?.trim() &&
+      evalData.diagnosticoPrincipal?.trim() &&
+      evalData.planTratamiento?.trim() &&
+      evalData.recomendaciones?.trim()
+    );
+  };
+
+  const iniciarEdicion = (cita: Cita) => {
+    const evaluacion = obtenerEvaluacion(cita);
+    const idExpediente =
+    cita.paciente.expedientesComoPaciente?.[0]?.idExpediente ?? null;
+    setEditingCitaId(cita.idCita);
+    setFormData({
+      idEvaluacion: evaluacion?.idEvaluacion || undefined,
+      idCita: cita.idCita,
+      idPaciente: cita.idPaciente,
+      idDoctor: cita.idMedico,
+      idExpediente,
+      fecha: new Date().toISOString().split("T")[0],
+      sintomasReportados: evaluacion?.sintomasReportados || "",
+      evaluacionFisica: evaluacion?.evaluacionFisica || "",
+      diagnosticoPrincipal: evaluacion?.diagnosticoPrincipal || "",
+      planTratamiento: evaluacion?.planTratamiento || "",
+      recomendaciones: evaluacion?.recomendaciones || "",
+    });
+  };
+
+  const cancelarEdicion = () => {
+    setEditingCitaId(null);
+    setFormData({
+      idPaciente: 0,
+      sintomasReportados: "",
+      evaluacionFisica: "",
+      diagnosticoPrincipal: "",
+      planTratamiento: "",
+      recomendaciones: "",
+    });
+  };
+
+  const guardarEvaluacion = async () => {
+    if (!editingCitaId) return;
+
+    try {
+      let evaluacionGuardada;
+
+      if (formData.idEvaluacion) {
+        // Actualizar
+        console.log("Actualizando evaluación:", formData);
+        evaluacionGuardada = await api.put(`/diagnosticos/diagCita/${formData.idEvaluacion}`, formData);
+      } else {
+        // Crear nueva
+        evaluacionGuardada = await api.post("/diagnosticos/diagCita", formData);
+      }
+
+      // Normalizar respuesta      
+      const nuevaEval = evaluacionGuardada.data || evaluacionGuardada;
+
+      // Guardar idEvaluacion en formData para futuras ediciones
+      setFormData((prev) => ({
+        ...prev,
+        idEvaluacion: nuevaEval.idEvaluacion,
+      }));
+
+      //Actualizar la cita en el estado
+      setCitas((prev) =>
+      prev.map((c) =>
+        c.idCita === editingCitaId
+          ? { ...c, evaluaciones: [nuevaEval] }
+          : c
+      )
+    );
+
+      cancelarEdicion();
+    } catch (err) {
+      console.error("Error guardando evaluación:", err);
+      alert("No se pudo guardar la evaluación");
     }
-  }, [citas]);
-
-  const formatFecha = (fecha: Date) => {
-    return new Intl.DateTimeFormat('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    }).format(fecha);
   };
 
-  const formatFechaCorta = (fecha: Date) => {
-    return new Intl.DateTimeFormat('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }).format(fecha);
+  const cambiarEstadoCita = async (cita: Cita, estado: "completada" | "cancelada") => {
+    if (estado === "completada" && !evaluacionCompleta(obtenerEvaluacion(cita))) {
+      alert("Debes completar toda la evaluación antes de marcar como Completada");
+      return;
+    }
+
+    try {
+      await api.put(`/citas/${cita.idCita}`, { estadoCita: estado });
+
+      setCitas((prev) =>
+        prev.map((c) => (c.idCita === cita.idCita ? { ...c, estadoCita: estado } : c))
+      );
+    } catch (err) {
+      alert("Error al actualizar el estado de la cita");
+    }
   };
 
-  // Mostrar loading
+  const citasFiltradas = citas.filter((c) => {
+    const matchEstado = filtroEstado === "todos" || c.estadoCita === filtroEstado;
+    const matchTipo = filtroTipo === "todos" || c.tipo === filtroTipo;
+    const matchTexto =
+      !busqueda ||
+      `${c.paciente.nombre} ${c.paciente.apellido1}`.toLowerCase().includes(busqueda.toLowerCase()) ||
+      c.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
+
+    return matchEstado && matchTipo && matchTexto;
+  });
+
+  const formatFecha = (fecha: string) =>
+    new Intl.DateTimeFormat("es-ES", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(fecha));
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Cargando historial de citas...</p>
+          <p className="mt-4 text-muted-foreground">Cargando citas del día...</p>
         </div>
       </div>
     );
   }
 
-  // Mostrar error
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">
-            Error al cargar las citas
-          </h2>
-          <p className="text-muted-foreground mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()}>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center text-red-600">
+          <AlertCircle className="w-16 h-16 mx-auto mx-auto mb-4" />
+          <p>{error}</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
             Reintentar
           </Button>
         </div>
@@ -281,158 +367,56 @@ export default function HistorialCitasCronologico() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header con diseño médico */}
+    <div className="min-h-screen bg-background p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+
+        {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/10 rounded-full">
-                <CalendarDays className="w-8 h-8 text-accent" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">
-                  Historial Cronológico de Citas
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  Visualiza cronológicamente todas tus citas médicas con vista de árbol
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Filtros
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={expandirTodas}
-                className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
-              >
-                <Expand className="w-4 h-4 mr-2" />
-                Expandir Todas
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={colapsarTodas}
-                className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
-              >
-                <Minimize className="w-4 h-4 mr-2" />
-                Colapsar Todas
-              </Button>
-            </div>
+          <h1 className="text-3xl font-bold text-foreground">Citas del Día</h1>
+          <p className="text-muted-foreground">Gestiona y completa las citas de hoy</p>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button variant="outline" onClick={() => setMostrarFiltros(!mostrarFiltros)}>
+              <Filter className="w-4 h-4 mr-2" />
+              Filtros
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => setExpandedCitas(new Set(citas.map((c) => c.idCita)))}
+            >
+              <Expand className="w-4 h-4 mr-2" />
+              Expandir todas
+            </Button>
+
+            <Button variant="outline" onClick={() => setExpandedCitas(new Set())}>
+              <Minimize className="w-4 h-4 mr-2" />
+              Colapsar todas
+            </Button>
           </div>
-          
-          {/* Botones de exportación - FUERA del header principal */}
-          <div className="mt-6 flex justify-center">
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePrint(citas, paciente)}
-                className="border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300 hover:text-green-700"
-              >
-                🖨️ Imprimir Historial
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExportPDF(citas, paciente)}
-                className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
-              >
-                📄 Exportar PDF
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-card border-0 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total de Citas</p>
-                  <p className="text-2xl font-bold text-foreground">{estadisticas.total}</p>
-                </div>
-                <div className="p-3 bg-primary/10 rounded-full">
-                  <Calendar className="w-6 h-6 text-accent" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-0 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Completadas</p>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{estadisticas.completadas}</p>
-                </div>
-                <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
-                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-0 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Programadas</p>
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{estadisticas.programadas}</p>
-                </div>
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
-                  <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-0 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Próxima Cita</p>
-                  <p className="text-lg font-semibold text-foreground">
-                    {estadisticas.proximaCita ? formatFechaCorta(estadisticas.proximaCita.fecha) : 'No programada'}
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
-                  <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Filtros */}
         {mostrarFiltros && (
-          <Card className="bg-card border-0 shadow-sm mb-8">
+          <Card className="mb-6">
             <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <input
                     type="text"
-                    placeholder="Buscar por fisioterapeuta, tipo de cita o síntomas..."
-                    className="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-input text-foreground placeholder:text-muted-foreground"
+                    placeholder="Buscar paciente..."
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg bg-background"
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
                   />
                 </div>
+
                 <select
-                  className="px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-input text-foreground"
                   value={filtroEstado}
                   onChange={(e) => setFiltroEstado(e.target.value)}
+                  className="px-4 py-2 border rounded-lg bg-background"
                 >
                   <option value="todos">Todos los estados</option>
                   <option value="programada">Programada</option>
@@ -441,10 +425,11 @@ export default function HistorialCitasCronologico() {
                   <option value="completada">Completada</option>
                   <option value="cancelada">Cancelada</option>
                 </select>
+
                 <select
-                  className="px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-input text-foreground"
                   value={filtroTipo}
                   onChange={(e) => setFiltroTipo(e.target.value)}
+                  className="px-4 py-2 border rounded-lg bg-background"
                 >
                   <option value="todos">Todos los tipos</option>
                   <option value="consulta">Consulta</option>
@@ -457,350 +442,241 @@ export default function HistorialCitasCronologico() {
           </Card>
         )}
 
-        {/* Lista de Citas en Vista de Árbol */}
+        {/* Lista de citas */}
         <div className="space-y-4">
           {citasFiltradas.length === 0 ? (
-            <Card className="bg-card border-0 shadow-sm">
-              <CardContent className="p-12 text-center">
-                <CalendarDays className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-muted-foreground mb-2">
-                  {citas.length === 0 ? 'No tienes citas registradas' : 'No hay citas que coincidan con los filtros'}
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  {citas.length === 0 
-                    ? 'Cuando tengas citas programadas, aparecerán aquí de forma cronológica.'
-                    : 'Intenta ajustar los filtros para ver más resultados.'
-                  }
-                </p>
-                {citas.length === 0 && (
-                  <Button 
-                    variant="outline" 
-                    className="border-primary/20 text-accent hover:bg-primary/5"
-                    onClick={() => window.location.href = '/pacientes'}
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Programar Cita
-                  </Button>
-                )}
+            <Card>
+              <CardContent className="text-center py-16">
+                <CalendarDays className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                <p className="text-lg text-muted-foreground">No hay citas para hoy</p>
               </CardContent>
             </Card>
           ) : (
-            citasFiltradas.map((cita, index) => (
-              <Card key={cita.id} className="bg-card border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="pb-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-center gap-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleExpansion(cita.id)}
-                        className="p-1 h-auto hover:bg-primary/10"
-                      >
-                        {cita.expandida ? (
-                          <ChevronDown className="w-5 h-5 text-accent" />
-                        ) : (
-                          <ChevronRight className="w-5 h-5 text-accent" />
-                        )}
-                      </Button>
-                      <div className="p-3 bg-primary/10 rounded-full">
-                        {getTipoIcon(cita.tipo)}
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl text-foreground flex items-center gap-3">
-                          {getTipoText(cita.tipo)} - {formatFecha(cita.fecha)}
-                          <Badge className={`${getEstadoColor(cita.estado)} border text-xs`}>
-                            {getEstadoIcon(cita.estado)}
-                            <span className="ml-1">{getEstadoText(cita.estado)}</span>
+            citasFiltradas.map((cita) => {
+              const isExpanded = expandedCitas.has(cita.idCita);
+              const isEditing = editingCitaId === cita.idCita;
+              const evaluacion = obtenerEvaluacion(cita);
+              const puedeEditar = ["programada", "confirmada", "en_proceso"].includes(
+                cita.estadoCita
+              );
+
+              return (
+                <Card key={cita.idCita} className="overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <Button variant="ghost" size="sm" onClick={() => toggleExpansion(cita.idCita)}>
+                          {isExpanded ? (
+                            <ChevronDown className="w-5 h-5" />
+                          ) : (
+                            <ChevronRight className="w-5 h-5" />
+                          )}
+                        </Button>
+
+                        <div className="flex items-center gap-3">
+                          {cita.tipo ? getTipoIcon(cita.tipo) : <Stethoscope className="w-5 h-5" />}
+                          <div>
+                            <div className="font-semibold">
+                              {cita.paciente.nombre} {cita.paciente.apellido1}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {formatFecha(cita.fechaCita)} · {cita.duracionMinutos} min
+                            </div>
+                          </div>
+
+                          <Badge className={getEstadoColor(cita.estadoCita)}>
+                            {getEstadoText(cita.estadoCita)}
                           </Badge>
-                        </CardTitle>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            {cita.duracion} min
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <User className="w-4 h-4" />
-                            {cita.fisioterapeutaNombre}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleExpansion(cita.id)}
-                        className="border-primary/20 text-accent hover:bg-primary/5 hover:text-accent"
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        {cita.expandida ? 'Ocultar Detalles' : 'Ver Detalles'}
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                {/* Contenido expandible - Detalles completos como en /pacientes/citas/[id] */}
-                {cita.expandida && (
-                  <CardContent className="pt-0">
-                    <div className="space-y-6 border-t border-border pt-4">
-                      {/* Información General de la Cita */}
-                      <div className="bg-muted/30 p-4 rounded-lg">
-                        <h4 className="font-semibold text-sm text-foreground mb-3 flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          Información General
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <div>
-                              <h5 className="font-medium text-xs text-foreground mb-1">Fecha</h5>
-                              <p className="text-xs text-muted-foreground bg-background p-2 rounded">
-                                {formatFecha(cita.fecha)}
-                              </p>
-                            </div>
-                            <div>
-                              <h5 className="font-medium text-xs text-foreground mb-1">Nombre del Paciente</h5>
-                              <p className="text-xs text-muted-foreground bg-background p-2 rounded">Ana García López</p>
-                            </div>
-                            <div>
-                              <h5 className="font-medium text-xs text-foreground mb-1">Estado</h5>
-                              <Badge className={`${getEstadoColor(cita.estado)} border text-xs`}>
-                                {getEstadoText(cita.estado)}
-                              </Badge>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <div>
-                              <h5 className="font-medium text-xs text-foreground mb-1">Fisioterapeuta</h5>
-                              <p className="text-xs text-muted-foreground bg-background p-2 rounded">{cita.fisioterapeutaNombre}</p>
-                            </div>
-                            <div>
-                              <h5 className="font-medium text-xs text-foreground mb-1">Tipo de Cita</h5>
-                              <p className="text-xs text-muted-foreground bg-background p-2 rounded">{getTipoText(cita.tipo)}</p>
-                            </div>
-                          </div>
                         </div>
                       </div>
 
-                      {/* Diagnóstico y Evaluación */}
-                      {(() => {
-                        const diagnostico = obtenerDatosDiagnostico(cita);
-                        if (!diagnostico) {
-                          return (
-                            <div className="bg-muted/30 p-4 rounded-lg">
-                              <h4 className="font-semibold text-sm text-foreground mb-3 flex items-center gap-2">
-                                <Stethoscope className="w-4 h-4" />
-                                Diagnóstico y Evaluación
-                              </h4>
-                              <p className="text-xs text-muted-foreground text-center py-4">
-                                No hay evaluación registrada para esta cita
-                              </p>
-                            </div>
-                          );
-                        }
+                      <div className="flex items-center gap-2">
+                        {puedeEditar && (
+                          <>
+                            <Button
+                              size="sm"
+                              disabled={!evaluacionCompleta(evaluacion)}
+                              onClick={() => cambiarEstadoCita(cita, "completada")}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              Completar
+                            </Button>
 
-                        return (
-                          <div className="bg-muted/30 p-4 rounded-lg">
-                            <h4 className="font-semibold text-sm text-foreground mb-3 flex items-center gap-2">
-                              <Stethoscope className="w-4 h-4" />
-                              Diagnóstico y Evaluación
-                            </h4>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => cambiarEstadoCita(cita, "cancelada")}
+                            >
+                              <AlertCircle className="w-4 h-4 mr-1" />
+                              Cancelar
+                            </Button>
+                          </>
+                        )}
+
+                        <Button variant="ghost" size="sm" onClick={() => toggleExpansion(cita.idCita)}>
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  {isExpanded && (
+                    <CardContent className="border-t pt-6">
+                      <div className="space-y-6">
+
+                        {/* Evaluación Diagnóstica */}
+                        <div>
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-semibold flex items-center gap-2">
+                              <Stethoscope className="w-5 h-5" />
+                              Evaluación Diagnóstica
+                            </h3>
+
+                            {puedeEditar && (
+                              <div className="flex gap-2">
+                                {isEditing ? (
+                                  <>
+                                    <Button size="sm" onClick={guardarEvaluacion}>
+                                      <Save className="w-4 h-4 mr-2" /> Guardar
+                                    </Button>
+
+                                    <Button size="sm" variant="outline" onClick={cancelarEdicion}>
+                                      <X className="w-4 h-4 mr-2" /> Cancelar
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <Button size="sm" variant="outline" onClick={() => iniciarEdicion(cita)}>
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    {evaluacion ? "Editar" : "Crear"} Evaluación
+                                  </Button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* FORM EDICIÓN */}
+                          {isEditing ? (
                             <div className="space-y-4">
-                              {diagnostico.sintomas && (
-                                <div>
-                                  <h5 className="font-medium text-xs text-foreground mb-2 flex items-center gap-2">
-                                    <Activity className="w-3 h-3" />
-                                    Síntomas Reportados
-                                  </h5>
-                                  <p className="text-xs text-muted-foreground bg-background p-3 rounded-lg">{diagnostico.sintomas}</p>
+                              {[
+                                { key: "sintomasReportados", label: "Síntomas Reportados" },
+                                { key: "evaluacionFisica", label: "Evaluación Física" },
+                                { key: "diagnosticoPrincipal", label: "Diagnóstico Principal" },
+                                { key: "planTratamiento", label: "Plan de Tratamiento" },
+                                { key: "recomendaciones", label: "Recomendaciones" },
+                              ].map(({ key, label }) => (
+                                <div key={key}>
+                                  <Label>{label}</Label>
+                                  <Textarea
+                                    value={formData[key as keyof Evaluacion] || ""}
+                                    onChange={(e) =>
+                                      setFormData((prev) => ({ ...prev, [key]: e.target.value }))
+                                    }
+                                    className="mt-1"
+                                    rows={3}
+                                  />
                                 </div>
-                              )}
-                              {diagnostico.evaluacion && (
-                                <div>
-                                  <h5 className="font-medium text-xs text-foreground mb-2 flex items-center gap-2">
-                                    <FileText className="w-3 h-3" />
-                                    Evaluación Física
-                                  </h5>
-                                  <p className="text-xs text-muted-foreground bg-background p-3 rounded-lg">{diagnostico.evaluacion}</p>
-                                </div>
-                              )}
-                              {diagnostico.diagnostico && (
-                                <div>
-                                  <h5 className="font-medium text-xs text-foreground mb-2 flex items-center gap-2">
-                                    <Stethoscope className="w-3 h-3" />
-                                    Diagnóstico
-                                  </h5>
-                                  <p className="text-xs text-muted-foreground bg-green-500/5 dark:bg-green-400/10 p-3 rounded-lg">{diagnostico.diagnostico}</p>
-                                </div>
-                              )}
-                              {diagnostico.planTratamiento && (
-                                <div>
-                                  <h5 className="font-medium text-xs text-foreground mb-2 flex items-center gap-2">
-                                    <TrendingUp className="w-3 h-3" />
-                                    Plan de Tratamiento
-                                  </h5>
-                                  <p className="text-xs text-muted-foreground bg-purple-500/5 dark:bg-purple-400/10 p-3 rounded-lg whitespace-pre-line">{diagnostico.planTratamiento}</p>
-                                </div>
-                              )}
-                              {diagnostico.recomendaciones && (
-                                <div>
-                                  <h5 className="font-medium text-xs text-foreground mb-2 flex items-center gap-2">
-                                    <Activity className="w-3 h-3" />
-                                    Recomendaciones
-                                  </h5>
-                                  <p className="text-xs text-muted-foreground bg-yellow-500/5 dark:bg-yellow-400/10 p-3 rounded-lg whitespace-pre-line">{diagnostico.recomendaciones}</p>
-                                </div>
-                              )}
+                              ))}
                             </div>
-                          </div>
-                        );
-                      })()}
-
-                      {/* Medicamentos - Se puede implementar más adelante */}
-                      {(() => {
-                        const diagnostico = obtenerDatosDiagnostico(cita);
-                        if (diagnostico?.medicamentos && diagnostico.medicamentos.length > 0) {
-                          return (
-                            <div className="bg-muted/30 p-4 rounded-lg">
-                              <h4 className="font-semibold text-sm text-foreground mb-3 flex items-center gap-2">
-                                <Pill className="w-4 h-4" />
-                                Medicamentos Recetados
-                              </h4>
-                              <div className="space-y-3">
-                                {diagnostico.medicamentos.map((medicamento) => (
-                                  <div key={medicamento.id} className="border border-border rounded-lg p-3 bg-background">
-                                    <div className="flex justify-between items-start mb-2">
-                                      <h5 className="font-medium text-xs text-foreground">{medicamento.nombre}</h5>
-                                      {medicamento.receta && (
-                                        <Badge className="bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-200 text-xs border-orange-200 dark:border-orange-800">
-                                          Requiere Receta
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground">
-                                      <div>
-                                        <span className="font-medium">Dosis:</span> {medicamento.dosis}
-                                      </div>
-                                      <div>
-                                        <span className="font-medium">Frecuencia:</span> {medicamento.frecuencia}
-                                      </div>
-                                      <div>
-                                        <span className="font-medium">Duración:</span> {medicamento.duracion}
-                                      </div>
-                                    </div>
-                                    {medicamento.instrucciones && (
-                                      <div className="mt-2">
-                                        <span className="font-medium text-xs text-foreground">Instrucciones:</span>
-                                        <p className="text-xs text-muted-foreground mt-1 bg-muted p-2 rounded">{medicamento.instrucciones}</p>
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
-
-                      {/* Archivos Adjuntos */}
-                      {cita.archivos && cita.archivos.length > 0 && (
-                        <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 p-6 rounded-xl border border-blue-200/50 dark:border-blue-800/50">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                              <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-base text-foreground">
-                                Archivos Adjuntos
-                              </h4>
-                              <p className="text-sm text-muted-foreground">
-                                {cita.archivos.length} {cita.archivos.length === 1 ? 'archivo' : 'archivos'} adjunto{cita.archivos.length === 1 ? '' : 's'}
+                          ) : evaluacion ? (
+                            <div className="space-y-3 text-sm text-muted-foreground">
+                              <p>
+                                <strong>Síntomas:</strong>{" "}
+                                {evaluacion.sintomasReportados || "—"}
+                              </p>
+                              <p>
+                                <strong>Evaluación Física:</strong>{" "}
+                                {evaluacion.evaluacionFisica || "—"}
+                              </p>
+                              <p>
+                                <strong>Diagnóstico:</strong>{" "}
+                                {evaluacion.diagnosticoPrincipal}
+                              </p>
+                              <p>
+                                <strong>Plan:</strong>{" "}
+                                {evaluacion.planTratamiento || "—"}
+                              </p>
+                              <p>
+                                <strong>Recomendaciones:</strong>{" "}
+                                {evaluacion.recomendaciones || "—"}
                               </p>
                             </div>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {cita.archivos.map((archivo) => (
-                              <div key={archivo.id} className="group relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-lg hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-600">
-                                {/* Header del archivo */}
-                                <div className="flex items-start gap-3 mb-3">
-                                  <div className="p-2 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 rounded-lg group-hover:from-blue-200 group-hover:to-indigo-200 dark:group-hover:from-blue-800/50 dark:group-hover:to-indigo-800/50 transition-colors">
-                                    {getArchivoIcon(archivo.extension)}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <h5 className="font-semibold text-sm text-foreground truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                      {archivo.nombreOriginal}
-                                    </h5>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <span className="text-xs text-muted-foreground">
-                                        {new Date(archivo.fechaSubida).toLocaleDateString('es-ES')}
-                                      </span>
-                                      <span className="text-xs text-muted-foreground">•</span>
-                                      <span className="text-xs text-muted-foreground font-medium">
-                                        {formatFileSize(archivo.tamanoArchivo)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Descripción */}
-                                {archivo.descripcion && (
-                                  <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                                    {archivo.descripcion}
-                                  </p>
-                                )}
-
-                                {/* Categoría */}
-                                {archivo.categoria && (
-                                  <div className="mb-3">
-                                    <Badge 
-                                      variant="secondary" 
-                                      className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700"
-                                    >
-                                      {archivo.categoria.replace('_', ' ')}
-                                    </Badge>
-                                  </div>
-                                )}
-
-                                {/* Botón de descarga */}
-
-                                {/* Efecto de hover sutil */}
-                                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                              </div>
-                            ))}
-                          </div>
+                          ) : (
+                            <p className="text-muted-foreground italic">
+                              No hay evaluación registrada para esta cita
+                            </p>
+                          )}
                         </div>
-                      )}
 
-                      {/* Botones de exportación para esta cita específica */}
-                      <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-                        <div className="flex gap-2 justify-end">
+                        {/* BOTONES PDF
+                        <div className="flex justify-end gap-2 pt-4 border-t">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handlePrint([cita], paciente)}
-                            className="border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300 hover:text-green-700"
+                            onClick={() =>
+                              printHistorial([cita as any], (doctor?.nombre ?? "") + " " + (doctor?.apellido1 ?? ""))
+                            }
                           >
-                            🖨️ Imprimir Cita
+                            Imprimir Cita
                           </Button>
+
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleExportPDF([cita], paciente)}
-                            className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700"
+                            onClick={() =>
+                              downloadHistorialPDF(
+                                [cita as any],
+                                (doctor?.nombre ?? "") + " " + (doctor?.apellido1 ?? "")
+                              )
+                            }
                           >
-                            📄 Exportar Cita
+                            PDF Cita
                           </Button>
-                        </div>
+                        </div> */}
                       </div>
-
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            ))
+                    </CardContent>
+                  )}
+                </Card>
+              );
+            })
           )}
         </div>
       </div>
     </div>
   );
+}
+
+/* -------------------------
+   FUNCIONES AUXILIARES
+-------------------------- */
+
+function getEstadoColor(estado: string) {
+  const colors: Record<string, string> = {
+    programada: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300",
+    confirmada: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300",
+    en_proceso: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300",
+    completada: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+    cancelada: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300",
+  };
+  return colors[estado] || "bg-gray-100 text-gray-800";
+}
+
+function getEstadoText(estado: string) {
+  const textos: Record<string, string> = {
+    programada: "Programada",
+    confirmada: "Confirmada",
+    en_proceso: "En Proceso",
+    completada: "Completada",
+    cancelada: "Cancelada",
+  };
+  return textos[estado] || estado;
+}
+
+function getTipoIcon(tipo?: string) {
+  const icons: Record<string, JSX.Element> = {
+    consulta: <Stethoscope className="w-5 h-5" />,
+    tratamiento: <Activity className="w-5 h-5" />,
+    evaluacion: <FileText className="w-5 h-5" />,
+    seguimiento: <TrendingUp className="w-5 h-5" />,
+  };
+  return icons[tipo || ""] || <Calendar className="w-5 h-5" />;
 }

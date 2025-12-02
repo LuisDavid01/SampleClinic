@@ -36,7 +36,7 @@ async function logAuditAction(req, res, data) {
     const action = getActionFromMethod(method);
     const resource = getResourceFromUrl(url, baseUrl);
     const resourceId = getResourceIdFromUrl(url);
-    console.log('Recurso auditado:', req);
+    //console.log('Recurso auditado:', req);
     // Obtener información del usuario
     const userId = user?.id ? await getUserIdFromClerkId(user.id) : null;
     const userInfo = user ? {

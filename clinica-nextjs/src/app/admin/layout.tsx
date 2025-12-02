@@ -85,9 +85,19 @@ export default async function dasboardLayout({
 							className="w-full justify-start  hover:bg-gray-800"
 							asChild
 						>
+							<Link href={"/admin/appointmentsRecords"}>
+								<CalendarDays className="w-4 h-4 mr-3" />
+								<span>Historial Citas</span>
+							</Link>
+						</Button>	
+						<Button
+							variant="ghost"
+							className="w-full justify-start  hover:bg-gray-800"
+							asChild
+						>
 							<Link href={"/admin/appointments"}>
 								<CalendarDays className="w-4 h-4 mr-3" />
-								<span>Citas</span>
+								<span>Agendar Citas</span>
 							</Link>
 						</Button>
 

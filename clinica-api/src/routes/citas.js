@@ -6,8 +6,12 @@ import { ROLES, isPaciente, isFisioterapeuta, isAdministrador, canManageAppointm
 import { validateCita, validateId } from '../middleware/validation.js';
 import { auditMiddleware } from '../middleware/audit.js';
 import emailService from '../services/emailService.js';
-
+import { startOfDay, endOfDay } from 'date-fns';
 const router = Router();
+
+function intervalsOverlap(aStart, aEnd, bStart, bEnd) {
+  return aStart < bEnd && bStart < aEnd;
+}
 
 /**
  * @swagger
@@ -522,6 +526,83 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
 	}
 });
 
+// GET /api/citas/hoy/mis-citas - Cargar citas del día del médico logueado
+router.get("/hoy/mis-citas", clerkAuth, async (req, res) => {
+  try {
+	const clerkUserId = req.user.id;
+
+    if (!clerkUserId) {
+      return res.status(401).json({ error: "No se pudo obtener información del usuario" });
+    }
+
+    // Buscar el médico en la BD por clerk_id
+    const medico = await prisma.usuario.findUnique({
+      where: { clerkId: clerkUserId }
+    });
+
+    if (!medico) {
+      return res.status(404).json({ error: "No se encontró un usuario asociado a este Clerk ID" });
+    }
+
+	// Obtener inicio y fin del día actual
+    const inicioDia = new Date();
+    inicioDia.setHours(0, 0, 0, 0);
+
+    const finDia = new Date();
+    finDia.setHours(23, 59, 59, 999);
+
+    // Obtener citas asociadas al médico
+    const citas = await prisma.cita.findMany({
+      where: {
+        idMedico: medico.idUsuario,
+		fechaCita: {
+          gte: inicioDia,
+          lte: finDia
+        }
+      },
+      orderBy: {
+        fechaCita: "asc"
+      },
+      include: {
+        paciente: true,
+        servicio: true,
+
+        // Traer TODAS las evaluaciones (relación directa cita.evaluaciones)
+        evaluaciones: {
+          include: {
+            expediente: true,
+            doctor: true,
+            paciente: true
+          }
+        },
+
+        // Obtener expediente DEL PACIENTE (no de la cita)
+        paciente: {
+          include: {
+            expedientesComoPaciente: {
+              include: {
+                evaluaciones: true,
+                documentos: true,
+                archivos: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return res.json({ citas });
+
+  } catch (error) {
+    console.error("ERROR en mis-citas:", error);
+    return res.status(500).json({ error: "Error al obtener citas" });
+  }
+});
+
+
+
+
+
 /**
  * @swagger
  * /citas:
@@ -663,9 +744,53 @@ router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RE
 			}
 		}
 
+		// Validar solapamiento de horarios si se proporciona fecha
+		if (fechaCita && !esBorrador) {
+			const duracionMinutos = req.body.duracionMinutos ?? 30;
+			const newStart = new Date(fechaCita);
+			const newDur = Number(duracionMinutos);
+			const newEnd = new Date(newStart.getTime() + newDur * 60000);
+
+			const dayStart = startOfDay(newStart);
+			const dayEnd = endOfDay(newStart);
+
+			// Buscar citas del mismo médico o paciente el mismo día
+			const posibles = await prisma.cita.findMany({
+				where: {
+					AND: [
+						{ fechaCita: { gte: dayStart } },
+						{ fechaCita: { lte: dayEnd } },
+						{
+							OR: [
+								{ idMedico: idMedico },
+								{ idPaciente: idPaciente }
+							]
+						}
+					]
+				}
+			});
+
+			// Revisar solapamiento
+			for (const ex of posibles) {
+				const exStart = ex.fechaCita ? new Date(ex.fechaCita) : null;
+				const exDur = ex.duracionMinutos ?? 30;
+				const exEnd = exStart ? new Date(exStart.getTime() + exDur * 60000) : null;
+
+				if (exStart && exEnd && intervalsOverlap(newStart, newEnd, exStart, exEnd)) {
+					return res.status(200).json({
+						success: false,
+						info: 'Conflicto de horario',
+						message: `No es posible agendar dos citas en el mismo horario. Ya existe una cita programada (id: ${ex.idCita}) que se solapa con el horario solicitado. Por favor elija otro horario.`,
+						conflictId: ex.idCita
+					});
+				}
+			}
+		}
+
 		const cita = await prisma.cita.create({
 			data: {
 				fechaCita: fechaCita ? new Date(fechaCita) : null,
+				duracionMinutos: req.body.duracionMinutos ? Number(req.body.duracionMinutos) : 30,
 				idPaciente,
 				idMedico: esBorrador ? (idMedico || null) : idMedico,
 				idServicio,
@@ -714,13 +839,13 @@ router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RE
 			cita
 		});
 
-	} catch (error) {
-		console.error('Error al crear cita:', error);
-		res.status(500).json({
-			error: 'Error interno del servidor',
-			message: 'No se pudo crear la cita'
-		});
-	}
+  } catch (error) {
+    console.error('Error al crear cita:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo crear la cita'
+    });
+  }
 });
 
 /**
@@ -822,114 +947,148 @@ router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RE
 router.put('/:id', auditMiddleware, clerkAuth, requireClerkRole(['admin',ROLES.ADMINISTRADOR, ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateId, async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = { ...req.body };
+    const { fechaCita, duracionMinutos, idPaciente, idMedico, idServicio, descripcion, estadoCita } = req.body;
 
-		// Verificar que la cita existe
-		const citaExistente = await prisma.cita.findUnique({
-			where: { idCita: parseInt(id) }
-		});
+    const citaActual = await prisma.cita.findUnique({ where: { idCita: parseInt(id) } });
+    if (!citaActual) {
+      return res.status(404).json({ error: 'Cita no encontrada' });
+    }
 
-		if (!citaExistente) {
-			return res.status(404).json({
-				error: 'Cita no encontrada',
-				message: 'No existe una cita con el ID proporcionado'
-			});
-		}
+    // Si cambian paciente/medico validar existencia
+    if (idPaciente) {
+      const p = await prisma.usuario.findUnique({ where: { idUsuario: idPaciente } });
+      if (!p) return res.status(400).json({ error: 'Paciente no existe' });
+    }
+    if (idMedico) {
+      const m = await prisma.usuario.findUnique({ where: { idUsuario: idMedico } });
+      if (!m) return res.status(400).json({ error: 'Medico no existe' });
+    }
 
-		// Validar cambio de borrador a programada
-		const esCambioABorrador = updateData.estadoCita === 'borrador';
-		const esCambioAProgramada = updateData.estadoCita === 'programada';
-		const eraBorrador = citaExistente.estadoCita === 'borrador';
-		const estaConfirmandoBorrador = eraBorrador && esCambioAProgramada;
+    // Validar cambio de borrador a programada
+    const esCambioABorrador = estadoCita === 'borrador';
+    const esCambioAProgramada = estadoCita === 'programada';
+    const eraBorrador = citaActual.estadoCita === 'borrador';
+    const estaConfirmandoBorrador = eraBorrador && esCambioAProgramada;
+    const idMedicoFinal = idMedico ?? citaActual.idMedico;
 
-		// Si se está confirmando un borrador (cambiando a programada), el médico es obligatorio
-		if (estaConfirmandoBorrador) {
-			if (!updateData.idMedico && !citaExistente.idMedico) {
-				return res.status(400).json({
-					error: 'Datos inválidos',
-					message: 'Debe asignar un médico para confirmar la cita borrador'
-				});
-			}
-			// Asegurar que el médico esté en updateData
-			if (!updateData.idMedico) {
-				updateData.idMedico = citaExistente.idMedico;
-			}
-		}
+    // Si se está confirmando un borrador (cambiando a programada), el médico es obligatorio
+    if (estaConfirmandoBorrador) {
+      if (!idMedicoFinal) {
+        return res.status(400).json({
+          error: 'Datos inválidos',
+          message: 'Debe asignar un médico para confirmar la cita borrador'
+        });
+      }
+    }
 
-		// Si se está cambiando a programada (no desde borrador), validar médico
-		if (esCambioAProgramada && !estaConfirmandoBorrador) {
-			if (!updateData.idMedico && !citaExistente.idMedico) {
-				return res.status(400).json({
-					error: 'Datos inválidos',
-					message: 'El médico es requerido para citas programadas'
-				});
-			}
-		}
+    // Si se está cambiando a programada (no desde borrador), validar médico
+    if (esCambioAProgramada && !estaConfirmandoBorrador) {
+      if (!idMedicoFinal) {
+        return res.status(400).json({
+          error: 'Datos inválidos',
+          message: 'El médico es requerido para citas programadas'
+        });
+      }
+    }
 
-		// Validar que el médico existe si se proporciona
-		if (updateData.idMedico) {
-			const medico = await prisma.usuario.findUnique({ 
-				where: { idUsuario: updateData.idMedico } 
-			});
-			if (!medico) {
-				return res.status(400).json({
-					error: 'Datos inválidos',
-					message: 'El médico especificado no existe'
-				});
-			}
-		}
+    // Si cambian fecha/duración -> validar solapamiento
+    const newStart = fechaCita ? new Date(fechaCita) : (citaActual.fechaCita ? new Date(citaActual.fechaCita) : null);
+    const newDur = duracionMinutos ?? citaActual.duracionMinutos ?? 30;
+    const newEnd = newStart ? new Date(newStart.getTime() + Number(newDur) * 60000) : null;
 
-		// Convertir fecha si se proporciona
-		if (updateData.fechaCita) {
-			updateData.fechaCita = new Date(updateData.fechaCita);
-		}
+    if (newStart && newEnd) {
+      const dayStart = startOfDay(newStart);
+      const dayEnd = endOfDay(newStart);
 
-		const cita = await prisma.cita.update({
-			where: { idCita: parseInt(id) },
-			data: updateData,
-			include: {
-				paciente: {
-					select: {
-						idUsuario: true,
-						nombre: true,
-						apellido1: true,
-						apellido2: true,
-						correoElectronico: true
-					}
-				},
-				medico: {
-					select: {
-						idUsuario: true,
-						nombre: true,
-						apellido1: true,
-						apellido2: true
-					}
-				},
-				servicio: true
-			}
-		});
+      // Buscar otras citas del mismo medico o paciente en el mismo día (excluir la propia)
+      const posibles = await prisma.cita.findMany({
+        where: {
+          AND: [
+            { idCita: { not: parseInt(id) } },
+            { fechaCita: { gte: dayStart } },
+            { fechaCita: { lte: dayEnd } },
+            {
+              OR: [
+                { idMedico: idMedicoFinal },
+                { idPaciente: idPaciente ?? citaActual.idPaciente }
+              ]
+            }
+          ]
+        }
+      });
 
-		// Si se confirmó un borrador, enviar email de agendamiento
-		if (estaConfirmandoBorrador) {
-			emailService.enviarEmailAgendamiento(cita).catch(error => {
-				console.error('Error al enviar email de agendamiento (no crítico):', error);
-			});
-		}
+      // Revisar solapamiento en JS
+      for (const ex of posibles) {
+        const exStart = ex.fechaCita ? new Date(ex.fechaCita) : null;
+        const exDur = ex.duracionMinutos ?? 30;
+        const exEnd = exStart ? new Date(exStart.getTime() + exDur * 60000) : null;
 
-		res.json({
-			message: estaConfirmandoBorrador 
-				? 'Cita confirmada exitosamente. El paciente recibirá una notificación por correo.'
-				: 'Cita actualizada exitosamente',
-			cita
-		});
+        if (exStart && exEnd && intervalsOverlap(newStart, newEnd, exStart, exEnd)) {
+          return res.status(200).json({
+            success: false,
+            info: 'Conflicto de horario',
+            message: `No es posible actualizar la cita. El nuevo horario se solapa con otra cita existente (id: ${ex.idCita}). Por favor elija otro horario.`,
+            conflictId: ex.idCita
+          });
+        }
+      }
+    }
 
-	} catch (error) {
-		console.error('Error al actualizar cita:', error);
-		res.status(500).json({
-			error: 'Error interno del servidor',
-			message: 'No se pudo actualizar la cita'
-		});
-	}
+    // Actualizar cita
+    const cita = await prisma.cita.update({
+      where: { idCita: parseInt(id) },
+      data: {
+        fechaCita: fechaCita ? new Date(fechaCita) : citaActual.fechaCita,
+        duracionMinutos: duracionMinutos !== undefined ? Number(duracionMinutos) : citaActual.duracionMinutos,
+        idPaciente: idPaciente ?? citaActual.idPaciente,
+        idMedico: idMedicoFinal,
+        idServicio: idServicio ?? citaActual.idServicio,
+        descripcion: descripcion ?? citaActual.descripcion,
+        estadoCita: estadoCita ?? citaActual.estadoCita
+      },
+      include: {
+        paciente: {
+          select: {
+            idUsuario: true,
+            nombre: true,
+            apellido1: true,
+            apellido2: true,
+            correoElectronico: true
+          }
+        },
+        medico: {
+          select: {
+            idUsuario: true,
+            nombre: true,
+            apellido1: true,
+            apellido2: true
+          }
+        },
+        servicio: true
+      }
+    });
+
+    // Si se confirmó un borrador, enviar email de agendamiento
+    if (estaConfirmandoBorrador) {
+      emailService.enviarEmailAgendamiento(cita).catch(error => {
+        console.error('Error al enviar email de agendamiento (no crítico):', error);
+      });
+    }
+
+    res.json({
+      message: estaConfirmandoBorrador 
+        ? 'Cita confirmada exitosamente. El paciente recibirá una notificación por correo.'
+        : 'Cita actualizada exitosamente',
+      cita
+    });
+
+  } catch (error) {
+    console.error('Error al actualizar cita:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      message: 'No se pudo actualizar la cita'
+    });
+  }
 });
 
 /**
