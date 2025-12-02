@@ -50,16 +50,24 @@ export default function FilesPage() {
 	const [page, setPage] = useState(1)
 	const [limit, setLimit] = useState(10)
 	const [search, setSearch] = useState("")
+	const [published, setPublished] = useState<boolean | undefined>(undefined)
+	const [ratingSearch, setRatingSearch] = useState<number>(0)
 	const { isLoading, data, error } = useQuery({
-		queryKey: ['testimonials', page, limit, search],
+		queryKey: ['testimonials', page, limit, search, published],
 		queryFn: async () => {
-			const res = await getTestimonies(page, limit, search)
-			console.log(res);
-			console.log(res.pagination.pages)
+			const res = await getTestimonies(page, limit, search, published)
+			console.log(res.historias);
 			return res
-		}
+		},
+		staleTime: 60 * 1000
 	}
 	)
+	const filteredTestimonies = (
+		data?.historias?.filter((testimonio: HistoriaExito) =>
+			(ratingSearch === 0 || testimonio.rating === ratingSearch)
+		)
+
+	);
 	return (
 		<div className="min-h-screen bg-background p-6">
 			<div className="max-w-7xl mx-auto space-y-6">
@@ -115,12 +123,16 @@ export default function FilesPage() {
 								</SelectContent>
 							</Select>
 
-							<Select defaultValue="all">
+							<Select defaultValue="0"
+								onValueChange={(value) => {
+									setRatingSearch(Number(value));
+								}}
+							>
 								<SelectTrigger>
 									<SelectValue placeholder="Rating" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="all">Todas las reseñas</SelectItem>
+									<SelectItem value="0">Todas las reseñas</SelectItem>
 									<SelectItem value="1">1 estrella</SelectItem>
 									<SelectItem value="2">2 estrellas</SelectItem>
 									<SelectItem value="3">3 estrellas</SelectItem>
@@ -131,14 +143,23 @@ export default function FilesPage() {
 							</Select>
 
 							<div className="flex gap-2">
-								<Select defaultValue="all">
+								<Select defaultValue="all"
+									onValueChange={(value) => {
+										if (value === 'all') {
+											setPublished(undefined)
+										} else {
+											setPublished(value === "true");
+										}
+									}}
+								>
 									<SelectTrigger>
 										<SelectValue placeholder="Estado" />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="all">Todos los estados</SelectItem>
-										<SelectItem value="exitoso">Activo</SelectItem>
-										<SelectItem value="fallido">Inactivo</SelectItem>
+										<SelectItem value="all">Todos</SelectItem>
+
+										<SelectItem value="true">Activos</SelectItem>
+										<SelectItem value="false">Inactivos</SelectItem>
 									</SelectContent>
 								</Select>
 
@@ -175,13 +196,15 @@ export default function FilesPage() {
 										</TableRow>
 									) :
 
-										!data.historias || data.historias.length === 0 ? (
+										!filteredTestimonies || filteredTestimonies.length === 0 ? (
 											<TableRow>
-												<TableCell colSpan={6} className="text-center">No hay registros</TableCell>
+												<TableCell colSpan={6} className="text-center">
+												No hay registros, prueba cambiando los filtros o buscando en otra pagina.
+												</TableCell>
 											</TableRow>
 										) :
 
-											data.historias.map((review: HistoriaExito) => {
+											filteredTestimonies.map((review: HistoriaExito) => {
 
 												return (
 													<TableRow key={review.idHistoria + review.fechaTratamiento + review.idPaciente} className="hover:bg-muted/50">
@@ -262,7 +285,7 @@ export default function FilesPage() {
 
 				<div className="lg:hidden space-y-4">
 					{isLoading ? (<div className="text-center">Cargando...</div>)
-						: data.historias.map((review: HistoriaExito) => {
+						: filteredTestimonies.map((review: HistoriaExito) => {
 
 							return (
 								<Card key={review.idHistoria + review.fechaTratamiento + review.idPaciente + 'mobile'}>
@@ -274,7 +297,7 @@ export default function FilesPage() {
 												</div>
 												<div>
 													<h3 className="font-medium">
-													{`${review.paciente?.nombre ?? 'anonimo'} ${review.paciente?.apellido1} ${review.paciente?.apellido2}`}
+														{`${review.paciente?.nombre ?? 'anonimo'} ${review.paciente?.apellido1} ${review.paciente?.apellido2}`}
 													</h3>
 
 												</div>

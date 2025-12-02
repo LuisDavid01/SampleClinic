@@ -1,10 +1,15 @@
 
 "use client";
 
+import { getEquipo } from "@/actions/equipo";
+import { teamProfile } from "@/types/perfiles";
+import { apiEndpoints, useApiClient } from "@/utils/apiClient";
+import { useQuery } from "@tanstack/react-query";
 import { Users } from "lucide-react";
-import { useState } from "react";
-
+import { useState } from "react"
 export const TeamSection = () => {
+
+	/*
 	const teamMembers = [
 		{
 			id: 1,
@@ -55,49 +60,55 @@ export const TeamSection = () => {
 			bgGradient: "from-accent/20 via-primary/10 to-accent/5",
 		},
 	];
+*/
+
+	const apiClient = useApiClient();
+	const { isLoading, data: teamData } = useQuery<{
+		usuarios: teamProfile[]
+		total: number
+		totalPaginas: number
+	}>({
+		queryKey: ['team-members'],
+		queryFn: async () => {
+			const res = await getEquipo(1, 10, "")
+			console.log(res)
+			return {
+				usuarios: res.perfiles,
+				total: res.pagination.total,
+				totalPaginas: res.pagination.pages,
+			}
+		},
+		staleTime: 60 * 1000,
+	})
+
+	const teamMembers = teamData?.usuarios || []
 
 	// 🔹 Estados
 	const [filtered, setFiltered] = useState(teamMembers);
 	const [search, setSearch] = useState("");
 	const [activeTreatment, setActiveTreatment] = useState("");
+	const filteredMembers = (
+		teamMembers
+			?.filter(m =>
+				m.medico.nombre.includes(search) ||
+				m.especialidad.includes(search) ||
+				m.medico.apellido1.includes(search)
+					)
+					.filter(m => m.servicios.some(s => s.nombreServicio.includes(activeTreatment))
+)
 
+	);
 	// 🔹 Todas las especialidades únicas
-	const allTreatments = Array.from(new Set(teamMembers.flatMap((m) => m.specialties)));
+	const allTreatments = Array.from(new Set(teamMembers.flatMap((m) => m.servicios)));
 
 	// 🔹 Filtrado
 	const handleSearch = (query: string) => {
 		setSearch(query);
-		applyFilters(query, activeTreatment);
 	};
 
-	const handleTreatmentClick = (treatment: string) => {
-		const newTreatment = activeTreatment === treatment ? "" : treatment;
+	const handleTreatmentClick = (service: string) => {
+		const newTreatment = activeTreatment === service ? "" : service;
 		setActiveTreatment(newTreatment);
-		applyFilters(search, newTreatment);
-	};
-
-	const applyFilters = (query: string, treatment: string) => {
-		let results = teamMembers;
-
-		if (query) {
-			results = results.filter(
-				(m) =>
-					m.name.toLowerCase().includes(query.toLowerCase()) ||
-					m.role.toLowerCase().includes(query.toLowerCase()) ||
-					m.specialties.some((s) =>
-						s.toLowerCase().includes(query.toLowerCase())
-					) ||
-					m.focusAreas.some((f) =>
-						f.toLowerCase().includes(query.toLowerCase())
-					)
-			);
-		}
-
-		if (treatment) {
-			results = results.filter((m) => m.specialties.includes(treatment));
-		}
-
-		setFiltered(results);
 	};
 
 	return (
@@ -116,88 +127,82 @@ export const TeamSection = () => {
                      placeholder-gray-400"
 				/>
 			</div>
-
-			{/* 🎯 Filtros tipo chips */}
 			<div className="flex flex-wrap gap-2 justify-center mb-10">
-				{allTreatments.map((t) => (
+				{allTreatments.map((t: any) => (
 					<button
-						key={t}
-						onClick={() => handleTreatmentClick(t)}
-						className={`px-4 py-2 rounded-full border transition ${activeTreatment === t
+						key={`servicio-${t.idServicio}${t.nombreServicio}`}
+						onClick={() => handleTreatmentClick(t.nombreServicio)}
+						className={`px-4 py-2 rounded-full border transition ${activeTreatment === t.nombreServicio
 							? "bg-blue-500 text-white border-blue-500"
 							: "bg-card text-text-primary hover:bg-card/80"
 							}`}
 					>
-						{t}
+						{t.nombreServicio}
 					</button>
 				))}
 			</div>
 
+
 			{/* 👨‍⚕️ Resultados */}
-			{filtered.length > 0 ? (
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-					{filtered.map((member, index) => (
-						<div
-							key={member.id}
-							className={`group relative bg-card/50 backdrop-blur-sm rounded-3xl p-8 border 
+			{isLoading ? (
+				<div>
+					cargando...
+				</div>
+			)
+
+				:
+				(filteredMembers && filteredMembers.length > 0) ? (
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+						{filteredMembers.map((member, index) => (
+							<div
+								key={member.idPerfil}
+								className={`group relative bg-card/50 backdrop-blur-sm rounded-3xl p-8 border 
               border-card-foreground/10 transition-all 
               duration-500 hover:shadow-2xl hover:shadow-primary/10 
               hover:-translate-y-2`}
-							style={{ animationDelay: `${index * 0.2}s` }}
-						>
-							<div
-								className={`absolute inset-0 bg-gradient-to-br ${member.bgGradient} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-							></div>
+								style={{ animationDelay: `${index * 0.2}s` }}
+							>
 
-							<div className="relative z-10 text-center space-y-4">
-								{/* Avatar */}
-								<div className="relative mb-6">
-									<div className="w-36 h-36 mx-auto rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-105 transition-transform duration-300">
-										<Users className="w-12 h-12 text-text-primary" />
+								<div className="relative z-10 text-center space-y-4">
+									{/* Avatar */}
+									<div className="relative mb-6">
+										<div className="w-36 h-36 mx-auto rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-105 transition-transform duration-300">
+											{member.fotografia != '' ? (
+												<img src={member.fotografia} className="rounded" />
+											) : (
+												<img src={'/user-default.webp'} className="rounded" />
+											)
+											}
+										</div>
+
 									</div>
-									<div className="absolute -top-2 -right-2 bg-accent text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-										{member.experience}
-									</div>
-								</div>
 
-								{/* Info */}
-								<h3 className="text-2xl font-bold text-text-primary">{member.name}</h3>
-								<p className="text-text-accent font-semibold text-lg">{member.role}</p>
-								<p className="text-text-primary/70 leading-relaxed text-sm">{member.description}</p>
+									{/* Info */}
+									<h3 className="text-2xl font-bold text-text-primary">{member.medico.nombre}</h3>
+									<p className="text-text-accent font-semibold text-lg break-words ">{member.especialidad}</p>
+									<p className="text-text-primary/70 leading-relaxed text-sm">{member.experienciaProfesional}</p>
 
-								{/* Especialidades */}
-								<div className="flex flex-wrap gap-2 justify-center mt-4">
-									{member.specialties.map((specialty, idx) => (
+									{/* Especialidades */}
+																	<div className="flex flex-wrap gap-2 justify-center mt-4">
+									{member.servicios.map((servicio, idx) => (
 										<span
-											key={idx}
+											key={`${idx}${servicio.nombreServicio}`}
 											className="px-3 py-1 bg-primary/10 text-text-primary text-xs font-medium rounded-full border border-primary/20"
 										>
-											{specialty}
+											{servicio.nombreServicio}
 										</span>
 									))}
 								</div>
 
-								{/* Áreas de enfoque */}
-								<div className="mt-4 text-left">
-									<h4 className="text-sm font-semibold text-accent mb-2">
-										Áreas de Enfoque:
-									</h4>
-									<ul className="list-disc list-inside text-sm text-text-primary/80 space-y-1">
-										{member.focusAreas.map((area, idx) => (
-											<li key={idx}>{area}</li>
-										))}
-									</ul>
 								</div>
-
 							</div>
-						</div>
-					))}
-				</div>
-			) : (
-				<p className="text-red-500 text-center mt-6">
-					No se encontraron profesionales con los criterios seleccionados.
-				</p>
-			)}
+						))}
+					</div>
+				) : (
+					<p className="text-red-500 text-center mt-6">
+						No se encontraron profesionales con los criterios seleccionados.
+					</p>
+				)}
 		</section>
 	);
 };

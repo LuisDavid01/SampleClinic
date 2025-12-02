@@ -23,7 +23,7 @@ const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 export async function getServicios(page: number, search?: string, limit: number = 10) {
   const user = await auth()
   if (!user.userId && !checkRole('admin')) {
-    return []
+	  throw new Error('Sin autorizacion')
   }
 
   // Validar y obtener el token de Clerk

@@ -16,9 +16,11 @@ import { MessageSquareShare, Send } from "lucide-react";
 
 import { Checkbox } from "../ui/checkbox";
 import { Form, FormError } from "../FormWithActions";
-import { createPacientTestimony, createTestimony } from "@/actions/historiasExito";
+import { createPacientTestimony } from "@/actions/historiasExito";
+import { useRouter } from "next/navigation";
 
 export function NewTestimonio() {
+	const router = useRouter()
 	const [stars, setStars] = useState(0);
 	const initialState: ActionResponse = {
 		success: false,
@@ -37,15 +39,19 @@ export function NewTestimonio() {
 		}
 
 		try {
-			// Call the appropriate action based on whether we're editing or creating
 			const result = await createPacientTestimony(data)
 
 
 			// Handle successful submission
 			if (result.success) {
 				console.log(result)
+				setStars(0);
 			}
 			console.log(result)
+			if (result.error === 'Unauthorized_Client'){
+				console.log("Redirigiendo al usuario")
+				router.push("/sign-in")
+			}
 			return result
 		} catch (err) {
 			return {
@@ -97,6 +103,14 @@ export function NewTestimonio() {
 								animate={{ opacity: 1, x: 0 }}
 								transition={{ delay: 0.1 }}
 							>
+							{state.errors?.rating && (
+								<FormError
+										className={`mb-4}`}
+									>
+										{state.errors.rating}
+									</FormError>
+
+							)}
 								<label className="block text-text-primary font-medium mb-3 text-center">
 									¿Cómo calificarías nuestro servicio?
 								</label>
