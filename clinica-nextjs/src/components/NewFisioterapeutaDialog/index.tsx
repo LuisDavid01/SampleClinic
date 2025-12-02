@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { Button } from '../ui/button'
 import {
 	Dialog,
@@ -10,10 +10,16 @@ import {
 	DialogFooter,
 } from '../ui/dialog'
 import { createUsuario, UsuarioData } from '@/actions/usuarios'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
-import { Form, FormGroup, FormInput, FormLabel, FormTextarea } from '../FormWithActions'
+import { Form, FormGroup, FormInput, FormLabel, FormSelect, FormTextarea } from '../FormWithActions'
 import { useNotification } from '../UseNotification'
+import { apiEndpoints, useApiClient } from '@/utils/apiClient'
+import { Usuario } from '@/types/Usuario'
+import { createTeamMember, editTeamMember } from '@/actions/equipo'
+import { teamProfile } from '@/types/perfiles'
+import { getServicios } from '@/actions/servicios'
+import { Service, Servicio } from '@/types/Service'
 
 type ActionResponse = {
 	success: boolean
@@ -24,6 +30,8 @@ type ActionResponse = {
 interface NewFisioterapeutaDialogProps {
 	open: boolean
 	onOpenChange: (open: boolean) => void
+	isEditing?: boolean
+	miembro?: teamProfile
 }
 
 const initialState: ActionResponse = {
@@ -35,40 +43,79 @@ const initialState: ActionResponse = {
 export default function NewFisioterapeutaDialog({
 	open,
 	onOpenChange,
+	miembro,
+	isEditing = false,
 }: NewFisioterapeutaDialogProps) {
 	const queryClient = useQueryClient()
 	const notificationContext = useNotification()
-	const showNotification = notificationContext?.showNotification || (() => {})
+	const apiClient = useApiClient()
+	const [serviciosSeleccionados, setServiciosSeleccionados] = useState<number[]>(
+		miembro?.servicios?.map(s => s.idServicio) ?? []
+	);
+	const showNotification = notificationContext?.showNotification || (() => { })
+	const results = useQueries({
+		queries: [
 
+			{
+				queryKey: ['usuarios'],
+				queryFn: async () => {
+					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}`)
+					const usuarios = res.usuarios
+					const equipo = usuarios.filter((usr: Usuario) => usr.rol.nombreRol != 'Paciente')
+					console.log(equipo);
+					return equipo;
+				},
+				staleTime: 3 * 60 * 1000,
+			},
+			{
+				queryKey: ['services'],
+				queryFn: async () => {
+					const resServices = await getServicios(1, "", 20)
+					console.log(resServices)
+					return resServices.servicios
+				},
+				staleTime: 3 * 60 * 1000
+			}
+
+		]
+	});
+
+	const toggleServicio = (id: number) => {
+		if (serviciosSeleccionados.includes(id)) {
+			setServiciosSeleccionados(serviciosSeleccionados.filter((s) => s !== id));
+		} else {
+			setServiciosSeleccionados([...serviciosSeleccionados, id]);
+		}
+	};
+
+	const isloading = results.some((r) => r.isLoading);
+	const teamMembers = results[0].data ?? [];
+	const services = results[1].data ?? [];
 	const [state, formAction, isPending] = useActionState<ActionResponse, FormData>(
 		async (_prevState, formData) => {
-			const data: UsuarioData = {
-				nombre: (formData.get('nombre') as string) ?? '',
-				apellido1: (formData.get('apellido1') as string) ?? '',
-				apellido2: (formData.get('apellido2') as string) || undefined,
-				fechaNacimiento: (formData.get('fechaNacimiento') as string) || undefined,
-				telefonoPrincipal: (formData.get('telefonoPrincipal') as string) ?? '',
-				telefonoSecundario: (formData.get('telefonoSecundario') as string) || undefined,
-				correoElectronico: (formData.get('correoElectronico') as string) ?? '',
-				direccionResidencia: (formData.get('direccionResidencia') as string) || undefined,
-				idRol: 2, // Rol de fisioterapeuta
-				activo: true,
+			const data = {
+				idEquipo: (formData.get('idEquipo') as string),
+				descripcionBreve: (formData.get('descripcionBreve') as string),
+				experienciaProfesional: (formData.get('experienciaProfesional') as string),
+				especialidad: (formData.get('especialidad') as string),
+				servicios: serviciosSeleccionados,
 			}
 
 			try {
-				const result = await createUsuario(data)
+				const result = isEditing ? await editTeamMember(miembro!.idPerfil, data, true) :
+					await createTeamMember(data)
 
 				if (result.success) {
 					// Invalidar caches relacionadas a usuarios
 					await queryClient.invalidateQueries({ queryKey: ['usuarios'] })
 					await queryClient.invalidateQueries({ queryKey: ['team'] })
-					
+
 					showNotification({
 						type: 'success',
 						title: 'Fisioterapeuta creado',
 						message: result.message || 'El fisioterapeuta se creó correctamente'
 					})
-					
+					console.log(result)
 					onOpenChange(false)
 				} else {
 					showNotification({
@@ -100,9 +147,8 @@ export default function NewFisioterapeutaDialog({
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-[calc(700px)] max-h-[90vh] overflow-y-auto">
 				<DialogHeader>
-					<DialogTitle className="text-2xl font-bold">Nuevo Fisioterapeuta</DialogTitle>
+					<DialogTitle className="text-2xl font-bold">{isEditing ? 'Editando miembro del equipo' : 'Nuevo miembro del equipo'}</DialogTitle>
 				</DialogHeader>
-
 				<Form action={formAction}>
 					{state?.message && !state.success && (
 						<div
@@ -121,166 +167,124 @@ export default function NewFisioterapeutaDialog({
 						{/* Información Personal */}
 						<div className="space-y-4">
 							<h3 className="text-lg font-semibold text-foreground">Información Personal</h3>
-							
+
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<FormGroup>
-									<FormLabel htmlFor="nombre">Nombre *</FormLabel>
-									<FormInput
-										id="nombre"
-										name="nombre"
-										placeholder="Ingrese el nombre"
+									<FormLabel htmlFor="idEquipo">Miembro del equipo</FormLabel>
+									<FormSelect
+										key={"testimony-paciente-select"}
+										id="idEquipo"
+										name="idEquipo"
+										options={teamMembers.map((equipo: Usuario) => ({
+											label: equipo.nombre + ' ' + equipo.apellido1 + ' ' + equipo.apellido2,
+											value: equipo.clerkId
+										}))}
+										defaultValue={miembro?.medico.clerkId ?? ''}
 										required
-										minLength={2}
-										maxLength={100}
-										disabled={isPending}
-										aria-describedby="nombre-error"
-										className={cn('border-0', state?.errors?.nombre && 'border border-red-500')}
+										disabled={isPending || isloading}
+										aria-describedby="title-error"
+										className={state?.errors?.Equipo ? 'border-red-500' : ''}
 									/>
-									{state?.errors?.nombre && (
-										<p id="nombre-error" className="text-sm text-red-500">
-											{state.errors.nombre[0]}
+									{state?.errors?.title && (
+										<p id="idPaciente-error" className="text-sm text-red-500">
+											{state.errors.idEquipo[0]}
+										</p>
+									)}
+								</FormGroup>
+								<FormGroup>
+									<FormLabel htmlFor="Especialidad">Especialidad *</FormLabel>
+									<FormInput
+										id="especialidad"
+										name="especialidad"
+										placeholder="Area medica"
+										required
+										maxLength={200}
+										disabled={isPending}
+										defaultValue={miembro?.especialidad ?? ''}
+										aria-describedby="especialidad-error"
+										className={cn('border-0', state?.errors?.especialidad && 'border border-red-500')}
+									/>
+									{state?.errors?.telefonoPrincipal && (
+										<p id="telefonoPrincipal-error" className="text-sm text-red-500">
+											{state.errors.especialidad}
 										</p>
 									)}
 								</FormGroup>
 
 								<FormGroup>
-									<FormLabel htmlFor="apellido1">Primer Apellido *</FormLabel>
-									<FormInput
-										id="apellido1"
-										name="apellido1"
-										placeholder="Ingrese el primer apellido"
+									<FormLabel htmlFor="experienciaProfesional">Cuentanos sobre tu experiencia!</FormLabel>
+									<FormTextarea
+										id="experienciaProfesional"
+										name="experienciaProfesional"
+										placeholder="Cuentanos sobre ti!"
 										required
 										minLength={2}
 										maxLength={100}
 										disabled={isPending}
+										defaultValue={miembro?.experienciaProfesional ?? ''}
 										aria-describedby="apellido1-error"
-										className={cn('border-0', state?.errors?.apellido1 && 'border border-red-500')}
+										className={cn('border-0', state?.errors?.experienciaProfesional && 'border border-red-500')}
 									/>
-									{state?.errors?.apellido1 && (
+									{state?.errors?.experienciaProfesional && (
 										<p id="apellido1-error" className="text-sm text-red-500">
-											{state.errors.apellido1[0]}
+											{state.errors.experienciaProfesional[0]}
 										</p>
 									)}
 								</FormGroup>
 
 								<FormGroup>
-									<FormLabel htmlFor="apellido2">Segundo Apellido</FormLabel>
-									<FormInput
-										id="apellido2"
-										name="apellido2"
-										placeholder="Ingrese el segundo apellido (opcional)"
+									<FormLabel htmlFor="descripcionBreve">Descripcion</FormLabel>
+									<FormTextarea
+										id="descripcionBreve"
+										name="descripcionBreve"
+										placeholder="Describe brevemente que haces!"
+										required
+										minLength={2}
 										maxLength={100}
 										disabled={isPending}
-										aria-describedby="apellido2-error"
-										className={cn('border-0', state?.errors?.apellido2 && 'border border-red-500')}
+										defaultValue={miembro?.descripcionBreve ?? ''}
+										aria-describedby="descripcionBreve-error"
+										className={cn('border-0', state?.errors?.descripcionBreve && 'border border-red-500')}
 									/>
-									{state?.errors?.apellido2 && (
-										<p id="apellido2-error" className="text-sm text-red-500">
-											{state.errors.apellido2[0]}
-										</p>
-									)}
-								</FormGroup>
-
-								<FormGroup>
-									<FormLabel htmlFor="fechaNacimiento">Fecha de Nacimiento</FormLabel>
-									<FormInput
-										id="fechaNacimiento"
-										name="fechaNacimiento"
-										type="date"
-										disabled={isPending}
-										aria-describedby="fechaNacimiento-error"
-										className={cn('border-0', state?.errors?.fechaNacimiento && 'border border-red-500')}
-									/>
-									{state?.errors?.fechaNacimiento && (
-										<p id="fechaNacimiento-error" className="text-sm text-red-500">
-											{state.errors.fechaNacimiento[0]}
+									{state?.errors?.descripcionBreve && (
+										<p id="apellido1-error" className="text-sm text-red-500">
+											{state.errors.descripcionBreve}
 										</p>
 									)}
 								</FormGroup>
 							</div>
 						</div>
 
-						{/* Información de Contacto */}
 						<div className="space-y-4">
 							<h3 className="text-lg font-semibold text-foreground">Información de Contacto</h3>
-							
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<FormGroup>
-									<FormLabel htmlFor="correoElectronico">Correo Electrónico *</FormLabel>
-									<FormInput
-										id="correoElectronico"
-										name="correoElectronico"
-										type="email"
-										placeholder="ejemplo@correo.com"
-										required
-										maxLength={150}
-										disabled={isPending}
-										aria-describedby="correoElectronico-error"
-										className={cn('border-0', state?.errors?.correoElectronico && 'border border-red-500')}
-									/>
-									{state?.errors?.correoElectronico && (
-										<p id="correoElectronico-error" className="text-sm text-red-500">
-											{state.errors.correoElectronico[0]}
-										</p>
-									)}
-								</FormGroup>
+							<FormGroup>
+								{services.map((servicio: Service) => {
+									return (<div key={servicio.idServicio}>
 
-								<FormGroup>
-									<FormLabel htmlFor="telefonoPrincipal">Teléfono Principal *</FormLabel>
-									<FormInput
-										id="telefonoPrincipal"
-										name="telefonoPrincipal"
-										placeholder="+506 8888-8888"
-										required
-										maxLength={20}
-										disabled={isPending}
-										aria-describedby="telefonoPrincipal-error"
-										className={cn('border-0', state?.errors?.telefonoPrincipal && 'border border-red-500')}
-									/>
-									{state?.errors?.telefonoPrincipal && (
-										<p id="telefonoPrincipal-error" className="text-sm text-red-500">
-											{state.errors.telefonoPrincipal[0]}
-										</p>
-									)}
-								</FormGroup>
+										<label htmlFor={`servicio-${servicio.idServicio}`}>{servicio.nombreServicio ?? 'Servicio no identificado'}</label>
+										<input
+											checked={serviciosSeleccionados.includes(servicio.idServicio)}
+											onChange={() => toggleServicio(servicio.idServicio)}
+											name={`servicio-${servicio.idServicio}`}
+											id={`servicio-${servicio.idServicio}`}
+											type='checkbox'
+											disabled={isPending}
+											aria-describedby="servicios-miembro-error"
+											className={cn('border-0', state?.errors?.servicios && 'border border-red-500')}
+										/>
 
-								<FormGroup>
-									<FormLabel htmlFor="telefonoSecundario">Teléfono Secundario</FormLabel>
-									<FormInput
-										id="telefonoSecundario"
-										name="telefonoSecundario"
-										placeholder="+506 8888-8889 (opcional)"
-										maxLength={20}
-										disabled={isPending}
-										aria-describedby="telefonoSecundario-error"
-										className={cn('border-0', state?.errors?.telefonoSecundario && 'border border-red-500')}
-									/>
-									{state?.errors?.telefonoSecundario && (
-										<p id="telefonoSecundario-error" className="text-sm text-red-500">
-											{state.errors.telefonoSecundario[0]}
-										</p>
-									)}
-								</FormGroup>
+									</div>
+									)
+								})
+								}
+								{state?.errors?.servicio && (
+									<p id="servicio-error" className="text-sm text-red-500">
+										{state.errors.servicio}
+									</p>
+								)}
+							</FormGroup>
 
-								<FormGroup>
-									<FormLabel htmlFor="direccionResidencia">Dirección de Residencia</FormLabel>
-									<FormTextarea
-										id="direccionResidencia"
-										name="direccionResidencia"
-										placeholder="Dirección completa (opcional)"
-										rows={2}
-										maxLength={255}
-										disabled={isPending}
-										aria-describedby="direccionResidencia-error"
-										className={cn('border-0', state?.errors?.direccionResidencia && 'border border-red-500')}
-									/>
-									{state?.errors?.direccionResidencia && (
-										<p id="direccionResidencia-error" className="text-sm text-red-500">
-											{state.errors.direccionResidencia[0]}
-										</p>
-									)}
-								</FormGroup>
-							</div>
+
 						</div>
 					</div>
 
@@ -294,12 +298,12 @@ export default function NewFisioterapeutaDialog({
 							Cancelar
 						</Button>
 						<Button type="submit" disabled={isPending}>
-							{isPending ? 'Creando...' : 'Crear Fisioterapeuta'}
+							{isEditing ? 'Editar miembro' : 'Crear Miembro del equipo'}
 						</Button>
 					</DialogFooter>
 				</Form>
 			</DialogContent>
-		</Dialog>
+		</Dialog >
 	)
 }
 

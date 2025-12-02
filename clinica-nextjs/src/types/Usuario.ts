@@ -20,4 +20,5 @@ export interface Usuario {
 	idRol: number;
 	activo: boolean;
 	rol: Rol;
+	clerkId: string;
 }

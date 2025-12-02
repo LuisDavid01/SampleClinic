@@ -187,9 +187,9 @@ const validateServicio = [
 
 // Validaciones para perfiles
 const validatePerfil = [
-	body('idMedico')
-		.isInt({ min: 1 })
-		.withMessage('El ID del médico debe ser un número entero positivo'),
+	body('idEquipo')
+		.isString({ min: 1 })
+		.withMessage('El ID del médico debe ser string'),
 
 	body('fotografia')
 		.optional()
@@ -210,7 +210,11 @@ const validatePerfil = [
 		.optional()
 		.isLength({ max: 100 })
 		.withMessage('La especialidad no puede exceder 100 caracteres'),
-
+	body('servicios')
+		.optional()
+		.isArray()
+		.isLength({ min: 1, max: 5 })
+		.withMessage('Solo se pueden agregar 5 servicios maximo'),
 	handleValidationErrors
 ];
 
@@ -219,14 +223,8 @@ const validateHistoriaExito = [
 
 	body('rating')
 		.optional()
-		.isInt({ min: 1 ,max: 5})
+		.isInt({ min: 1, max: 5 })
 		.withMessage('El rating debe ser un numero entre 1 y 5'),
-
-	body('idPaciente')
-		.optional()
-		.isInt({ min: 1 })
-		.withMessage('El ID del paciente debe ser un número entero positivo'),
-
 	body('fechaTratamiento')
 		.optional()
 		.isISO8601()

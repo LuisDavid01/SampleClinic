@@ -68,77 +68,88 @@ const router = express.Router();
  *         $ref: '#/components/responses/InternalServerError'
  */
 // GET /api/perfiles - Obtener todos los perfiles
-router.get('/', clerkAuth, async (req, res) => {
-  try {
-    const { page = 1, limit = 10, search, especialidad } = req.query;
-    const skip = (page - 1) * limit;
+router.get('/', async (req, res) => {
+	try {
+		const { page = 1, limit = 10, search, especialidad } = req.query;
+		const skip = (page - 1) * limit;
 
-    // Construir filtros
-    const where = {};
+		// Construir filtros
+		const where = {};
 
-    if (search) {
-      where.OR = [
-        { especialidad: { contains: search, mode: 'insensitive' } },
-        { descripcionBreve: { contains: search, mode: 'insensitive' } },
-        { medico: { 
-          OR: [
-            { nombre: { contains: search, mode: 'insensitive' } },
-            { apellido1: { contains: search, mode: 'insensitive' } },
-            { apellido2: { contains: search, mode: 'insensitive' } }
-          ]
-        }}
-      ];
-    }
+		if (search) {
+			where.OR = [
+				{ especialidad: { contains: search, mode: 'insensitive' } },
+				{ descripcionBreve: { contains: search, mode: 'insensitive' } },
+				{
+					medico: {
+						OR: [
+							{ nombre: { contains: search, mode: 'insensitive' } },
+							{ apellido1: { contains: search, mode: 'insensitive' } },
+							{ apellido2: { contains: search, mode: 'insensitive' } }
+						]
+					}
+				}
+			];
+		}
 
-    if (especialidad) {
-      where.especialidad = { contains: especialidad, mode: 'insensitive' };
-    }
+		if (especialidad) {
+			where.especialidad = { contains: especialidad, mode: 'insensitive' };
+		}
 
-    const [perfiles, total] = await Promise.all([
-      prisma.perfil.findMany({
-        where,
-        include: {
-          medico: {
-            select: { 
-              idUsuario: true, 
-              nombre: true, 
-              apellido1: true, 
-              apellido2: true,
-              telefonoPrincipal: true,
-              correoElectronico: true
-            }
-          },
-          certificaciones: {
-            include: { certificacion: true }
-          },
-          servicios: {
-            include: { servicio: true }
-          }
-        },
-        skip: parseInt(skip),
-        take: parseInt(limit),
-        orderBy: { especialidad: 'asc' }
-      }),
-      prisma.perfil.count({ where })
-    ]);
+		const [perfiles, total] = await Promise.all([
+			prisma.perfil.findMany({
+				where,
+				include: {
+					medico: {
+						select: {
+							idUsuario: true,
+							nombre: true,
+							apellido1: true,
+							apellido2: true,
+							telefonoPrincipal: true,
+							correoElectronico: true,
+							clerkId: true,
+						}
+					},
+					certificaciones: {
+						include: { certificacion: true }
+					},
+					servicios: {
+						select: {
+							servicio: true  // Solo seleccionamos el servicio, no el PerfilServicio
+						}
+					}
+				},
+				skip: parseInt(skip),
+				take: parseInt(limit),
+				orderBy: { especialidad: 'asc' }
+			}),
+			prisma.perfil.count({ where })
+		]);
+		const perfilesConServicios = perfiles.map(({ servicios, ...rest }) => ({
+			...rest,
+			servicios: servicios.map(({ servicio }) => servicio),
+			medico: rest.medico,
+			certificaciones: rest.certificaciones
+		}));
 
-    res.json({
-      perfiles,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    });
+		res.json({
+			perfiles: perfilesConServicios,
+			pagination: {
+				page: parseInt(page),
+				limit: parseInt(limit),
+				total,
+				pages: Math.ceil(total / limit)
+			}
+		});
 
-  } catch (error) {
-    console.error('Error al obtener perfiles:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudieron obtener los perfiles'
-    });
-  }
+	} catch (error) {
+		console.error('Error al obtener perfiles:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudieron obtener los perfiles'
+		});
+	}
 });
 
 /**
@@ -173,49 +184,49 @@ router.get('/', clerkAuth, async (req, res) => {
  */
 // GET /api/perfiles/:id - Obtener perfil por ID
 router.get('/:id', clerkAuth, validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
+	try {
+		const { id } = req.params;
 
-    const perfil = await prisma.perfil.findUnique({
-      where: { idPerfil: parseInt(id) },
-      include: {
-        medico: {
-          select: { 
-            idUsuario: true, 
-            nombre: true, 
-            apellido1: true, 
-            apellido2: true,
-            telefonoPrincipal: true,
-            telefonoSecundario: true,
-            correoElectronico: true,
-            direccionResidencia: true
-          }
-        },
-        certificaciones: {
-          include: { certificacion: true }
-        },
-        servicios: {
-          include: { servicio: true }
-        }
-      }
-    });
+		const perfil = await prisma.perfil.findUnique({
+			where: { idPerfil: parseInt(id) },
+			include: {
+				medico: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true,
+						telefonoPrincipal: true,
+						telefonoSecundario: true,
+						correoElectronico: true,
+						direccionResidencia: true
+					}
+				},
+				certificaciones: {
+					include: { certificacion: true }
+				},
+				servicios: {
+					include: { servicio: true }
+				}
+			}
+		});
 
-    if (!perfil) {
-      return res.status(404).json({
-        error: 'Perfil no encontrado',
-        message: 'No existe un perfil con el ID proporcionado'
-      });
-    }
+		if (!perfil) {
+			return res.status(404).json({
+				error: 'Perfil no encontrado',
+				message: 'No existe un perfil con el ID proporcionado'
+			});
+		}
 
-    res.json(perfil);
+		res.json(perfil);
 
-  } catch (error) {
-    console.error('Error al obtener perfil:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo obtener el perfil'
-    });
-  }
+	} catch (error) {
+		console.error('Error al obtener perfil:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo obtener el perfil'
+		});
+	}
 });
 
 /**
@@ -270,73 +281,81 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
  */
 // POST /api/perfiles - Crear nuevo perfil
 router.post('/', clerkAuth, validatePerfil, async (req, res) => {
-  try {
-    const { idMedico, fotografia, experienciaProfesional, descripcionBreve, especialidad } = req.body;
+	try {
+		const { idEquipo, fotografia,
+			experienciaProfesional, descripcionBreve,
+			especialidad, servicios } = req.body;
 
-    // Verificar que el médico existe y es un médico
-    const medico = await prisma.usuario.findUnique({
-      where: { idUsuario: idMedico },
-      include: { rol: true }
-    });
+		// Verificar que el miembro del equipo exista
+		const medico = await prisma.usuario.findUnique({
+			where: { clerkId: idEquipo },
+			include: { rol: true }
+		});
 
-    if (!medico) {
-      return res.status(404).json({
-        error: 'Médico no encontrado',
-        message: 'No existe un usuario con el ID proporcionado'
-      });
-    }
+		if (!medico) {
+			return res.status(404).json({
+				error: 'Médico no encontrado',
+				message: 'No existe un usuario con el ID proporcionado'
+			});
+		}
 
-    if (medico.rol?.nombreRol !== 'medico') {
-      return res.status(400).json({
-        error: 'Tipo de usuario inválido',
-        message: 'El usuario debe ser un médico para crear un perfil'
-      });
-    }
+		if (medico.rol?.nombreRol === 'Paciente') {
+			return res.status(400).json({
+				error: 'Tipo de usuario inválido',
+				message: 'El usuario debe ser un médico para crear un perfil'
+			});
+		}
 
-    // Verificar si ya existe un perfil para este médico
-    const perfilExistente = await prisma.perfil.findUnique({
-      where: { idMedico }
-    });
+		// Verificar si ya existe un perfil para este médico
+		const perfilExistente = await prisma.perfil.findUnique({
+			where: { idMedico: medico.idUsuario }
+		});
 
-    if (perfilExistente) {
-      return res.status(409).json({
-        error: 'Perfil ya existe',
-        message: 'Ya existe un perfil para este médico'
-      });
-    }
+		if (perfilExistente) {
+			return res.status(409).json({
+				error: 'Perfil ya existe',
+				message: 'Ya existe un perfil para este médico'
+			});
+		}
 
-    const perfil = await prisma.perfil.create({
-      data: {
-        idMedico,
-        fotografia,
-        experienciaProfesional,
-        descripcionBreve,
-        especialidad
-      },
-      include: {
-        medico: {
-          select: { 
-            idUsuario: true, 
-            nombre: true, 
-            apellido1: true, 
-            apellido2: true
-          }
-        }
-      }
-    });
+		const perfil = await prisma.perfil.create({
+			data: {
+				idMedico: medico.idUsuario,
+				fotografia,
+				experienciaProfesional,
+				descripcionBreve,
+				especialidad,
+				servicios: {
+					create: servicios.map((idServicio) => ({
+						idServicio: idServicio
+					}))
+				}
+			},
+			include: {
+				medico: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true
+					}
+				},
+				servicios: true
+			}
+		});
 
-    res.status(201).json({
-      message: 'Perfil creado exitosamente',
-      perfil
-    });
+		res.status(201).json({
+			message: 'Perfil creado exitosamente',
+			perfil
+		});
 
-  } catch (error) {
-    console.error('Error al crear perfil:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo crear el perfil'
-    });
-  }
+	} catch (error) {
+		console.error('Error al crear perfil:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo crear el perfil'
+		});
+	}
 });
 
 /**
@@ -390,67 +409,107 @@ router.post('/', clerkAuth, validatePerfil, async (req, res) => {
  */
 // PUT /api/perfiles/:id - Actualizar perfil
 router.put('/:id', clerkAuth, validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = { ...req.body };
+	try {
+		const { id } = req.params;
+		const data = { ...req.body };
+		const { idEquipo, servicios, ...updateData } = data;
+		// Verificar que el perfil existe
+		const perfilExistente = await prisma.perfil.findUnique({
+			where: { idPerfil: parseInt(id) },
+			include: { medico: true }
+		});
 
-    // Verificar que el perfil existe
-    const perfilExistente = await prisma.perfil.findUnique({
-      where: { idPerfil: parseInt(id) },
-      include: { medico: true }
-    });
+		if (!perfilExistente) {
+			return res.status(404).json({
+				error: 'Perfil no encontrado',
+				message: 'No existe un perfil con el ID proporcionado'
+			});
+		}
 
-    if (!perfilExistente) {
-      return res.status(404).json({
-        error: 'Perfil no encontrado',
-        message: 'No existe un perfil con el ID proporcionado'
-      });
-    }
+		// Verificar permisos: solo el médico propietario o admin pueden actualizar
+		/*
+		const isOwner = perfilExistente.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
+		
+		if (!isOwner && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'Solo el médico propietario o un administrador pueden actualizar el perfil'
+			});
+		}
+		*/
+		// Verificar que el miembro del equipo exista
+		const medico = await prisma.usuario.findUnique({
+			where: { clerkId: idEquipo },
+			include: { rol: true }
+		});
 
-    // Verificar permisos: solo el médico propietario o admin pueden actualizar
-    const isOwner = perfilExistente.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		if (!medico) {
+			return res.status(404).json({
+				error: 'Médico no encontrado',
+				message: 'No existe un usuario con el ID proporcionado'
+			});
+		}
 
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'Solo el médico propietario o un administrador pueden actualizar el perfil'
-      });
-    }
+		if (medico.rol?.nombreRol === 'Paciente') {
+			return res.status(400).json({
+				error: 'Tipo de usuario inválido',
+				message: 'El usuario debe ser un médico para crear un perfil'
+			});
+		}
 
-    const perfil = await prisma.perfil.update({
-      where: { idPerfil: parseInt(id) },
-      data: updateData,
-      include: {
-        medico: {
-          select: { 
-            idUsuario: true, 
-            nombre: true, 
-            apellido1: true, 
-            apellido2: true
-          }
-        },
-        certificaciones: {
-          include: { certificacion: true }
-        },
-        servicios: {
-          include: { servicio: true }
-        }
-      }
-    });
+		// Verificar si ya existe un perfil para este médico
+		const perfilExistenteConMedico = await prisma.perfil.findUnique({
+			where: { idMedico: medico.idUsuario }
+		});
+		if (perfilExistenteConMedico.idPerfil != id) {
+			return res.status(409).json({
+				error: 'Perfil ya existe',
+				message: 'Ya existe un perfil para este médico'
+			});
+		}
 
-    res.json({
-      message: 'Perfil actualizado exitosamente',
-      perfil
-    });
+		const perfil = await prisma.perfil.update({
+			where: { idPerfil: parseInt(id) },
+			data: {
+				...updateData,
+				servicios: {
+					deleteMany: {}, // Elimina todas las relaciones actuales
+					create: servicios.map((idServicio) => ({
+						idServicio: idServicio
+					}))
+				}
+			},
+			include: {
+				medico: {
+					select: {
+						idUsuario: true,
+						nombre: true,
+						apellido1: true,
+						apellido2: true
+					}
+				},
+				certificaciones: {
+					include: { certificacion: true }
+				},
+				servicios: {
+					include: { servicio: true }
+				}
+			}
+		});
 
-  } catch (error) {
-    console.error('Error al actualizar perfil:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo actualizar el perfil'
-    });
-  }
+		res.json({
+			message: 'Perfil actualizado exitosamente',
+			perfil
+		});
+
+	} catch (error) {
+		console.error('Error al actualizar perfil:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo actualizar el perfil'
+		});
+	}
 });
 
 /**
@@ -491,358 +550,359 @@ router.put('/:id', clerkAuth, validateId, async (req, res) => {
  */
 // DELETE /api/perfiles/:id - Eliminar perfil
 router.delete('/:id', clerkAuth, validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
+	try {
+		const { id } = req.params;
 
-    // Verificar que el perfil existe
-    const perfilExistente = await prisma.perfil.findUnique({
-      where: { idPerfil: parseInt(id) },
-      include: { medico: true }
-    });
+		// Verificar que el perfil existe
+		const perfilExistente = await prisma.perfil.findUnique({
+			where: { idPerfil: parseInt(id) },
+			include: { medico: true }
+		});
 
-    if (!perfilExistente) {
-      return res.status(404).json({
-        error: 'Perfil no encontrado',
-        message: 'No existe un perfil con el ID proporcionado'
-      });
-    }
+		if (!perfilExistente) {
+			return res.status(404).json({
+				error: 'Perfil no encontrado',
+				message: 'No existe un perfil con el ID proporcionado'
+			});
+		}
 
-    // Verificar permisos: solo el médico propietario o admin pueden eliminar
-    const isOwner = perfilExistente.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		// Verificar permisos: solo el médico propietario o admin pueden eliminar
+		/*
+		const isOwner = perfilExistente.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
 
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'Solo el médico propietario o un administrador pueden eliminar el perfil'
-      });
-    }
+		if (!isOwner && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'Solo el médico propietario o un administrador pueden eliminar el perfil'
+			});
+		}*/
 
-    await prisma.perfil.delete({
-      where: { idPerfil: parseInt(id) }
-    });
+		await prisma.perfil.delete({
+			where: { idPerfil: parseInt(id) }
+		});
 
-    res.json({
-      message: 'Perfil eliminado exitosamente'
-    });
+		res.json({
+			message: 'Perfil eliminado exitosamente'
+		});
 
-  } catch (error) {
-    console.error('Error al eliminar perfil:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo eliminar el perfil'
-    });
-  }
+	} catch (error) {
+		console.error('Error al eliminar perfil:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo eliminar el perfil'
+		});
+	}
 });
 
 // POST /api/perfiles/:id/certificaciones - Agregar certificación al perfil
 router.post('/:id/certificaciones', clerkAuth, validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { idCertificacion } = req.body;
+	try {
+		const { id } = req.params;
+		const { idCertificacion } = req.body;
 
-    if (!idCertificacion) {
-      return res.status(400).json({
-        error: 'Datos inválidos',
-        message: 'El ID de la certificación es requerido'
-      });
-    }
+		if (!idCertificacion) {
+			return res.status(400).json({
+				error: 'Datos inválidos',
+				message: 'El ID de la certificación es requerido'
+			});
+		}
 
-    // Verificar que el perfil existe
-    const perfil = await prisma.perfil.findUnique({
-      where: { idPerfil: parseInt(id) },
-      include: { medico: true }
-    });
+		// Verificar que el perfil existe
+		const perfil = await prisma.perfil.findUnique({
+			where: { idPerfil: parseInt(id) },
+			include: { medico: true }
+		});
 
-    if (!perfil) {
-      return res.status(404).json({
-        error: 'Perfil no encontrado',
-        message: 'No existe un perfil con el ID proporcionado'
-      });
-    }
+		if (!perfil) {
+			return res.status(404).json({
+				error: 'Perfil no encontrado',
+				message: 'No existe un perfil con el ID proporcionado'
+			});
+		}
 
-    // Verificar permisos
-    const isOwner = perfil.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		// Verificar permisos
+		const isOwner = perfil.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
 
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'Solo el médico propietario o un administrador pueden agregar certificaciones'
-      });
-    }
+		if (!isOwner && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'Solo el médico propietario o un administrador pueden agregar certificaciones'
+			});
+		}
 
-    // Verificar que la certificación existe
-    const certificacion = await prisma.certificacion.findUnique({
-      where: { idCertificacion: parseInt(idCertificacion) }
-    });
+		// Verificar que la certificación existe
+		const certificacion = await prisma.certificacion.findUnique({
+			where: { idCertificacion: parseInt(idCertificacion) }
+		});
 
-    if (!certificacion) {
-      return res.status(404).json({
-        error: 'Certificación no encontrada',
-        message: 'No existe una certificación con el ID proporcionado'
-      });
-    }
+		if (!certificacion) {
+			return res.status(404).json({
+				error: 'Certificación no encontrada',
+				message: 'No existe una certificación con el ID proporcionado'
+			});
+		}
 
-    // Verificar si ya existe la asociación
-    const asociacionExistente = await prisma.perfilCertificacion.findUnique({
-      where: {
-        idPerfil_idCertificacion: {
-          idPerfil: parseInt(id),
-          idCertificacion: parseInt(idCertificacion)
-        }
-      }
-    });
+		// Verificar si ya existe la asociación
+		const asociacionExistente = await prisma.perfilCertificacion.findUnique({
+			where: {
+				idPerfil_idCertificacion: {
+					idPerfil: parseInt(id),
+					idCertificacion: parseInt(idCertificacion)
+				}
+			}
+		});
 
-    if (asociacionExistente) {
-      return res.status(409).json({
-        error: 'Asociación ya existe',
-        message: 'El perfil ya tiene esta certificación'
-      });
-    }
+		if (asociacionExistente) {
+			return res.status(409).json({
+				error: 'Asociación ya existe',
+				message: 'El perfil ya tiene esta certificación'
+			});
+		}
 
-    const perfilCertificacion = await prisma.perfilCertificacion.create({
-      data: {
-        idPerfil: parseInt(id),
-        idCertificacion: parseInt(idCertificacion)
-      }
-    });
+		const perfilCertificacion = await prisma.perfilCertificacion.create({
+			data: {
+				idPerfil: parseInt(id),
+				idCertificacion: parseInt(idCertificacion)
+			}
+		});
 
-    res.status(201).json({
-      message: 'Certificación agregada al perfil exitosamente',
-      perfilCertificacion
-    });
+		res.status(201).json({
+			message: 'Certificación agregada al perfil exitosamente',
+			perfilCertificacion
+		});
 
-  } catch (error) {
-    console.error('Error al agregar certificación:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo agregar la certificación'
-    });
-  }
+	} catch (error) {
+		console.error('Error al agregar certificación:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo agregar la certificación'
+		});
+	}
 });
 
 // DELETE /api/perfiles/:id/certificaciones/:idCertificacion - Remover certificación del perfil
 router.delete('/:id/certificaciones/:idCertificacion', clerkAuth, validateId, async (req, res) => {
-  try {
-    const { id, idCertificacion } = req.params;
+	try {
+		const { id, idCertificacion } = req.params;
 
-    // Verificar que el perfil existe
-    const perfil = await prisma.perfil.findUnique({
-      where: { idPerfil: parseInt(id) },
-      include: { medico: true }
-    });
+		// Verificar que el perfil existe
+		const perfil = await prisma.perfil.findUnique({
+			where: { idPerfil: parseInt(id) },
+			include: { medico: true }
+		});
 
-    if (!perfil) {
-      return res.status(404).json({
-        error: 'Perfil no encontrado',
-        message: 'No existe un perfil con el ID proporcionado'
-      });
-    }
+		if (!perfil) {
+			return res.status(404).json({
+				error: 'Perfil no encontrado',
+				message: 'No existe un perfil con el ID proporcionado'
+			});
+		}
 
-    // Verificar permisos
-    const isOwner = perfil.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		// Verificar permisos
+		const isOwner = perfil.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
 
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'Solo el médico propietario o un administrador pueden remover certificaciones'
-      });
-    }
+		if (!isOwner && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'Solo el médico propietario o un administrador pueden remover certificaciones'
+			});
+		}
 
-    // Verificar si existe la asociación
-    const asociacion = await prisma.perfilCertificacion.findUnique({
-      where: {
-        idPerfil_idCertificacion: {
-          idPerfil: parseInt(id),
-          idCertificacion: parseInt(idCertificacion)
-        }
-      }
-    });
+		// Verificar si existe la asociación
+		const asociacion = await prisma.perfilCertificacion.findUnique({
+			where: {
+				idPerfil_idCertificacion: {
+					idPerfil: parseInt(id),
+					idCertificacion: parseInt(idCertificacion)
+				}
+			}
+		});
 
-    if (!asociacion) {
-      return res.status(404).json({
-        error: 'Asociación no encontrada',
-        message: 'El perfil no tiene esta certificación'
-      });
-    }
+		if (!asociacion) {
+			return res.status(404).json({
+				error: 'Asociación no encontrada',
+				message: 'El perfil no tiene esta certificación'
+			});
+		}
 
-    await prisma.perfilCertificacion.delete({
-      where: {
-        idPerfil_idCertificacion: {
-          idPerfil: parseInt(id),
-          idCertificacion: parseInt(idCertificacion)
-        }
-      }
-    });
+		await prisma.perfilCertificacion.delete({
+			where: {
+				idPerfil_idCertificacion: {
+					idPerfil: parseInt(id),
+					idCertificacion: parseInt(idCertificacion)
+				}
+			}
+		});
 
-    res.json({
-      message: 'Certificación removida del perfil exitosamente'
-    });
+		res.json({
+			message: 'Certificación removida del perfil exitosamente'
+		});
 
-  } catch (error) {
-    console.error('Error al remover certificación:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo remover la certificación'
-    });
-  }
+	} catch (error) {
+		console.error('Error al remover certificación:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo remover la certificación'
+		});
+	}
 });
 
 // POST /api/perfiles/:id/servicios - Agregar servicio al perfil
 router.post('/:id/servicios', clerkAuth, validateId, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { idServicio } = req.body;
+	try {
+		const { id } = req.params;
+		const { idServicio } = req.body;
 
-    if (!idServicio) {
-      return res.status(400).json({
-        error: 'Datos inválidos',
-        message: 'El ID del servicio es requerido'
-      });
-    }
+		if (!idServicio) {
+			return res.status(400).json({
+				error: 'Datos inválidos',
+				message: 'El ID del servicio es requerido'
+			});
+		}
 
-    // Verificar que el perfil existe
-    const perfil = await prisma.perfil.findUnique({
-      where: { idPerfil: parseInt(id) },
-      include: { medico: true }
-    });
+		// Verificar que el perfil existe
+		const perfil = await prisma.perfil.findUnique({
+			where: { idPerfil: parseInt(id) },
+			include: { medico: true }
+		});
 
-    if (!perfil) {
-      return res.status(404).json({
-        error: 'Perfil no encontrado',
-        message: 'No existe un perfil con el ID proporcionado'
-      });
-    }
+		if (!perfil) {
+			return res.status(404).json({
+				error: 'Perfil no encontrado',
+				message: 'No existe un perfil con el ID proporcionado'
+			});
+		}
 
-    // Verificar permisos
-    const isOwner = perfil.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		// Verificar permisos
+		const isOwner = perfil.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
 
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'Solo el médico propietario o un administrador pueden agregar servicios'
-      });
-    }
+		if (!isOwner && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'Solo el médico propietario o un administrador pueden agregar servicios'
+			});
+		}
 
-    // Verificar que el servicio existe
-    const servicio = await prisma.servicio.findUnique({
-      where: { idServicio: parseInt(idServicio) }
-    });
+		// Verificar que el servicio existe
+		const servicio = await prisma.servicio.findUnique({
+			where: { idServicio: parseInt(idServicio) }
+		});
 
-    if (!servicio) {
-      return res.status(404).json({
-        error: 'Servicio no encontrado',
-        message: 'No existe un servicio con el ID proporcionado'
-      });
-    }
+		if (!servicio) {
+			return res.status(404).json({
+				error: 'Servicio no encontrado',
+				message: 'No existe un servicio con el ID proporcionado'
+			});
+		}
 
-    // Verificar si ya existe la asociación
-    const asociacionExistente = await prisma.perfilServicio.findUnique({
-      where: {
-        idPerfil_idServicio: {
-          idPerfil: parseInt(id),
-          idServicio: parseInt(idServicio)
-        }
-      }
-    });
+		// Verificar si ya existe la asociación
+		const asociacionExistente = await prisma.perfilServicio.findUnique({
+			where: {
+				idPerfil_idServicio: {
+					idPerfil: parseInt(id),
+					idServicio: parseInt(idServicio)
+				}
+			}
+		});
 
-    if (asociacionExistente) {
-      return res.status(409).json({
-        error: 'Asociación ya existe',
-        message: 'El perfil ya ofrece este servicio'
-      });
-    }
+		if (asociacionExistente) {
+			return res.status(409).json({
+				error: 'Asociación ya existe',
+				message: 'El perfil ya ofrece este servicio'
+			});
+		}
 
-    const perfilServicio = await prisma.perfilServicio.create({
-      data: {
-        idPerfil: parseInt(id),
-        idServicio: parseInt(idServicio)
-      }
-    });
+		const perfilServicio = await prisma.perfilServicio.create({
+			data: {
+				idPerfil: parseInt(id),
+				idServicio: parseInt(idServicio)
+			}
+		});
 
-    res.status(201).json({
-      message: 'Servicio agregado al perfil exitosamente',
-      perfilServicio
-    });
+		res.status(201).json({
+			message: 'Servicio agregado al perfil exitosamente',
+			perfilServicio
+		});
 
-  } catch (error) {
-    console.error('Error al agregar servicio:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo agregar el servicio'
-    });
-  }
+	} catch (error) {
+		console.error('Error al agregar servicio:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo agregar el servicio'
+		});
+	}
 });
 
 // DELETE /api/perfiles/:id/servicios/:idServicio - Remover servicio del perfil
 router.delete('/:id/servicios/:idServicio', clerkAuth, validateId, async (req, res) => {
-  try {
-    const { id, idServicio } = req.params;
+	try {
+		const { id, idServicio } = req.params;
 
-    // Verificar que el perfil existe
-    const perfil = await prisma.perfil.findUnique({
-      where: { idPerfil: parseInt(id) },
-      include: { medico: true }
-    });
+		// Verificar que el perfil existe
+		const perfil = await prisma.perfil.findUnique({
+			where: { idPerfil: parseInt(id) },
+			include: { medico: true }
+		});
 
-    if (!perfil) {
-      return res.status(404).json({
-        error: 'Perfil no encontrado',
-        message: 'No existe un perfil con el ID proporcionado'
-      });
-    }
+		if (!perfil) {
+			return res.status(404).json({
+				error: 'Perfil no encontrado',
+				message: 'No existe un perfil con el ID proporcionado'
+			});
+		}
 
-    // Verificar permisos
-    const isOwner = perfil.idMedico === req.user.idUsuario;
-    const isAdmin = isAdministrador(req.user);
+		// Verificar permisos
+		const isOwner = perfil.idMedico === req.user.idUsuario;
+		const isAdmin = isAdministrador(req.user);
 
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({
-        error: 'Acceso denegado',
-        message: 'Solo el médico propietario o un administrador pueden remover servicios'
-      });
-    }
+		if (!isOwner && !isAdmin) {
+			return res.status(403).json({
+				error: 'Acceso denegado',
+				message: 'Solo el médico propietario o un administrador pueden remover servicios'
+			});
+		}
 
-    // Verificar si existe la asociación
-    const asociacion = await prisma.perfilServicio.findUnique({
-      where: {
-        idPerfil_idServicio: {
-          idPerfil: parseInt(id),
-          idServicio: parseInt(idServicio)
-        }
-      }
-    });
+		// Verificar si existe la asociación
+		const asociacion = await prisma.perfilServicio.findUnique({
+			where: {
+				idPerfil_idServicio: {
+					idPerfil: parseInt(id),
+					idServicio: parseInt(idServicio)
+				}
+			}
+		});
 
-    if (!asociacion) {
-      return res.status(404).json({
-        error: 'Asociación no encontrada',
-        message: 'El perfil no ofrece este servicio'
-      });
-    }
+		if (!asociacion) {
+			return res.status(404).json({
+				error: 'Asociación no encontrada',
+				message: 'El perfil no ofrece este servicio'
+			});
+		}
 
-    await prisma.perfilServicio.delete({
-      where: {
-        idPerfil_idServicio: {
-          idPerfil: parseInt(id),
-          idServicio: parseInt(idServicio)
-        }
-      }
-    });
+		await prisma.perfilServicio.delete({
+			where: {
+				idPerfil_idServicio: {
+					idPerfil: parseInt(id),
+					idServicio: parseInt(idServicio)
+				}
+			}
+		});
 
-    res.json({
-      message: 'Servicio removido del perfil exitosamente'
-    });
+		res.json({
+			message: 'Servicio removido del perfil exitosamente'
+		});
 
-  } catch (error) {
-    console.error('Error al remover servicio:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor',
-      message: 'No se pudo remover el servicio'
-    });
-  }
+	} catch (error) {
+		console.error('Error al remover servicio:', error);
+		res.status(500).json({
+			error: 'Error interno del servidor',
+			message: 'No se pudo remover el servicio'
+		});
+	}
 });
 
 export default router;

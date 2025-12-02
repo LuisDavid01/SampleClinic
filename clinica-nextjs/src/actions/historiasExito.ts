@@ -4,9 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import z from "zod";
 const TesimonySchema = z.object({
-	idPaciente: z.number('Invalido').optional().nullable(),
-	rating: z.number('Invalido').min(1).max(5),
-	experiencia: z.string('Invalido'),
+	rating: z.number('Invalido').min(1, 'El rating debe ser mayor a 1').max(5, 'El rating no debe ser mayor a 5'),
+	experiencia: z.string('Invalido').min(1, 'El campo no debe estar vacio').max(255, 'El maximo de caracteres son 255'),
 	fechaTratamiento: z.string('Invalido').optional().nullable(),
 	publicado: z.boolean('Invalido').optional().nullable(),
 	isAnonimo: z.boolean('Invalido').optional().nullable(),
@@ -16,26 +15,19 @@ export type TestimonyData = z.infer<typeof TesimonySchema>
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
-export const getTestimonies = async (page: number, limit: number, search: string) => {
-	const user = await auth();
-	if (!user.userId) {
-		return {
-			success: false,
-			message: 'Unauthorized access',
-			error: 'Unauthorized',
-		}
-	}
+export const getTestimonies = async (page: number, limit: number, search: string, publicado?: boolean) => {
 
 	const params = new URLSearchParams({
 		page: page.toString(),
 		limit: limit.toString(),
+		...(search && { search }),
+		...(publicado !== undefined && { publicado: publicado ? "true" : "false" }),
 	});
 	const res = await fetch(`${baseUrl}/historias-exito?${params}`, {
 		method: 'GET',
 		headers: {
 			'Content-Type': 'application/json',
 
-			authorization: `Bearer ${await user.getToken()}`
 		}
 	});
 	if (!res.ok) {
@@ -100,7 +92,6 @@ export const getTestimony = async (idHistoria: number) => {
 
 export const createTestimony = async (data: TestimonyData) => {
 	try {
-		console.log(data.idPaciente, data.experiencia, data.publicado, data.fechaTratamiento);
 		const user = await auth()
 		if (!user.userId) {
 			return {
@@ -189,8 +180,6 @@ export const updateTestimony = async (
 		const validatedData = validationResult.data
 		const updateData: Record<string, unknown> = {}
 
-		if (validatedData.idPaciente !== undefined)
-			updateData.idPaciente = validatedData.idPaciente
 		if (validatedData.rating !== undefined)
 			updateData.rating = validatedData.rating
 		if (validatedData.experiencia !== undefined)
@@ -349,7 +338,7 @@ export const createPacientTestimony = async (data: TestimonyData) => {
 			return {
 				success: false,
 				message: 'Unauthorized access',
-				error: 'Unauthorized',
+				error: 'Unauthorized_Client',
 			}
 		}
 		const token = await user.getToken()
@@ -367,7 +356,7 @@ export const createPacientTestimony = async (data: TestimonyData) => {
 			console.log('validation failes', validationResult.error);
 			return {
 				success: false,
-				message: 'Error validando los archivos',
+				message: 'Error validando el testimonio',
 				errors: validationResult.error.flatten().fieldErrors,
 			}
 		}

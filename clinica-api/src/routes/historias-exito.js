@@ -75,7 +75,7 @@ const router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 // GET /api/historias-exito - Obtener todas las historias de éxito
-router.get('/', clerkAuth, async (req, res) => {
+router.get('/', async (req, res) => {
 	try {
 		const {
 			page = 1,
@@ -302,16 +302,28 @@ router.get('/:id', clerkAuth, validateId, async (req, res) => {
 router.post('/', clerkAuth, validateHistoriaExito, async (req, res) => {
 	try {
 		const {
-			idPaciente,
 			rating,
 			fechaTratamiento,
 			experiencia,
 			publicado = false
 		} = req.body;
 
+
+		// Verificar que el paciente existe si se proporciona
+		const paciente = await prisma.usuario.findUnique({
+			where: { clerkId: req.clerkUserId }
+		})
+		console.log("\n este es el usuario encontrado: ", paciente.nombre, " \n\n")
+		if (!paciente) {
+			return res.status(400).json({
+				error: 'Paciente no encontrado',
+				message: 'El paciente especificado no existe'
+			});
+		}
+
 		// Si es paciente, solo puede crear historias para sí mismo
 		if (isPaciente(req.user)) {
-			if (idPaciente && idPaciente !== req.user.idUsuario) {
+			if (paciente && paciente.idUsuario !== req.user.idUsuario) {
 				return res.status(403).json({
 					error: 'Acceso denegado',
 					message: 'Solo puede crear historias de éxito para sí mismo'
@@ -320,22 +332,11 @@ router.post('/', clerkAuth, validateHistoriaExito, async (req, res) => {
 		}
 
 
-		// Verificar que el paciente existe si se proporciona
-		if (idPaciente) {
-			const paciente = await prisma.usuario.findUnique({
-				where: { idUsuario: idPaciente }
-			});
-			if (!paciente) {
-				return res.status(400).json({
-					error: 'Paciente no encontrado',
-					message: 'El paciente especificado no existe'
-				});
-			}
-		}
+
 
 		const historia = await prisma.historiaExito.create({
 			data: {
-				idPaciente: idPaciente || req.user.idUsuario, // Si es paciente, usar su ID
+				idPaciente: paciente.idUsuario, // Si es paciente, usar su ID
 				fechaTratamiento: fechaTratamiento ? new Date(fechaTratamiento) : null,
 				rating,
 				experiencia,
