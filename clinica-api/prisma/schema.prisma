@@ -112,7 +112,7 @@ model Cita {
   idCita                   Int             @id @default(autoincrement()) @map("id_cita")
   fechaCita                DateTime?       @map("fecha_cita") @db.Date
   idPaciente               Int             @map("id_paciente")
-  idMedico                 Int             @map("id_medico")
+  idMedico                 Int?            @map("id_medico")
   idServicio               Int?            @map("id_servicio")
   descripcion              String?
   estadoCita               String?         @map("estado_cita") @db.VarChar(50)
@@ -120,7 +120,7 @@ model Cita {
   fechaRecordatorioEnviado DateTime?       @map("fecha_recordatorio_enviado")
   tokenConfirmacion        String?         @unique @map("token_confirmacion") @db.VarChar(255)
   fechaConfirmacion        DateTime?       @map("fecha_confirmacion")
-  medico                   Usuario         @relation("CitaMedico", fields: [idMedico], references: [idUsuario], onDelete: Cascade)
+  medico                   Usuario?        @relation("CitaMedico", fields: [idMedico], references: [idUsuario], onDelete: Cascade)
   paciente                 Usuario         @relation("CitaPaciente", fields: [idPaciente], references: [idUsuario], onDelete: Cascade)
   servicio                 Servicio?       @relation(fields: [idServicio], references: [idServicio])
   notas                    NotaCita[]

@@ -153,8 +153,8 @@ const validateCita = [
 
 	body('estadoCita')
 		.optional()
-		.isIn(['programada', 'confirmada', 'en_progreso', 'completada', 'cancelada'])
-		.withMessage('El estado de la cita debe ser uno de: programada, confirmada, en_progreso, completada, cancelada'),
+		.isIn(['borrador', 'programada', 'confirmada', 'en_progreso', 'completada', 'cancelada'])
+		.withMessage('El estado de la cita debe ser uno de: borrador, programada, confirmada, en_progreso, completada, cancelada'),
 
 	handleValidationErrors
 ];

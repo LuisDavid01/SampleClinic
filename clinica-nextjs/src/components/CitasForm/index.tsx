@@ -32,25 +32,57 @@ export const CitasForm = () => {
 		e.preventDefault();
 		setIsSubmitting(true);
 
-		// Simular envío del formulario
-		await new Promise(resolve => setTimeout(resolve, 2000));
+		try {
+			const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+			
+			// Preparar datos para enviar
+			const datosEnvio = {
+				nombre: formData.nombre.trim(),
+				email: formData.email.trim(),
+				telefono: formData.telefono.trim(),
+				fecha: formData.fecha,
+				hora: formData.hora,
+				servicio: formData.servicio || null,
+				mensaje: formData.mensaje.trim() || null
+			};
 
-		// Aquí iría la lógica real para enviar los datos
-		console.log("Datos del formulario:", formData);
+			// Enviar solicitud al API
+			const response = await fetch(`${baseUrl}/citas/solicitar`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(datosEnvio)
+			});
 
-		setIsSubmitting(false);
-		// Resetear formulario
-		setFormData({
-			nombre: "",
-			email: "",
-			telefono: "",
-			fecha: "",
-			hora: "",
-			servicio: "",
-			mensaje: "",
-		});
+			const data = await response.json();
 
-		alert("¡Cita de fisioterapia agendada exitosamente! Te contactaremos pronto para confirmar tu consulta médica.");
+			if (!response.ok) {
+				throw new Error(data.message || 'Error al procesar la solicitud');
+			}
+
+			// Éxito - resetear formulario
+			setFormData({
+				nombre: "",
+				email: "",
+				telefono: "",
+				fecha: "",
+				hora: "",
+				servicio: "",
+				mensaje: "",
+			});
+
+			// Mostrar mensaje de éxito
+			alert("¡Solicitud de cita recibida exitosamente! Recibirá una notificación por correo electrónico. Nuestro equipo se pondrá en contacto con usted para confirmar su cita.");
+
+		} catch (error) {
+			console.error("Error al enviar solicitud de cita:", error);
+			alert(error instanceof Error 
+				? `Error: ${error.message}` 
+				: "Hubo un error al procesar su solicitud. Por favor, intente nuevamente o contáctenos directamente.");
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	// Obtener servicios reales del API
@@ -305,7 +337,7 @@ export const CitasForm = () => {
 										{isLoadingServicios ? 'Cargando servicios...' : 'Selecciona un servicio'}
 									</option>
 									{servicios.map((servicio: { idServicio: number; nombreServicio: string }) => (
-										<option key={servicio.idServicio} value={servicio.nombreServicio}>
+										<option key={servicio.idServicio} value={servicio.idServicio}>
 											{servicio.nombreServicio}
 										</option>
 									))}
