@@ -80,14 +80,26 @@ interface Evaluacion {
 
 interface Cita {
   idCita: number;
-  fechaCita: string;
-  duracionMinutos: number;
-  estadoCita: string;
-  idMedico: number;
+  fechaCita: string | Date | null;
+  duracionMinutos: number | null;
+  estadoCita: string | null;
+  idMedico: number | null;
+  idServicio: number | null;
   tipo?: string;
-  descripcion?: string;
+  descripcion?: string | null;
   idPaciente: number;
   paciente: Paciente;
+  medico?: {
+    idUsuario: number;
+    nombre: string;
+    apellido1: string;
+    apellido2?: string | null;
+  } | null;
+  servicio?: {
+    idServicio: number;
+    nombreServicio: string;
+    descripcion?: string | null;
+  } | null;
   evaluaciones: Evaluacion[];
 }
 
@@ -297,9 +309,21 @@ export default function HistorialCitasCronologico() {
     );
 
       cancelarEdicion();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error guardando evaluación:", err);
-      alert("No se pudo guardar la evaluación");
+      
+      // Intentar obtener el mensaje de error específico
+      let errorMessage = "No se pudo guardar la evaluación";
+      
+      if (err?.message) {
+        errorMessage = err.message;
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+      
+      alert(errorMessage);
     }
   };
 
@@ -331,15 +355,25 @@ export default function HistorialCitasCronologico() {
     return matchEstado && matchTipo && matchTexto;
   });
 
-  const formatFecha = (fecha: string) =>
-    new Intl.DateTimeFormat("es-ES", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(fecha));
+  const formatFecha = (fecha: string | Date | null) => {
+    if (!fecha) return "Fecha no disponible";
+    try {
+      const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
+      if (isNaN(fechaObj.getTime())) return "Fecha inválida";
+      
+      return new Intl.DateTimeFormat("es-ES", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(fechaObj);
+    } catch (error) {
+      console.error("Error formateando fecha:", error);
+      return "Fecha inválida";
+    }
+  };
 
   if (loading) {
     return (
@@ -480,7 +514,9 @@ export default function HistorialCitasCronologico() {
                               {cita.paciente.nombre} {cita.paciente.apellido1}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              {formatFecha(cita.fechaCita)} · {cita.duracionMinutos} min
+                              {formatFecha(cita.fechaCita)}
+                              {cita.duracionMinutos && ` · ${cita.duracionMinutos} min`}
+                              {cita.servicio && ` · ${cita.servicio.nombreServicio}`}
                             </div>
                           </div>
 

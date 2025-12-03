@@ -213,7 +213,7 @@ export default function ManageUser() {
 											</div>
 
 											{/* Acciones */}
-											<div className="grid grid-cols-1 gap-2 sm:w-[520px] sm:grid-cols-3">
+											<div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
 
 												<Button
 													size="sm"
@@ -224,9 +224,9 @@ export default function ManageUser() {
 														})
 													}}
 													disabled={currentRole === "admin"}
-													className="w-full bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground"
+													className="w-full min-w-0 truncate bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground text-xs sm:text-sm"
 												>
-													Hacer Administrador
+													<span className="truncate">Hacer Administrador</span>
 												</Button>
 
 
@@ -239,9 +239,9 @@ export default function ManageUser() {
 														})
 													}}
 													disabled={currentRole === "fisioterapeuta"}
-													className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:bg-muted disabled:text-muted-foreground"
+													className="w-full min-w-0 truncate bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:bg-muted disabled:text-muted-foreground text-xs sm:text-sm"
 												>
-													Hacer fisioterapeuta
+													<span className="truncate">Hacer fisioterapeuta</span>
 												</Button>
 
 
@@ -255,9 +255,9 @@ export default function ManageUser() {
 														})
 													}}
 													disabled={currentRole === "recepcionista"}
-													className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:bg-muted disabled:text-muted-foreground"
+													className="w-full min-w-0 truncate bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:bg-muted disabled:text-muted-foreground text-xs sm:text-sm"
 												>
-													Hacer recepcionista
+													<span className="truncate">Hacer recepcionista</span>
 												</Button>
 
 												<Button
@@ -270,9 +270,9 @@ export default function ManageUser() {
 														})
 													}}
 													disabled={currentRole === "paciente"}
-													className="w-full  disabled:bg-muted disabled:text-muted-foreground"
+													className="w-full min-w-0 truncate disabled:bg-muted disabled:text-muted-foreground text-xs sm:text-sm"
 												>
-													Paciente
+													<span className="truncate">Paciente</span>
 												</Button>
 											</div>
 										</div>
