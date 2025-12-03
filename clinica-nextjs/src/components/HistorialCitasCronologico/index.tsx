@@ -491,7 +491,7 @@ export default function HistorialCitasCronologico() {
               const isEditing = editingCitaId === cita.idCita;
               const evaluacion = obtenerEvaluacion(cita);
               const puedeEditar = ["programada", "confirmada", "en_proceso"].includes(
-                cita.estadoCita
+                cita.estadoCita ?? ''
               );
 
               return (
@@ -520,8 +520,8 @@ export default function HistorialCitasCronologico() {
                             </div>
                           </div>
 
-                          <Badge className={getEstadoColor(cita.estadoCita)}>
-                            {getEstadoText(cita.estadoCita)}
+                          <Badge className={getEstadoColor(cita.estadoCita ?? '')}>
+                            {getEstadoText(cita.estadoCita ?? '')}
                           </Badge>
                         </div>
                       </div>
@@ -685,7 +685,7 @@ export default function HistorialCitasCronologico() {
    FUNCIONES AUXILIARES
 -------------------------- */
 
-function getEstadoColor(estado: string) {
+function getEstadoColor(estado?: string) {
   const colors: Record<string, string> = {
     programada: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300",
     confirmada: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300",
@@ -693,6 +693,9 @@ function getEstadoColor(estado: string) {
     completada: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
     cancelada: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300",
   };
+  if(!estado || estado === ''){
+	  return "bg-gray-100 text-gray-800"
+  }
   return colors[estado] || "bg-gray-100 text-gray-800";
 }
 

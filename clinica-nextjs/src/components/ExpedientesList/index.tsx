@@ -162,11 +162,11 @@ export const ExpedientesList = () => {
 						<Table className=" overflow-x-auto">
 							<TableHeader>
 								<TableRow>
-									<TableHead>Paciente</TableHead>
-									<TableHead>Estado</TableHead>
-									<TableHead>Médico</TableHead>
-									<TableHead>Actualizado</TableHead>
-									<TableHead>Acciones</TableHead>
+									<TableHead className="text-center">Paciente</TableHead>
+									<TableHead className="text-center">Estado</TableHead>
+									<TableHead className="text-center">Médico</TableHead>
+									<TableHead className="text-center">Actualizado</TableHead>
+									<TableHead className="text-center">Acciones</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -190,32 +190,28 @@ export const ExpedientesList = () => {
 
 											return (
 												<TableRow key={file.idExpediente} className="hover:bg-muted/50">
-													<TableCell className="font-medium">
-														<div className="flex items-center gap-2">
+													<TableCell className="text-center font-medium">
 															{file.paciente.nombre + " " + file.paciente.apellido1}
-														</div>
 													</TableCell>
-													<TableCell>
+													<TableCell className="flex justify-center items-center">
 														<Badge className={statusConfig_?.color}>
 															{statusConfig_?.label}
 														</Badge>
 													</TableCell>
-													<TableCell>{file.medico?.nombre ?? 'no hay medico'}</TableCell>
-													<TableCell className=" text-sm">
+													<TableCell className="text-center">
+													{file.medico?.nombre ?? 'no hay medico'}
+													</TableCell>
+													<TableCell className=" text-center text-sm">
 														{formatRelativeTime(file.fechaCreacion)}
 													</TableCell>
 													<TableCell>
-														<div className="flex gap-2">
+														<div className="flex justify-center items-center gap-2">
 															<Link href={`files/${file.idExpediente}/view`}>
 																<Button variant="outline" size="sm">
 																	Ver
 																</Button>
 															</Link>
-															<Link href={`files/${file.idExpediente}/edit`}>
-																<Button variant="default" size="sm">
-																	Editar
-																</Button>
-															</Link>
+
 															<Button variant="destructive" size="sm"
 																onClick={async () => {
 																	const result = await deleteExpediente(file.idExpediente);
