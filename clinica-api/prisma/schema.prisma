@@ -111,6 +111,7 @@ model PerfilServicio {
 model Cita {
   idCita                   Int             @id @default(autoincrement()) @map("id_cita")
   fechaCita                DateTime?       @map("fecha_cita") @db.Date
+  duracionMinutos Int?        @map("duracion_minutos") // en minutos (30, 60)
   idPaciente               Int             @map("id_paciente")
   idMedico                 Int?            @map("id_medico")
   idServicio               Int?            @map("id_servicio")

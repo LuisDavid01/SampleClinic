@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useApiClient, apiEndpoints } from "@/utils/apiClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -61,6 +61,19 @@ export default function AdminDashboard() {
     message: '',
     userData: null
   });
+  const [stats, setStats] = useState({
+    pacientesHoy: 0,
+    cambioPacientes: 0,
+    citasProgramadas: 0,
+    cambioCitas: 0,
+    tiempoPromedio: 45,
+    citasHoy: [] as any[],
+    pacientesRecientes: [] as any[],
+    monthlyData: [] as any[],
+    treatmentData: [] as any[]
+  });
+  const [loading, setLoading] = useState(true);
+  const loadingRef = useRef(false);
 
   useEffect(() => {
     const validateUser = async () => {
@@ -122,93 +135,31 @@ export default function AdminDashboard() {
     validateUser();
   }, [isSignedIn, user, getToken]);
 
-	const monthlyData = [
-		{ month: "Ene", consultas: 180, terapias: 165 },
-		{ month: "Feb", consultas: 220, terapias: 195 },
-		{ month: "Mar", consultas: 195, terapias: 180 },
-		{ month: "Abr", consultas: 240, terapias: 220 },
-		{ month: "May", consultas: 280, terapias: 250 },
-		{ month: "Jun", consultas: 320, terapias: 290 },
-	]
+  // Cargar estadísticas del dashboard
+  useEffect(() => {
+    // Prevenir múltiples llamadas simultáneas
+    if (loadingRef.current || !isSignedIn) {
+      return;
+    }
 
-	const treatmentData = [
-		{ treatment: "Fisioterapia", value: 85 },
-		{ treatment: "Rehabilitación", value: 70 },
-		{ treatment: "Masoterapia", value: 60 },
-		{ treatment: "Electroterapia", value: 45 },
-		{ treatment: "Ejercicios", value: 90 },
-		{ treatment: "Evaluación", value: 75 },
-	]
+    const cargarEstadisticas = async () => {
+      if (loadingRef.current) return;
+      
+      loadingRef.current = true;
+      try {
+        setLoading(true);
+        const response = await apiClient.get("/citas/dashboard/estadisticas");
+        setStats(response);
+      } catch (error) {
+        console.error("Error cargando estadísticas:", error);
+      } finally {
+        setLoading(false);
+        loadingRef.current = false;
+      }
+    };
 
-	const todayAppointments = [
-		{
-			id: 1,
-			name: "María González",
-			time: "09:00",
-			treatment: "Fisioterapia",
-			avatar: "/placeholder.svg?height=32&width=32",
-		},
-		{
-			id: 2,
-			name: "Carlos Rodríguez",
-			time: "10:30",
-			treatment: "Rehabilitación",
-			avatar: "/placeholder.svg?height=32&width=32",
-		},
-		{
-			id: 3,
-			name: "Ana Martínez",
-			time: "11:45",
-			treatment: "Masoterapia",
-			avatar: "/placeholder.svg?height=32&width=32",
-		},
-		{
-			id: 4,
-			name: "Luis Fernández",
-			time: "14:00",
-			treatment: "Electroterapia",
-			avatar: "/placeholder.svg?height=32&width=32",
-		},
-	]
-
-	const recentPatients = [
-		{
-			id: 1,
-			name: "María González",
-			lastVisit: "15-01-2025",
-			age: 45,
-			treatment: "Fisioterapia",
-			status: "Activo",
-			avatar: "/placeholder.svg?height=32&width=32",
-		},
-		{
-			id: 2,
-			name: "Carlos Rodríguez",
-			lastVisit: "14-01-2025",
-			age: 38,
-			treatment: "Rehabilitación",
-			status: "En tratamiento",
-			avatar: "/placeholder.svg?height=32&width=32",
-		},
-		{
-			id: 3,
-			name: "Ana Martínez",
-			lastVisit: "13-01-2025",
-			age: 52,
-			treatment: "Masoterapia",
-			status: "Completado",
-			avatar: "/placeholder.svg?height=32&width=32",
-		},
-		{
-			id: 4,
-			name: "Luis Fernández",
-			lastVisit: "12-01-2025",
-			age: 29,
-			treatment: "Electroterapia",
-			status: "Activo",
-			avatar: "/placeholder.svg?height=32&width=32",
-		},
-	]
+    cargarEstadisticas();
+  }, [isSignedIn]); // Removido apiClient de las dependencias
 	return (
 		<div className="min-h-screen bg-background p-6">
 			<div className="max-w-7xl mx-auto space-y-6">
@@ -271,80 +222,106 @@ export default function AdminDashboard() {
 
 				{/* Stats Cards */}
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-					<Card className="bg-card border-0 shadow-sm">
-						<CardContent className="p-6">
-							<div className="flex items-center justify-between">
-								<div>
-									<p className="text-sm font-medium text-muted-foreground">Pacientes Hoy</p>
-									<p className="text-3xl font-bold ">12</p>
-									<div className="flex items-center mt-2">
-										<TrendingUp className="h-4 w-4 text-accent mr-1" />
-										<span className="text-sm text-accent font-medium">+8%</span>
-										<span className="text-sm text-muted-foreground ml-1">vs ayer</span>
+					<Card className="bg-card border-0 shadow-sm h-full flex flex-col">
+						<CardContent className="p-6 flex-1 flex flex-col">
+							<div className="flex items-start justify-between flex-1">
+								<div className="flex-1 min-w-0">
+									<div className="h-5 mb-3 flex items-center">
+										<p className="text-sm font-medium text-muted-foreground">Pacientes Hoy</p>
+									</div>
+									<div className="h-10 flex items-end mb-2">
+										<p className="text-3xl font-bold leading-none">{loading ? "..." : stats.pacientesHoy}</p>
+									</div>
+									<div className="flex items-center flex-wrap gap-1 mt-auto">
+										{stats.cambioPacientes >= 0 ? (
+											<TrendingUp className="h-4 w-4 text-accent flex-shrink-0" />
+										) : (
+											<TrendingDown className="h-4 w-4 text-complementario flex-shrink-0" />
+										)}
+										<span className={`text-sm font-medium ${stats.cambioPacientes >= 0 ? 'text-accent' : 'text-complementario'}`}>
+											{stats.cambioPacientes >= 0 ? '+' : ''}{stats.cambioPacientes}%
+										</span>
+										<span className="text-sm text-muted-foreground">vs ayer</span>
 									</div>
 								</div>
-								<div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
+								<div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
 									<Users className="h-6 w-6 text-accent" />
 								</div>
 							</div>
 						</CardContent>
 					</Card>
 
-					<Card className="bg-card border-0 shadow-sm">
-						<CardContent className="p-6">
-							<div className="flex items-center justify-between">
-								<div>
-									<p className="text-sm font-medium text-muted-foreground">Citas Programadas</p>
-									<p className="text-3xl font-bold ">28</p>
-									<div className="flex items-center mt-2">
-										<TrendingUp className="h-4 w-4 text-accent mr-1" />
-										<span className="text-sm text-accent font-medium">+12%</span>
-										<span className="text-sm text-muted-foreground ml-1">esta semana</span>
+					<Card className="bg-card border-0 shadow-sm h-full flex flex-col">
+						<CardContent className="p-6 flex-1 flex flex-col">
+							<div className="flex items-start justify-between flex-1">
+								<div className="flex-1 min-w-0">
+									<div className="h-5 mb-3 flex items-center">
+										<p className="text-sm font-medium text-muted-foreground">Citas Programadas</p>
+									</div>
+									<div className="h-10 flex items-end mb-2">
+										<p className="text-3xl font-bold leading-none">{loading ? "..." : stats.citasProgramadas}</p>
+									</div>
+									<div className="flex items-center flex-wrap gap-1 mt-auto">
+										{stats.cambioCitas >= 0 ? (
+											<TrendingUp className="h-4 w-4 text-accent flex-shrink-0" />
+										) : (
+											<TrendingDown className="h-4 w-4 text-complementario flex-shrink-0" />
+										)}
+										<span className={`text-sm font-medium ${stats.cambioCitas >= 0 ? 'text-accent' : 'text-complementario'}`}>
+											{stats.cambioCitas >= 0 ? '+' : ''}{stats.cambioCitas}%
+										</span>
+										<span className="text-sm text-muted-foreground">esta semana</span>
 									</div>
 								</div>
-								<div className="h-12 w-12 bg-accent/10 rounded-lg flex items-center justify-center">
+								<div className="h-12 w-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
 									<Calendar className="h-6 w-6 text-accent" />
 								</div>
 							</div>
 						</CardContent>
 					</Card>
 
-					<Card className="bg-card border-0 shadow-sm">
-						<CardContent className="p-6">
-							<div className="flex items-center justify-between">
-								<div>
-									<p className="text-sm font-medium text-muted-foreground">Salas Disponibles</p>
-									<p className="text-3xl font-bold ">
-										3<span className="text-lg text-muted-foreground">/4</span>
-									</p>
-									<div className="flex items-center mt-2">
-										<TrendingDown className="h-4 w-4 text-complementario mr-1" />
-										<span className="text-sm text-complementario font-medium">-25%</span>
-										<span className="text-sm text-muted-foreground ml-1">ocupación</span>
+					<Card className="bg-card border-0 shadow-sm h-full flex flex-col">
+						<CardContent className="p-6 flex-1 flex flex-col">
+							<div className="flex items-start justify-between flex-1">
+								<div className="flex-1 min-w-0">
+									<div className="h-5 mb-3 flex items-center">
+										<p className="text-sm font-medium text-muted-foreground">Citas de Hoy</p>
+									</div>
+									<div className="h-10 flex items-end mb-2">
+										<p className="text-3xl font-bold leading-none">{loading ? "..." : stats.citasHoy.length}</p>
+									</div>
+									<div className="flex items-center flex-wrap gap-1 mt-auto">
+										<Calendar className="h-4 w-4 text-accent flex-shrink-0" />
+										<span className="text-sm text-accent font-medium">Total</span>
+										<span className="text-sm text-muted-foreground">citas programadas</span>
 									</div>
 								</div>
-								<div className="h-12 w-12 bg-accent/10 rounded-lg flex items-center justify-center">
+								<div className="h-12 w-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
 									<Activity className="h-6 w-6 text-accent" />
 								</div>
 							</div>
 						</CardContent>
 					</Card>
 
-					<Card className="bg-card border-0 shadow-sm">
-						<CardContent className="p-6">
-							<div className="flex items-center justify-between">
-								<div>
-									<p className="text-sm font-medium text-muted-foreground">Tiempo Promedio</p>
-									<p className="text-3xl font-bold ">
-										45<span className="text-lg text-muted-foreground">min</span>
-									</p>
-									<div className="flex items-center mt-2">
-										<Clock className="h-4 w-4  mr-1" />
-										<span className="text-sm  font-medium">Óptimo</span>
-										<span className="text-sm text-muted-foreground ml-1">por sesión</span>
+					<Card className="bg-card border-0 shadow-sm h-full flex flex-col">
+						<CardContent className="p-6 flex-1 flex flex-col">
+							<div className="flex items-start justify-between flex-1">
+								<div className="flex-1 min-w-0">
+									<div className="h-5 mb-3 flex items-center">
+										<p className="text-sm font-medium text-muted-foreground">Tiempo Promedio</p>
+									</div>
+									<div className="h-10 flex items-end mb-2">
+										<p className="text-3xl font-bold leading-none">
+											{loading ? "..." : stats.tiempoPromedio}<span className="text-lg text-muted-foreground ml-1">min</span>
+										</p>
+									</div>
+									<div className="flex items-center flex-wrap gap-1 mt-auto">
+										<Clock className="h-4 w-4 mr-1 flex-shrink-0" />
+										<span className="text-sm font-medium">Óptimo</span>
+										<span className="text-sm text-muted-foreground">por sesión</span>
 									</div>
 								</div>
-								<div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
+								<div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
 									<Clock className="h-6 w-6 text-accent" />
 								</div>
 							</div>
@@ -367,7 +344,7 @@ export default function AdminDashboard() {
 						<CardContent>
 							<div className="h-80">
 								<ResponsiveContainer width="100%" height="100%">
-									<AreaChart data={monthlyData}>
+									<AreaChart data={stats.monthlyData.length > 0 ? stats.monthlyData : []}>
 										<defs>
 											<linearGradient id="consultas" x1="0" y1="0" x2="0" y2="1">
 												<stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
@@ -421,7 +398,7 @@ export default function AdminDashboard() {
 						<CardContent>
 							<div className="h-80">
 								<ResponsiveContainer width="100%" height="100%">
-									<RadarChart data={treatmentData}>
+									<RadarChart data={stats.treatmentData.length > 0 ? stats.treatmentData : []}>
 										<PolarGrid stroke="var(--muted)" />
 										<PolarAngleAxis dataKey="treatment" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
 										<PolarRadiusAxis
@@ -452,7 +429,12 @@ export default function AdminDashboard() {
 							<CardTitle className="text-lg font-semibold ">Citas de Hoy</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							{todayAppointments.map((appointment) => (
+							{loading ? (
+								<div className="text-center py-4 text-muted-foreground">Cargando...</div>
+							) : stats.citasHoy.length === 0 ? (
+								<div className="text-center py-4 text-muted-foreground">No hay citas programadas para hoy</div>
+							) : (
+								stats.citasHoy.map((appointment) => (
 								<div key={appointment.id} className="flex items-center space-x-3">
 									<Avatar className="h-10 w-10">
 										<AvatarImage src={appointment.avatar || "/placeholder.svg"} />
@@ -471,7 +453,8 @@ export default function AdminDashboard() {
 										<p className="text-sm font-medium ">{appointment.time}</p>
 									</div>
 								</div>
-							))}
+								))
+							)}
 						</CardContent>
 					</Card>
 
@@ -505,7 +488,20 @@ export default function AdminDashboard() {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{recentPatients.map((patient) => (
+									{loading ? (
+										<TableRow>
+											<TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+												Cargando...
+											</TableCell>
+										</TableRow>
+									) : stats.pacientesRecientes.length === 0 ? (
+										<TableRow>
+											<TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+												No hay pacientes recientes
+											</TableCell>
+										</TableRow>
+									) : (
+										stats.pacientesRecientes.map((patient) => (
 										<TableRow key={patient.id} className="border-muted">
 											<TableCell>
 												<div className="flex items-center space-x-3">
@@ -550,7 +546,8 @@ export default function AdminDashboard() {
 												</Button>
 											</TableCell>
 										</TableRow>
-									))}
+										))
+									)}
 								</TableBody>
 							</Table>
 						</CardContent>

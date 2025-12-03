@@ -31,12 +31,12 @@ export default async function dasboardLayout({
 		<div className="flex min-h-screen flex-col">
 			<DasboardHeader />
 
-			<div className="flex">
+			<div className="flex min-w-0">
 				{/* Aside sticky */}
 				<aside
 					className="
-            hidden md:block w-64 p-6 border-r border-gray-800
-            sticky top-0 self-start h-[calc(100vh)] overflow-auto
+            hidden md:block w-64 shrink-0 p-6 border-r border-gray-800
+            sticky top-0 self-start h-[calc(100vh)] overflow-y-auto overflow-x-hidden
             bg-background
 			text-foreground
           "
@@ -85,9 +85,19 @@ export default async function dasboardLayout({
 							className="w-full justify-start  hover:bg-gray-800"
 							asChild
 						>
+							<Link href={"/admin/appointmentsRecords"}>
+								<CalendarDays className="w-4 h-4 mr-3" />
+								<span>Historial Citas</span>
+							</Link>
+						</Button>	
+						<Button
+							variant="ghost"
+							className="w-full justify-start  hover:bg-gray-800"
+							asChild
+						>
 							<Link href={"/admin/appointments"}>
 								<CalendarDays className="w-4 h-4 mr-3" />
-								<span>Citas</span>
+								<span>Agendar Citas</span>
 							</Link>
 						</Button>
 
@@ -175,7 +185,7 @@ export default async function dasboardLayout({
 				</aside>
 
 				{/* Contenido principal; permite scroll sin afectar el sticky */}
-				<main className="flex-1 p-6 min-h-[calc(100vh)]">{children}</main>
+				<main className="flex-1 min-w-0 p-4 sm:p-6 min-h-[calc(100vh)] overflow-x-hidden">{children}</main>
 			</div>
 		</div>
 	);

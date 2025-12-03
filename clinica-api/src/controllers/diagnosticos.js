@@ -351,6 +351,164 @@ export const createDiagnostico = async (req, res) => {
 };
 
 /**
+ * Crear un nuevo diagnóstico con el modelo completo de Prisma
+ */
+export const createDiagnosticoCita = async (req, res) => {
+  try {
+    const {
+      idPaciente,
+      idDoctor,
+      diagnosticoPrincipal,
+      sintomasReportados,
+      evaluacionFisica,
+      planTratamiento,
+      recomendaciones,
+      idExpediente,
+      idCita,
+      fecha
+    } = req.body;
+
+    const userId = req.user.id;
+
+    console.log("createDiagnostico - Datos recibidos:", req.body);
+
+    // Validación básica
+    if (!idPaciente || !diagnosticoPrincipal || !fecha) {
+      return res.status(400).json({
+        success: false,
+        error: "Datos incompletos",
+        message: "Paciente, diagnóstico principal y fecha son obligatorios"
+      });
+    }
+
+    // Validar paciente
+    const paciente = await prisma.usuario.findUnique({
+      where: { idUsuario: parseInt(idPaciente) },
+      include: { rol: true }
+    });
+
+    if (!paciente) {
+      return res.status(404).json({
+        success: false,
+        error: "Paciente no encontrado"
+      });
+    }
+
+    if (paciente.rol?.idRol !== ROLES.PACIENTE) {
+      return res.status(400).json({
+        success: false,
+        error: "Usuario inválido",
+        message: "El usuario no es paciente"
+      });
+    }
+
+    // Validar doctor
+    let doctorId = null;
+    if (idDoctor) {
+      const doctor = await prisma.usuario.findUnique({
+        where: { idUsuario: parseInt(idDoctor) },
+        include: { rol: true }
+      });
+
+      if (!doctor) {
+        return res.status(404).json({
+          success: false,
+          error: "Doctor no encontrado"
+        });
+      }
+
+      if (![ROLES.FISIOTERAPEUTA, ROLES.ADMINISTRADOR].includes(doctor.rol.idRol)) {
+        return res.status(400).json({
+          success: false,
+          error: "Usuario inválido",
+          message: "El usuario no es un fisioterapeuta o administrador"
+        });
+      }
+
+      doctorId = doctor.idUsuario;
+    }
+
+    // Validar expediente
+    let expedienteId = null;
+    if (idExpediente) {
+      const expediente = await prisma.expediente.findUnique({
+        where: { idExpediente: parseInt(idExpediente) }
+      });
+
+      if (!expediente) {
+        return res.status(404).json({
+          success: false,
+          error: "Expediente no encontrado"
+        });
+      }
+
+      if (expediente.idPaciente !== parseInt(idPaciente)) {
+        return res.status(400).json({
+          success: false,
+          error: "Expediente inválido"
+        });
+      }
+
+      expedienteId = expediente.idExpediente;
+    }
+
+    // Validar cita opcional
+    let citaId = null;
+    if (idCita) {
+      const cita = await prisma.cita.findUnique({
+        where: { idCita: parseInt(idCita) }
+      });
+
+      if (!cita) {
+        return res.status(404).json({
+          success: false,
+          error: "Cita no encontrada"
+        });
+      }
+
+      citaId = cita.idCita;
+    }
+
+    // Crear diagnóstico con todos los campos del modelo
+    const nuevoDiagnostico = await prisma.evaluacionDiagnostico.create({
+      data: {
+        idPaciente: parseInt(idPaciente),
+        idDoctor: doctorId,
+        diagnosticoPrincipal,
+        sintomasReportados,
+        evaluacionFisica,
+        planTratamiento,
+        recomendaciones,
+        idExpediente: expedienteId,
+        idCita: citaId,
+        fecha: new Date(fecha)
+      },
+      include: {
+        paciente: true,
+        doctor: true,
+        expediente: true,
+        cita: true
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Diagnóstico creado correctamente",
+      data: nuevoDiagnostico
+    });
+
+  } catch (error) {
+    console.error("Error creando diagnóstico:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Error interno del servidor"
+    });
+  }
+};
+
+
+/**
  * Actualizar un diagnóstico
  */
 export const updateDiagnostico = async (req, res) => {
@@ -494,6 +652,142 @@ export const updateDiagnostico = async (req, res) => {
     });
   }
 };
+
+/**
+ * Actualizar diagnóstico con el modelo completo
+ */
+export const updateDiagnosticoCita = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const diagnosticoId = parseInt(id);
+
+    const {
+      diagnosticoPrincipal,
+      sintomasReportados,
+      evaluacionFisica,
+      planTratamiento,
+      recomendaciones,
+      idDoctor,
+      idExpediente,
+      idCita
+    } = req.body;
+
+    if (isNaN(diagnosticoId)) {
+      return res.status(400).json({
+        success: false,
+        error: "ID inválido"
+      });
+    }
+
+    const diagnosticoExistente = await prisma.evaluacionDiagnostico.findUnique({
+      where: { idEvaluacion: diagnosticoId }
+    });
+
+    if (!diagnosticoExistente) {
+      return res.status(404).json({
+        success: false,
+        error: "Diagnóstico no encontrado"
+      });
+    }
+
+    // Validar doctor opcional
+    let doctorIdFinal = diagnosticoExistente.idDoctor;
+    if (idDoctor !== undefined) {
+      if (idDoctor === null) doctorIdFinal = null;
+      else {
+        const doctor = await prisma.usuario.findUnique({
+          where: { idUsuario: parseInt(idDoctor) },
+          include: { rol: true }
+        });
+
+        if (!doctor) {
+          return res.status(404).json({
+            success: false,
+            error: "Doctor no encontrado"
+          });
+        }
+
+        doctorIdFinal = doctor.idUsuario;
+      }
+    }
+
+    // Validar expediente opcional
+    let expedienteIdFinal = diagnosticoExistente.idExpediente;
+    if (idExpediente !== undefined) {
+      if (idExpediente === null) expedienteIdFinal = null;
+      else {
+        const expediente = await prisma.expediente.findUnique({
+          where: { idExpediente: parseInt(idExpediente) }
+        });
+
+        if (!expediente) {
+          return res.status(404).json({
+            success: false,
+            error: "Expediente no encontrado"
+          });
+        }
+
+        expedienteIdFinal = expediente.idExpediente;
+      }
+    }
+
+    // Validar cita opcional
+    let citaIdFinal = diagnosticoExistente.idCita;
+    if (idCita !== undefined) {
+      if (idCita === null) citaIdFinal = null;
+      else {
+        const cita = await prisma.cita.findUnique({
+          where: { idCita: parseInt(idCita) }
+        });
+
+        if (!cita) {
+          return res.status(404).json({
+            success: false,
+            error: "Cita no encontrada"
+          });
+        }
+
+        citaIdFinal = cita.idCita;
+      }
+    }
+
+    // Actualizar con el modelo completo
+    const diagnosticoActualizado = await prisma.evaluacionDiagnostico.update({
+      where: { idEvaluacion: diagnosticoId },
+      data: {
+        diagnosticoPrincipal: diagnosticoPrincipal ?? diagnosticoExistente.diagnosticoPrincipal,
+        sintomasReportados,
+        evaluacionFisica,
+        planTratamiento,
+        recomendaciones,
+        idDoctor: doctorIdFinal,
+        idExpediente: expedienteIdFinal,
+        idCita: citaIdFinal
+      },
+      include: {
+        paciente: true,
+        doctor: true,
+        expediente: true,
+        cita: true
+      }
+    });
+
+    res.json({
+      success: true,
+      message: "Diagnóstico actualizado correctamente",
+      data: diagnosticoActualizado
+    });
+
+  } catch (error) {
+    console.error("Error actualizando diagnóstico:", error);
+
+    res.status(500).json({
+      success: false,
+      error: "Error interno del servidor"
+    });
+  }
+};
+
 
 /**
  * Eliminar un diagnóstico

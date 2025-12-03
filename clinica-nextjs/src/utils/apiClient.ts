@@ -58,10 +58,43 @@ export class ApiClient {
 			let errorMessage = `Error ${response.status}: ${response.statusText}`;
 			try {
 				const errorData = await response.json();
-				console.error('API Error Details:', errorData);
-				errorMessage = errorData.message || errorData.error || errorMessage;
+				
+				// Solo mostrar como error si realmente hay información de error
+				// Si el objeto está vacío, solo loguear como información
+				if (Object.keys(errorData).length === 0) {
+					console.log('API Response Info: Respuesta vacía del servidor');
+				} else {
+					console.error('API Error Details:', errorData);
+				}
+				
+				// Intentar obtener el mensaje de error de diferentes formas
+				if (errorData.message) {
+					errorMessage = errorData.message;
+				} else if (errorData.error) {
+					errorMessage = errorData.error;
+				} else if (errorData.details && Array.isArray(errorData.details)) {
+					// Si hay detalles de validación, construir un mensaje más descriptivo
+					const validationErrors = errorData.details
+						.map((detail: any) => detail.msg || detail.message)
+						.filter(Boolean)
+						.join(', ');
+					if (validationErrors) {
+						errorMessage = `Errores de validación: ${validationErrors}`;
+					}
+				} else if (Object.keys(errorData).length > 0) {
+					// Si el objeto no está vacío pero no tiene message/error, mostrar el objeto completo
+					errorMessage = `Error: ${JSON.stringify(errorData)}`;
+				}
 			} catch (e) {
-				console.error('Could not parse error response:', e);
+				// Si no se puede parsear JSON, intentar leer como texto
+				try {
+					const text = await response.text();
+					if (text) {
+						errorMessage = text;
+					}
+				} catch (textError) {
+					console.error('Could not parse error response:', e);
+				}
 			}
 			throw new Error(errorMessage);
 		}
@@ -86,15 +119,48 @@ export class ApiClient {
 			},
 			body: JSON.stringify(data)
 		});
-
+		//console.log('response', response);
 		if (!response.ok) {
 			let errorMessage = `Error ${response.status}: ${response.statusText}`;
 			try {
 				const errorData = await response.json();
-				console.error('API Error Details:', errorData);
-				errorMessage = errorData.message || errorData.error || errorMessage;
+				
+				// Solo mostrar como error si realmente hay información de error
+				// Si el objeto está vacío, solo loguear como información
+				if (response.status === 200) {
+					console.log('API Response Info: Respuesta vacía del servidor');
+				} else {
+					console.error('API Error Details:', errorData);
+				}
+				
+				// Intentar obtener el mensaje de error de diferentes formas
+				if (errorData.message) {
+					errorMessage = errorData.message;
+				} else if (errorData.error) {
+					errorMessage = errorData.error;
+				} else if (errorData.details && Array.isArray(errorData.details)) {
+					// Si hay detalles de validación, construir un mensaje más descriptivo
+					const validationErrors = errorData.details
+						.map((detail: any) => detail.msg || detail.message)
+						.filter(Boolean)
+						.join(', ');
+					if (validationErrors) {
+						errorMessage = `Errores de validación: ${validationErrors}`;
+					}
+				} else if (Object.keys(errorData).length > 0) {
+					// Si el objeto no está vacío pero no tiene message/error, mostrar el objeto completo
+					errorMessage = `Error: ${JSON.stringify(errorData)}`;
+				}
 			} catch (e) {
-				console.error('Could not parse error response:', e);
+				// Si no se puede parsear JSON, intentar leer como texto
+				try {
+					const text = await response.text();
+					if (text) {
+						errorMessage = text;
+					}
+				} catch (textError) {
+					console.error('Could not parse error response:', e);
+				}
 			}
 			throw new Error(errorMessage);
 		}

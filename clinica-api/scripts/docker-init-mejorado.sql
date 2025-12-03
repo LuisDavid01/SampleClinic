@@ -103,7 +103,8 @@ FOREIGN KEY (id_servicio) REFERENCES servicios(id_servicio) ON DELETE CASCADE;
 -- 8. Tabla Citas (DEPENDE DE USUARIOS Y SERVICIOS)
 CREATE TABLE IF NOT EXISTS citas (
     id_cita SERIAL PRIMARY KEY,
-    fecha_cita DATE,
+    fecha_cita TIMESTAMP, 
+    duracion_minutos INTEGER DEFAULT 30, 
     id_paciente INTEGER,
     id_medico INTEGER,
     id_servicio INTEGER,

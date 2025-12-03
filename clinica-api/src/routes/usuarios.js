@@ -449,6 +449,81 @@ router.get('/:clerkId', async (req, res) => {
   }
 });
 
+
+
+
+// GET /api/usuarios/validaClerk/:clerkId
+router.get('/validaClerk/:clerkId', async (req, res) => {
+  try {
+    const { clerkId } = req.params;
+    console.log('Buscando/Creando usuario con clerkId:', clerkId);
+
+    // 1. Buscar en la DB
+    let usuario = await prisma.usuario.findUnique({
+      where: { clerkId: clerkId },
+      include: { rol: true }
+    });
+
+    // 2. Si NO existe → CREARLO automáticamente
+    if (!usuario) {
+      console.log('Usuario no encontrado → creando uno nuevo');
+
+      // Obtener datos reales desde Clerk (opcional pero recomendado)
+      let nombre = 'Fisioterapeuta';
+      let apellido1 = 'Sin apellido';
+      let correo = 'sin@email.com';
+
+      try {
+        const clerkUser = await clerkClient.users.getUser(clerkId);
+        nombre = clerkUser.firstName || 'Fisioterapeuta';
+        apellido1 = clerkUser.lastName?.split(' ')[0] || 'Sin apellido';
+        correo = clerkUser.emailAddresses[0]?.emailAddress || correo;
+      } catch (e) {
+        console.log('No se pudo obtener datos de Clerk, usando valores por defecto');
+      }
+
+      usuario = await prisma.usuario.create({
+        data: {
+          clerkId: clerkId,
+          nombre: nombre,
+          apellido1: apellido1,
+          apellido2: '',
+          correoElectronico: correo,
+          rol: { connect: { nombreRol: 'fisioterapeuta' } } // o 'medico' según tu caso
+        },
+        include: { rol: true }
+      });
+
+      console.log('Usuario creado:', usuario.idUsuario);
+    }
+
+    // 3. Devolver respuesta
+    res.json({
+      success: true,
+      user: {
+        idUsuario: usuario.idUsuario,
+        nombre: usuario.nombre,
+        apellido1: usuario.apellido1,
+        apellido2: usuario.apellido2,
+        correoElectronico: usuario.correoElectronico,
+        clerkId: usuario.clerkId,
+        rol: usuario.rol ? {
+          idRol: usuario.rol.idRol,
+          nombreRol: usuario.rol.nombreRol
+        } : null
+      }
+    });
+
+  } catch (error) {
+    console.error('Error en /usuarios/:clerkId:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error interno',
+      details: error.message
+    });
+  }
+});
+
 /**
  * @swagger
  * /usuarios/{id}:
@@ -854,6 +929,31 @@ router.get('/:id/citas', clerkAuth, requireOwnershipOrAdmin, validateId, async (
       error: 'Error interno del servidor',
       message: 'No se pudieron obtener las citas del usuario'
     });
+  }
+});
+
+// GET /api/usuarios/me - Obtener datos del usuario logueado
+router.get('/me', clerkAuth, async (req, res) => {
+  try {
+    const usuario = await getOrCreateClerkUser(req);
+    
+    res.json({
+      success: true,
+      user: {
+        idUsuario: usuario.idUsuario,
+        nombre: usuario.nombre,
+        apellido1: usuario.apellido1,
+        apellido2: usuario.apellido2,
+        correoElectronico: usuario.correoElectronico,
+        clerkId: usuario.clerkId,
+        rol: usuario.rol ? {
+          idRol: usuario.rol.idRol,
+          nombreRol: usuario.rol.nombreRol
+        } : null
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

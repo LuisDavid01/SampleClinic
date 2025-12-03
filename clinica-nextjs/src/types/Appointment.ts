@@ -29,8 +29,8 @@ import { Service } from "./Service";
  */
 export interface Appointment {
   idCita: number;            // ID único de la cita
-  fechaCita: string;         // Fecha y hora de la cita en formato ISO
-  idPaciente: number;        // ID del paciente asociado
+  fechaCita: string; // ISO string con fecha+hora
+  duracionMinutos?: number; // duración en minutos (30 o 60)
   idMedico: number;          // ID del médico asignado
   idServicio: number;        // ID del servicio solicitado
   descripcion: string;       // Descripción o motivo de la cita

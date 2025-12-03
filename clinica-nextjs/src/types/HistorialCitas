@@ -1,0 +1,39 @@
+// types.ts
+import { Usuario } from "./Usuario";
+import { Expediente } from "./Expediente";
+import { Service } from "./Service";
+
+export interface Cita {
+  idCita: number;
+  fechaCita: Date | null;
+  duracionMinutos: number | null;
+  idPaciente: number;
+  idMedico: number;
+  idServicio: number | null;
+  descripcion: string | null;
+  estadoCita: string | null;
+  // Relaciones
+  medico: Usuario;              // relación con Usuario (Medico)
+  paciente: Usuario;            // relación con Usuario (Paciente)
+  servicio: Service | null;    // relación con Servicio
+  evaluaciones: EvaluacionDiagnostico[];
+};
+
+export interface EvaluacionDiagnostico {
+  idEvaluacion: number;
+  idPaciente: number;
+  idCita: number | null;
+  fecha: Date;
+  idDoctor: number | null;
+  diagnosticoPrincipal: string;
+  sintomasReportados: string | null;
+  evaluacionFisica: string | null;
+  planTratamiento: string | null;
+  recomendaciones: string | null;
+  idExpediente: number | null;
+  // Relaciones
+  doctor: Usuario | null;
+  expediente: Expediente | null;
+  paciente: Usuario;
+  cita: Cita | null;
+};
