@@ -89,10 +89,7 @@ export default function SupportChat() {
 	const initializeWebSocketWithAuth = async () => {
 		try {
 
-
-
 			const token = await getToken();
-
 			const otp = await fetch('/chat/otp', {
 				headers: {
 					"Authorization": `Bearer ${token}`,
@@ -113,7 +110,8 @@ export default function SupportChat() {
 			}).then((data) => {
 				return data.otp;
 			})
-			wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8080/ws"}?otp=` + otp);
+			wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}?otp=`+ otp);
+
 			wsRef.current.onerror = (error) => {
 				console.log("WebSocket error:", error);
 				setConnectionStatus('error');
