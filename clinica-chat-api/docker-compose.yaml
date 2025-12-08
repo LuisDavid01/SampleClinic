@@ -1,25 +1,14 @@
-version: '3.8'
 
 services:
   # Chat API (Go)
   clinica-chat-api:
     container_name: clinica-chat-api
-    build: .
+    image: clinica/chat-api:latest
     ports:
       - "8081:8081"
-    environment:
-      # Clerk Authentication
-      CLERK_SECRET_KEY: "sk_test_REVOKED"
-      CLERK_PUBLISHABLE_KEY: "pk_test_dG91Y2hpbmctbWFsbGFyZC04NC5jbGVyay5hY2NvdW50cy5kZXYk"
+    env_file:
+      - .env
       
-      # Server Configuration
-      PORT: 8081
-      NODE_ENV: "development"
-      GO_ENV: "development"
-      
-      # Chat Configuration
-      CHAT_ROOM_PREFIX: "chat_"
-      MAX_CONNECTIONS_PER_ROOM: 100
     networks:
       - chat-network
     restart: unless-stopped

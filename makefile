@@ -25,7 +25,7 @@ build-image-chat:
 		./clinica-chat-api
 
 
-build-image-chat-promote:
+image-chat-promote:
 	docker image tag clinica/chat-api:$(GIT_SHA) clinica/chat-api:$(BUILD_TAG)
 
 down:

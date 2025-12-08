@@ -93,7 +93,7 @@ export default function FloatingChat() {
 			}).then((data) => {
 				return data.otp;
 			})
-			wsRef.current = new WebSocket(`ws://localhost:8080/ws?otp=` + otp);
+			wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}?otp=`+ otp);
 
 			wsRef.current.onerror = (error) => {
 				console.log("WebSocket error:", error);
