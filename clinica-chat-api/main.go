@@ -11,7 +11,7 @@ import (
 	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/app"
 	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/routes"
 	"github.com/clerk/clerk-sdk-go/v2"
-	"github.com/joho/godotenv"
+	//"github.com/joho/godotenv"
 )
 
 // @title						Clinica Chat API
@@ -23,12 +23,14 @@ import (
 // @name						Authorization
 func main() {
 	var port int
-	flag.IntVar(&port, "port", 8080, "live-chat")
+	flag.IntVar(&port, "port", 8081, "live-chat")
 	flag.Parse()
+	/*
 	err := godotenv.Load()
 	if err != nil {
 		log.Println(err)
 	}
+	*/
 	clerk.SetKey(os.Getenv("CLERK_SECRET_KEY"))
 
 	app, err := app.NewApplication()
@@ -44,7 +46,7 @@ func main() {
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	app.Logger.Printf("the server started successfuly on port: %d !!\n Swagger docs: http://localhost:8080/swagger/index.html", port)
+	app.Logger.Printf("the server started successfuly on port: %d !!\n Swagger docs: http://localhost:%d/swagger/index.html", port, port)
 
 	log.Fatal(server.ListenAndServe())
 }

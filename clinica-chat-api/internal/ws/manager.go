@@ -26,6 +26,8 @@ func checkOrigin(r *http.Request) bool {
 		return true
 	case "https://fisioterapeuta-ep.vercel.app":
 		return true
+	case "http://clinica.stackkub.com":
+		return true
 	default:
 		return false
 	}
