@@ -74,7 +74,7 @@ export default async function RootLayout({
 						}}
 					/>
 				</head>
-				<body className={`${inter.className} ${garamod.className} ${kiona.className} font-sans antialiased hide-scroll`}>
+				<body className={`${inter.className}  font-sans antialiased hide-scroll`}>
 					<ClerkErrorBoundary>
 						<NotificationProvider>
 							{children}

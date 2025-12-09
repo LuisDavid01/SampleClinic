@@ -15,9 +15,10 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
 					colorPrimary: "var(--primary)",
 					colorBackground: "var(--background)",
 					colorInputBackground: "var(--input)",
+					colorInput: "var(--input)",
 					colorNeutral: "var(--foreground)",
 					colorShimmer: "var(--accent)",
-					colorText: "var(--text-foreground)",
+					colorText: "var(--foreground)",
 				},
 			}}
 			localization={esES}
