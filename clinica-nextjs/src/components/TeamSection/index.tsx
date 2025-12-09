@@ -2,9 +2,10 @@
 "use client";
 
 import { getEquipo } from "@/actions/equipo";
+import { getAllServicios, getServicios } from "@/actions/servicios";
 import { teamProfile } from "@/types/perfiles";
 import { apiEndpoints, useApiClient } from "@/utils/apiClient";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { Users } from "lucide-react";
 import { useState } from "react"
 export const TeamSection = () => {
@@ -63,25 +64,34 @@ export const TeamSection = () => {
 */
 
 	const apiClient = useApiClient();
-	const { isLoading, data: teamData } = useQuery<{
-		usuarios: teamProfile[]
-		total: number
-		totalPaginas: number
-	}>({
-		queryKey: ['team-members'],
-		queryFn: async () => {
-			const res = await getEquipo(1, 10, "")
-			console.log(res)
-			return {
-				usuarios: res.perfiles,
-				total: res.pagination.total,
-				totalPaginas: res.pagination.pages,
-			}
-		},
-		staleTime: 60 * 1000,
-	})
 
-	const teamMembers = teamData?.usuarios || []
+	const results = useQueries({
+		queries: [
+			{
+				queryKey: ['team-members'],
+				queryFn: async () => {
+					const res = await getEquipo(1, 10, "")
+					console.log(res)
+					return res.perfiles
+				},
+				staleTime: 60 * 1000,
+
+			},
+			{
+				queryKey: ['servicios'],
+				queryFn: async () => {
+					const res = await getAllServicios()
+					console.log("Servicios", res)
+					return res.servicios
+				},
+				staleTime: 10 * 60 * 1000,
+			}
+		]
+	});
+
+
+	const teamMembers = results[0]?.data || []
+	const allServicios = results[1]?.data || []
 
 	// 🔹 Estados
 	const [filtered, setFiltered] = useState(teamMembers);
@@ -93,13 +103,13 @@ export const TeamSection = () => {
 				m.medico.nombre.includes(search) ||
 				m.especialidad.includes(search) ||
 				m.medico.apellido1.includes(search)
-					)
-					.filter(m => m.servicios.some(s => s.nombreServicio.includes(activeTreatment))
-)
+			)
+			.filter(m => m.servicios.some(s => s.nombreServicio.includes(activeTreatment))
+			)
 
 	);
 	// 🔹 Todas las especialidades únicas
-	const allTreatments = Array.from(new Set(teamMembers.flatMap((m) => m.servicios)));
+	//const allTreatments = Array.from(new Set(teamMembers.flatMap((m) => m.servicios)));
 
 	// 🔹 Filtrado
 	const handleSearch = (query: string) => {
@@ -116,35 +126,29 @@ export const TeamSection = () => {
 
 
 			{/* 🔎 Buscador */}
-			<div className="flex justify-center mb-6">
-				<input
-					type="text"
-					placeholder="Buscar por nombre, rol, especialidad o área de enfoque..."
-					value={search}
-					onChange={(e) => handleSearch(e.target.value)}
-					className="border p-2 rounded w-full md:w-1/2 
-                     bg-background text-text-primary 
-                     placeholder-gray-400"
-				/>
-			</div>
 			<div className="flex flex-wrap gap-2 justify-center mb-10">
-				{allTreatments.map((t: any) => (
-					<button
-						key={`servicio-${t.idServicio}${t.nombreServicio}`}
-						onClick={() => handleTreatmentClick(t.nombreServicio)}
-						className={`px-4 py-2 rounded-full border transition ${activeTreatment === t.nombreServicio
-							? "bg-blue-500 text-white border-blue-500"
-							: "bg-card text-text-primary hover:bg-card/80"
-							}`}
-					>
-						{t.nombreServicio}
-					</button>
-				))}
+				{results[1].isLoading ? (
+					<div>cargando...</div>
+				) : (
+					<>
+						{allServicios.map((t: any) => (
+							<button
+								key={`servicio-${t.idServicio}-${t.nombreServicio}`}
+								onClick={() => handleTreatmentClick(t.nombreServicio)}
+								className={`px-4 py-2 rounded-full border transition ${activeTreatment === t.nombreServicio
+										? "bg-blue-500 text-white border-blue-500"
+										: "bg-card text-text-primary hover:bg-card/80"
+									}`}
+							>
+								{t.nombreServicio}
+							</button>
+						))}
+					</>
+				)}
 			</div>
-
 
 			{/* 👨‍⚕️ Resultados */}
-			{isLoading ? (
+			{results[0].isLoading ? (
 				<div>
 					cargando...
 				</div>
@@ -183,16 +187,16 @@ export const TeamSection = () => {
 									<p className="text-text-primary/70 leading-relaxed text-sm">{member.experienciaProfesional}</p>
 
 									{/* Especialidades */}
-																	<div className="flex flex-wrap gap-2 justify-center mt-4">
-									{member.servicios.map((servicio, idx) => (
-										<span
-											key={`${idx}${servicio.nombreServicio}`}
-											className="px-3 py-1 bg-primary/10 text-text-primary text-xs font-medium rounded-full border border-primary/20"
-										>
-											{servicio.nombreServicio}
-										</span>
-									))}
-								</div>
+									<div className="flex flex-wrap gap-2 justify-center mt-4">
+										{member.servicios.map((servicio, idx) => (
+											<span
+												key={`${idx}${servicio.nombreServicio}`}
+												className="px-3 py-1 bg-primary/10 text-text-primary text-xs font-medium rounded-full border border-primary/20"
+											>
+												{servicio.nombreServicio}
+											</span>
+										))}
+									</div>
 
 								</div>
 							</div>
