@@ -14,7 +14,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
 				variables: {
 					colorPrimary: "var(--primary)",
 					colorBackground: "var(--background)",
-					colorInputBackground: "var(--input)",
+					colorInputForeground: "var(--foreground)",
 					colorInput: "var(--input)",
 					colorNeutral: "var(--foreground)",
 					colorShimmer: "var(--accent)",
