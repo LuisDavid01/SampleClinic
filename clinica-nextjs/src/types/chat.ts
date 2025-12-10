@@ -1,3 +1,4 @@
+import {z} from "zod"
 
 /*
 export interface Chat {
@@ -17,10 +18,12 @@ const RolePacient = "paciente"
 const RoleFisio = "fisioterapeuta"
 const RoleRecep = "recepcionista"
 
+export const chatMessageSchema =  z.string().trim().min(1,'Mensaje es muy pequeño').max(300, 'Mensaje es muy grande')
+
 export class chatRoomEvent {
-	name: string;
-	constructor(name: string) {
-		this.name = name;
+	id: string;
+	constructor(id: string) {
+		this.id = id;
 
 
 	}
@@ -30,10 +33,10 @@ export class chatRoomEvent {
 export class chatEvent {
 	type: string;
 	payload: SendMessageEvent | NewMessageEvent | chatRoomEvent | GetHistoryEvent | errorMessageEvent |
-		GetChatRoomsEvent | joinRoomEvent | createRoomEvent | string;
+		GetChatRoomsEvent | joinRoomEvent | createRoomEvent | LeaveRoomEvent|string;
 	constructor(type: string, payload: SendMessageEvent |
 		NewMessageEvent | chatRoomEvent | GetHistoryEvent |
-		errorMessageEvent | GetChatRoomsEvent | joinRoomEvent | string) {
+		errorMessageEvent | GetChatRoomsEvent | joinRoomEvent | LeaveRoomEvent |string) {
 		this.type = type;
 		this.payload = payload;
 	}
@@ -77,6 +80,10 @@ export type rooms = {
 	lastMessage: string;
 	sent: Date;
 }
+export type currentRoom = {
+	id: string;
+	name: string;
+}
 
 export type GetChatRoomsEvent = {
 	rooms: rooms[];
@@ -103,4 +110,8 @@ export type updateRoomEvent = {
 	id: string;
 	lastMessage: string;
 	sent: Date;
+}
+
+export type LeaveRoomEvent = {
+	id: string;
 }

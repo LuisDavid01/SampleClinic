@@ -127,9 +127,9 @@ export default function EditTestimony({ testimony,
 					required
 					disabled={isPending || isloading}
 					aria-describedby="title-error"
-					className={state?.errors?.title ? 'border-red-500' : ''}
+					className={state?.errors?.idPaciente ? 'border-red-500' : ''}
 				/>
-				{state?.errors?.title && (
+				{state?.errors?.idPaciente && (
 					<p id="idPaciente-error" className="text-sm text-red-500">
 						{state.errors.idPaciente[0]}
 					</p>
@@ -147,12 +147,12 @@ export default function EditTestimony({ testimony,
 					defaultValue={testimony?.rating || ''}
 					options={ratingOptions}
 					aria-describedby="description-error"
-					className={state?.errors?.idMedico ? 'border-red-500' : ''}
+					className={state?.errors?.rating ? 'border-red-500' : ''}
 					disabled={isPending || isloading}
 				/>
-				{state?.errors?.idMedico && (
+				{state?.errors?.rating && (
 					<p id="idMedico-error" className="text-sm text-red-500">
-						{state.errors.idMedico[0]}
+						{state.errors.rating[0]}
 					</p>
 				)}
 			</FormGroup>
@@ -168,12 +168,12 @@ export default function EditTestimony({ testimony,
 					type="date"
 					required
 					disabled={isPending || isloading}
-					aria-describedby="fecha-inicio-error"
-					className={state?.errors?.fechaInicio ? 'border-red-500' : ''}
+					aria-describedby="fecha-fechaTratamiento-error"
+					className={state?.errors?.fechaTratamiento ? 'border-red-500' : ''}
 				/>
-				{state?.errors?.title && (
+				{state?.errors?.fechaTratamiento && (
 					<p id="fecha-error" className="text-sm text-red-500">
-						{state.errors.fechaInicio[0]}
+						{state.errors.fechaTratamiento[0]}
 					</p>
 				)}
 			</FormGroup>
@@ -195,12 +195,12 @@ export default function EditTestimony({ testimony,
 						minLength={3}
 						maxLength={100}
 						disabled={isPending}
-						aria-describedby="title-error"
-						className={state?.errors?.title ? 'border-red-500' : ''}
+						aria-describedby="experiencia-error"
+						className={state?.errors?.experiencia ? 'border-red-500' : ''}
 					/>
-					{state?.errors?.title && (
+					{state?.errors?.experiencia && (
 						<p id="title-error" className="text-sm text-red-500">
-							{state.errors.title[0]}
+							{state.errors.experiencia[0]}
 						</p>
 					)}
 				</FormGroup>

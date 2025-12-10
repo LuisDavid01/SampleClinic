@@ -11,11 +11,11 @@ import (
 	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/app"
 	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/routes"
 	"github.com/clerk/clerk-sdk-go/v2"
-	//"github.com/joho/godotenv"
+	"github.com/joho/godotenv"
 )
 
 // @title						Clinica Chat API
-// @version					1.3
+// @version					2.1
 // @description				Microservicio de chat en tiempo real para Selena Fisiotarepia
 // @termsOfService				http://swagger.io/terms/
 // @securityDefinitions.apikey	BearerAuth
@@ -25,12 +25,12 @@ func main() {
 	var port int
 	flag.IntVar(&port, "port", 8081, "live-chat")
 	flag.Parse()
-	/*
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Println(err)
 	}
-	*/
+
 	clerk.SetKey(os.Getenv("CLERK_SECRET_KEY"))
 
 	app, err := app.NewApplication()

@@ -19,7 +19,7 @@ import {
 	LogOut,
 	Users,
 } from "lucide-react";
-import { chatEvent, chatRoomEvent, errorMessageEvent, GetHistoryEvent, NewMessageEvent, SendMessageEvent, rooms, GetChatRoomsEvent, createRoomEvent, updateRoomEvent } from "@/types/chat";
+import { chatEvent, chatRoomEvent, errorMessageEvent, GetHistoryEvent, NewMessageEvent, SendMessageEvent, rooms, GetChatRoomsEvent, createRoomEvent, updateRoomEvent, chatMessageSchema, LeaveRoomEvent, currentRoom } from "@/types/chat";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { useAuth } from "@clerk/nextjs";
@@ -32,10 +32,13 @@ export default function SupportChat() {
 	const { getToken } = useAuth();
 	const wsRef = useRef<WebSocket | null>(null);
 	const [rooms, setRooms] = useState<rooms[]>([]);
-	const [chatroom, setChatroom] = useState<chatRoomEvent | null>(null);
+	const [chatroom, setChatroom] = useState<currentRoom | null>(null);
+	const chatroomRef = useRef<currentRoom | null>(null);
 	const [messages, setMessages] = useState<Array<{
 		id: string; text: string; sender: string; role: string; timestamp: string
 	}>>([]);
+	const [inputError, setInputError] = useState<string | null>(null);
+
 	const [roomNameFilter, setRoomNameFilter] = useState("")
 
 
@@ -49,6 +52,11 @@ export default function SupportChat() {
 		isOpenRef.current = isOpen;
 	}, [isOpen]);
 
+	useEffect(() => {
+		chatroomRef.current = chatroom;
+	}, [chatroom]);
+
+	// muestra los chats filtrados por nombre
 	const filteredChats = (
 		rooms
 			?.filter((room) => room.name.includes(roomNameFilter))
@@ -67,7 +75,7 @@ export default function SupportChat() {
 	useEffect(() => {
 
 
-		if (typeof window !== 'undefined' && window.WebSocket ) {
+		if (typeof window !== 'undefined' && window.WebSocket) {
 			console.log("WebSocket supported");
 			if (wsRef.current != null) {
 
@@ -110,7 +118,7 @@ export default function SupportChat() {
 			}).then((data) => {
 				return data.otp;
 			})
-			wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}?otp=`+ otp);
+			wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}?otp=` + otp);
 
 			wsRef.current.onerror = (error) => {
 				console.log("WebSocket error:", error);
@@ -152,7 +160,7 @@ export default function SupportChat() {
 				}
 
 			};
-			
+
 
 		} catch (err) {
 			showNotification({
@@ -173,7 +181,6 @@ export default function SupportChat() {
 		}
 		switch (event.type) {
 			case "new_message":
-				console.log("new message");
 				const payload = event.payload as NewMessageEvent;
 				const messageEvent = Object.assign(new NewMessageEvent(payload.message, payload.from, payload.role, payload.sent))
 				setMessages(prev => [
@@ -245,24 +252,42 @@ export default function SupportChat() {
 				]);
 				break;
 			case "update_room":
-				console.log("attemting to update a room - timestamp:", Date.now());
 				const updatePayload = event.payload as updateRoomEvent;
-				console.log("Payload recibido:", updatePayload);
-				// hay un bug aqui por alguna razon se actualiza dos veces?????
-				// Sospecho que es el setRooms
 				setRooms(prevRooms => {
-					const roomIndex = prevRooms.findIndex(r => r.id === updatePayload.id);
-					console.log("Room index", roomIndex)
-					if (roomIndex >= 0) {
-						const newRooms = [...prevRooms];
-						newRooms[roomIndex] = { ...newRooms[roomIndex], ...updatePayload };
-						console.log("Updated room at index:", roomIndex);
-						return newRooms;
-					} else {
-						console.log("Room with id", updatePayload.id, "not found. Cannot update.");
-						return prevRooms;
-					}
+					if (!prevRooms) return prevRooms;
+
+					const index = prevRooms.findIndex(r => r.id === updatePayload.id);
+					if (index === -1) return prevRooms;
+
+					const updated = [...prevRooms];
+					updated[index] = {
+						...updated[index],
+						lastMessage: updatePayload.lastMessage,
+						sent: updatePayload.sent,
+					};
+
+					return updated;
 				});
+				break;
+			case 'leave_room':
+				const removeRoomPayload = event.payload as LeaveRoomEvent;
+
+				setRooms(prevRooms => {
+					if (!prevRooms) return prevRooms;
+
+					const index = prevRooms.findIndex(r => r.id === removeRoomPayload.id);
+					if (index === -1) return prevRooms;
+
+					const updated = [...prevRooms];
+					updated.splice(index, 1);
+
+					return updated;
+				});
+				if (chatroomRef.current && removeRoomPayload.id === chatroomRef.current.id) {
+					console.log("Client disconnected, leaving room...");
+					setChatroom(null)
+					setMessages([])
+				}
 				break;
 			default:
 				alert("unsupported event type");
@@ -270,13 +295,17 @@ export default function SupportChat() {
 		}
 	}
 
-	function changeChatroom(newChatroom: string | null) {
-		if (newChatroom != chatroom?.name) {
+	function changeChatroom(newChatroom: string | null, chatName?: string) {
+		if (newChatroom != chatroom?.id) {
 			const selectedChatroom = new chatRoomEvent(newChatroom ?? "");
-			if (newChatroom == "") {
+			if (newChatroom == "" || !chatName) {
 				setChatroom(null);
 			} else {
-				setChatroom(selectedChatroom);
+				const actualRoom = {
+					id: selectedChatroom.id,
+					name: chatName
+				}
+				setChatroom(actualRoom);
 			}
 			sendEvent("change_chatroom", selectedChatroom);
 			setMessages([]);
@@ -301,20 +330,18 @@ export default function SupportChat() {
 
 	}
 	function sendMessage() {
+
 		const newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
+		const validationResult = chatMessageSchema.safeParse(newMessage?.value);
+		if (!validationResult.success) {
+			const validationError = validationResult.error.format()._errors[0] ?? 'Mensaje invalido'
+			setInputError(validationError)
+			return;
+		}
+		setInputError(null)
 		if (newMessage) {
-			sendEvent("send_message", new SendMessageEvent(newMessage.value));
-			/*
-			setMessages(prev => [
-				...prev,
-				{
-					id: crypto.randomUUID(),
-					sender: 'Pacient',
-					text: newMessage.value,
-					timestamp: new Date().toLocaleTimeString()
-				}
-			]);
-			*/
+			sendEvent("send_message", new SendMessageEvent(validationResult.data));
+
 
 			newMessage.value = ""; // limpiar campo
 		}
@@ -363,16 +390,16 @@ export default function SupportChat() {
 				{/* Chat desplegable */}
 				{isOpen && (
 					<Card
-						className={cn(
-							// Clases comunes (aplican en todos los tamaños)
-							"shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col bg-background",
+					className={cn(
+						// Clases comunes (aplican en todos los tamaños)
+						"shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col bg-background",
 
-							// Clases base (móvil: <640px) - centrado y full-screen
-							"fixed inset-0 m-auto w-full h-[640] rounded-none",
+						// Clases base (móvil) - justo encima del botón flotante
+						"fixed bottom-20 right-4 left-4 z-30 max-w-md mx-auto h-[500px] rounded-lg",
 
-							// Clases para PC (≥640px) - posición fija en esquina, tamaño fijo
-							"sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-96 sm:h-[600px] sm:rounded-lg",
-						)}
+						// Clases para PC (≥640px) - posición fija en esquina, tamaño fijo
+						"sm:fixed sm:inset-auto z-30 sm:bottom-24 sm:right-6 sm:w-96 sm:h-[600px] sm:rounded-lg",
+					)}
 					>
 						{connectionStatus === 'error' ? (
 							<OfflineChat />
@@ -446,7 +473,7 @@ export default function SupportChat() {
 												{filteredChats.map((chat, index) => (
 													<div key={chat.id}>
 														<div
-															onClick={() => changeChatroom(chat.id)}
+															onClick={() => changeChatroom(chat.id, chat.name)}
 															className="p-4 hover:bg-card/70 cursor-pointer transition-colors"
 														>
 															<div className="flex items-start justify-between mb-2">
@@ -458,7 +485,10 @@ export default function SupportChat() {
 																</div>
 																<div className="flex items-center gap-2">
 																	<span className="text-xs ">
-																		{new Date(chat.sent).toLocaleString()}
+																		{new Date(chat.sent).toLocaleTimeString([], {
+																			hour: "2-digit",
+																			minute: "2-digit",
+																		})}
 																	</span>
 																	{0 > 0 && (
 																		<Badge
@@ -536,8 +566,12 @@ export default function SupportChat() {
 											</div>
 										</ScrollArea>
 									</CardContent>
-
-									<CardFooter className=" px-3">
+									<CardFooter className=" px-3 flex-col items-start">
+										{inputError && (
+											<div className="mb-2">
+												<p className="text-red-500 text-sm">{inputError}</p>
+											</div>
+										)}
 										<form onSubmit={(e) => {
 											e.preventDefault();
 											sendMessage();
@@ -546,14 +580,18 @@ export default function SupportChat() {
 											<Input
 												id="messageInput"
 												placeholder="Escribe tu mensaje..."
-												className="flex-1 text-sm"
+												required
+												minLength={1}
+												className={`${inputError ? 'border-red-500' : ''} flex-1 text-sm`}
 											/>
+
 											<Button type="submit" size="icon">
 												<Send className="h-4 w-4" />
 											</Button>
 										</form>
 									</CardFooter>
-								</>)
+								</>
+							)
 						)}
 					</Card>
 

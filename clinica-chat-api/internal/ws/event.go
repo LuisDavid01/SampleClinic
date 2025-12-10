@@ -22,6 +22,7 @@ const (
 	EventJoinRoom    = "join_room"
 	EventCreateRoom  = "create_room"
 	EventUpdateRoom  = "update_room"
+	EventLeaveRoom   = "leave_room"
 )
 
 type RoomEvent struct {
@@ -47,7 +48,7 @@ type NewMessageEvent struct {
 }
 
 type ChangeChatRoomEvent struct {
-	Name string `json:"name"`
+	ID string `json:"id"`
 }
 
 type GetChatRoomsEvent struct {
@@ -67,8 +68,13 @@ type CreateRoomEvent struct {
 	Room RoomEvent `json:"room"`
 }
 
-type updateRoomEvent struct {
+type UpdateRoomEvent struct {
 	ID            string    `json:"id"`
 	LastMessage   string    `json:"lastMessage"`
 	LastMessageAt time.Time `json:"sent"`
+}
+
+type LeaveRoomEvent struct {
+	ID string `json:"id"`
+
 }

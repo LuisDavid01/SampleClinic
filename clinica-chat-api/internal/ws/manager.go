@@ -139,6 +139,7 @@ func (m *Manager) RemoveClient(client *Client) {
 		if client.Rol == RolePacient {
 			m.removeRoom(client.chatroom)
 		}
+		leaveRoomHandler(client)
 		client.Conn.Close()
 		delete(m.Clients, client)
 		log.Printf("Client removed:  %s", client.Username)

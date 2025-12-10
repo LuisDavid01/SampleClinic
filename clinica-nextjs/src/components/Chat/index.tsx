@@ -12,7 +12,7 @@ import { MessageCircle, LogOut, Send, Clock, X, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
-import { chatEvent, errorMessageEvent, joinRoomEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
+import { chatEvent, chatMessageSchema, errorMessageEvent, joinRoomEvent, NewMessageEvent, SendMessageEvent } from "../../types/chat"
 import { useAuth } from "@clerk/nextjs";
 import { useNotification } from "../UseNotification";
 import { SurveyForm } from "../SurveyForm";
@@ -31,6 +31,7 @@ export default function FloatingChat() {
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
 	const isOpenRef = useRef(isOpen);
+	const [inputError, setInputError] = useState<string | null>(null);
 	const [receptionist, setRecptionist] = useState<joinRoomEvent | null>(null);
 
 
@@ -93,7 +94,7 @@ export default function FloatingChat() {
 			}).then((data) => {
 				return data.otp;
 			})
-			wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}?otp=`+ otp);
+			wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}?otp=` + otp);
 
 			wsRef.current.onerror = (error) => {
 				console.log("WebSocket error:", error);
@@ -211,26 +212,27 @@ export default function FloatingChat() {
 
 
 	}
+
 	function sendMessage() {
+
 		const newMessage = document.getElementById("messageInput") as HTMLInputElement | null;
+		const validationResult = chatMessageSchema.safeParse(newMessage?.value);
+		if (!validationResult.success) {
+			const validationError = validationResult.error.format()._errors[0] ?? 'Mensaje invalido'
+			setInputError(validationError)
+			return;
+		}
+		setInputError(null)
 		if (newMessage) {
-			sendEvent("send_message", new SendMessageEvent(newMessage.value));
-			/*
-			setMessages(prev => [
-				...prev,
-				{
-					id: crypto.randomUUID(),
-					sender: 'Pacient',
-					text: newMessage.value,
-					timestamp: new Date().toLocaleTimeString()
-				}
-			]);
-			*/
+			sendEvent("send_message", new SendMessageEvent(validationResult.data));
+
 
 			newMessage.value = ""; // limpiar campo
 		}
 
 	}
+
+
 	const toggleChat = () => {
 		if (!wsRef.current && isSurveyActive === false) {
 			console.log("Intentando reconectar...");
@@ -280,11 +282,11 @@ export default function FloatingChat() {
 						// Clases comunes (aplican en todos los tamaños)
 						"shadow-2xl z-40 animate-in slide-in-from-bottom-2 duration-200 flex flex-col bg-background",
 
-						// Clases base (móvil: <640px) - centrado y full-screen
-						"fixed inset-0 m-auto w-full h-[640] rounded-none",
+						// Clases base (móvil) - justo encima del botón flotante
+						"fixed bottom-20 right-4 left-4 z-30 max-w-md mx-auto h-[500px] rounded-lg",
 
 						// Clases para PC (≥640px) - posición fija en esquina, tamaño fijo
-						"sm:fixed sm:inset-auto sm:bottom-24 sm:right-6 sm:w-96 sm:h-[600px] sm:rounded-lg",
+						"sm:fixed sm:inset-auto z-30 sm:bottom-24 sm:right-6 sm:w-96 sm:h-[600px] sm:rounded-lg",
 					)}
 				>
 					{connectionStatus === 'error' ? (
@@ -345,7 +347,12 @@ export default function FloatingChat() {
 								</ScrollArea>
 							</CardContent>
 
-							<CardFooter className=" px-3">
+							<CardFooter className=" px-3 flex-col items-start">
+								{inputError && (
+									<div className="mb-2">
+										<p className="text-red-500 text-sm">{inputError}</p>
+									</div>
+								)}
 								<form onSubmit={(e) => {
 									e.preventDefault();
 									sendMessage();
@@ -354,13 +361,17 @@ export default function FloatingChat() {
 									<Input
 										id="messageInput"
 										placeholder="Escribe tu mensaje..."
-										className="flex-1 text-sm"
+										required
+										minLength={1}
+										className={`${inputError ? 'border-red-500' : ''} flex-1 text-sm`}
 									/>
+
 									<Button type="submit" size="icon">
 										<Send className="h-4 w-4" />
 									</Button>
 								</form>
 							</CardFooter>
+
 						</>
 					}
 				</Card>

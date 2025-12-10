@@ -48,7 +48,7 @@ export function NewTestimonio() {
 				setStars(0);
 			}
 			console.log(result)
-			if (result.error === 'Unauthorized_Client'){
+			if (result.error === 'Unauthorized_Client') {
 				console.log("Redirigiendo al usuario")
 				router.push("/sign-in")
 			}
@@ -103,14 +103,14 @@ export function NewTestimonio() {
 								animate={{ opacity: 1, x: 0 }}
 								transition={{ delay: 0.1 }}
 							>
-							{state.errors?.rating && (
-								<FormError
+								{state.errors?.rating && (
+									<FormError
 										className={`mb-4}`}
 									>
 										{state.errors.rating}
 									</FormError>
 
-							)}
+								)}
 								<label className="block text-text-primary font-medium mb-3 text-center">
 									¿Cómo calificarías nuestro servicio?
 								</label>
@@ -147,20 +147,7 @@ export function NewTestimonio() {
 
 							</motion.div>
 
-							<motion.div
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ delay: 0.3 }}
-								className="flex items-center  space-x-2"
-							>
-								<Checkbox id="anonymous" />
-								<label
-									htmlFor="anonymous"
-									className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-								>
-									Enviar de forma anónima
-								</label>
-							</motion.div>
+
 
 						</ModalContent>
 						<ModalFooter className="gap-4 pt-6 border-t border-muted">
