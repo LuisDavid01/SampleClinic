@@ -59,7 +59,7 @@ func sendMessage(event Event, c *Client) error {
 			room.History = room.History[len(room.History)-50:]
 		}
 	}
-	var updatedRoom updateRoomEvent
+	var updatedRoom UpdateRoomEvent
 	if len(room.History) > 0 {
 		lastMsg := room.History[len(room.History)-1]
 		updatedRoom.LastMessage = lastMsg.Message
@@ -123,16 +123,16 @@ func chatRoomHandler(event Event, c *Client) error {
 	}
 
 	// Si la sala es vacio, no enviamos historial
-	if changeChatRoomEvent.Name != "" {
+	if changeChatRoomEvent.ID != "" {
 
-		room := c.Manager.getRoomByID(changeChatRoomEvent.Name)
+		room := c.Manager.getRoomByID(changeChatRoomEvent.ID)
 		if room == nil {
 			errorMessageHandler("Room not found", time.Now(), c)
 			log.Println("Room not found")
 			return nil
 		}
-		log.Println("changing to chatroom: ", changeChatRoomEvent.Name)
-		c.chatroom = changeChatRoomEvent.Name
+		log.Println("changing to chatroom: ", changeChatRoomEvent.ID)
+		c.chatroom = changeChatRoomEvent.ID
 		//enviamos la notificacion al paciente de que se unio un miembro de soporte
 		joinEvent := JoinRoomEvent{
 			UserID:   c.ID,
@@ -256,4 +256,24 @@ func newRoomHandler(room Room, c *Client) error {
 	}
 
 	return nil
+}
+
+func leaveRoomHandler(client *Client) {
+	data, err := json.Marshal(LeaveRoomEvent{
+		ID: client.chatroom,
+	})
+	if err != nil {
+		fmt.Printf("Couldnt parse the leave event: %v", err)
+	}
+
+	outgointEvent := Event{
+		Type:    EventLeaveRoom,
+		Payload: data,
+	}
+
+	for c := range client.Manager.Clients {
+		if c.Rol != RolePacient {
+			c.egress <- outgointEvent
+		}
+	}
 }

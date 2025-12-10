@@ -16,10 +16,10 @@ var (
 
 // Client Roles
 const (
-	RoleAdmin = "admin"
+	RoleAdmin   = "admin"
 	RolePacient = "paciente"
-	RoleFisio = "fisioterapeuta"
-	RoleRecep = "recepcionista"
+	RoleFisio   = "fisioterapeuta"
+	RoleRecep   = "recepcionista"
 )
 
 type Client struct {

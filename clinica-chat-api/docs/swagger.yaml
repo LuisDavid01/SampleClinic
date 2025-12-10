@@ -16,7 +16,7 @@ info:
   description: Microservicio de chat en tiempo real para Selena Fisiotarepia
   termsOfService: http://swagger.io/terms/
   title: Clinica Chat API
-  version: "1.0"
+  version: "2.1"
 paths:
   /api/health:
     get:
