@@ -213,7 +213,7 @@ export default function PacientesContent() {
 							Nuevo Paciente
 						</Button>
 					</DialogTrigger>
-					<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+					<DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
 						<DialogHeader>
 							<DialogTitle>Registro de Nuevo Paciente</DialogTitle>
 						</DialogHeader>

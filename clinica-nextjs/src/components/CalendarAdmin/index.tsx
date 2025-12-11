@@ -100,7 +100,7 @@ export default function CalendarAdmin() {
     idMedico: "" as number | "",
     idServicio: "" as number | "",
     fechaCita: "",
-    duracionMinutos: 30,
+    duracionMinutos: "" as number | "",
     descripcion: "",
   });
 
@@ -121,7 +121,8 @@ export default function CalendarAdmin() {
         id: cita.idCita,
         title: `${cita.servicio?.nombreServicio || "Cita"} - ${cita.paciente?.nombre || ""}`,
         start: new Date(cita.fechaCita),
-        end: new Date(new Date(cita.fechaCita).getTime() + 30 * 60000),
+        //end: new Date(new Date(cita.fechaCita).getTime() + 30 * 60000),
+        end: new Date(new Date(cita.fechaCita).getTime() + (cita.duracionMinutos || 30) * 60000),
         status: cita.estadoCita?.toLowerCase() || "programada",
         idMedico: cita.idMedico || null,
         idPaciente: cita.idPaciente,
@@ -139,6 +140,7 @@ export default function CalendarAdmin() {
           id: cita.medico?.idUsuario || null,
         },
         notes: cita.descripcion,
+        duracionMinutos: Number(cita.duracionMinutos ?? 30),
       }));
 
       setAppointments(citas);
@@ -197,7 +199,7 @@ export default function CalendarAdmin() {
         idMedico: Number(newAppointment.idMedico),
         idServicio: newAppointment.idServicio ? Number(newAppointment.idServicio) : null,
         fechaCita: new Date(newAppointment.fechaCita).toISOString(),
-        duracionMinutos: Number(newAppointment.duracionMinutos || 30),
+        duracionMinutos: Number(newAppointment.duracionMinutos),
         descripcion: newAppointment.descripcion || "",
         estadoCita: "programada",
       };
@@ -209,7 +211,7 @@ export default function CalendarAdmin() {
         showNotification({
           type: "warning",
           title: "Conflicto de horario",
-          message: response.message || "No es posible agendar dos citas en el mismo horario.",
+          message: "No es posible agendar dos citas en el mismo horario.",
         });
         return; // No cerrar el diálogo ni recargar citas
       }
@@ -322,6 +324,32 @@ export default function CalendarAdmin() {
       setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth(), prev.getDate() + 1));
   };
   const handleViewChange = (newView: View) => setCurrentView(newView);
+
+  const generateHalfHourSlots = () => {
+    const slots: string[] = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m of [0, 30]) {
+        const hour = h.toString().padStart(2, "0");
+        const minute = m.toString().padStart(2, "0");
+        slots.push(`${hour}:${minute}`);
+      }
+    }
+    return slots;
+  };
+
+  const halfHourSlots = generateHalfHourSlots();
+
+  const formatLocalDateTime = (date: Date) => {
+    const pad = (n: number) => n.toString().padStart(2, "0");
+
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1);
+    const day = pad(date.getDate());
+    const hour = pad(date.getHours());
+    const minute = pad(date.getMinutes());
+
+    return `${year}-${month}-${day}T${hour}:${minute}`;
+  };
 
   return (
     <div className="min-h-screen bg-background p-1">
@@ -451,7 +479,16 @@ export default function CalendarAdmin() {
                   onNavigate={setCurrentDate}
                   onView={setCurrentView}
                   onSelectEvent={(e) => {
-                    setSelectedAppointment(e);
+                    setSelectedAppointment({
+                      ...e,
+                      raw: {
+                        ...e.raw,
+                        duracionMinutos:
+                          e.duracionMinutos ??
+                          e.raw?.duracionMinutos ??
+                          30
+                      }
+                    });
                     setSelectedDoctorId(e.idMedico || null);
                     setIsDialogOpen(true);
                   }}
@@ -557,21 +594,70 @@ export default function CalendarAdmin() {
               </div>
 
               <div>
-                <label htmlFor="fecha-cita-input" className="block text-sm font-medium mb-1">Fecha y hora</label>
-                <input
-                  id="fecha-cita-input"
-                  type="datetime-local"
+                {/* <label htmlFor="fecha-cita-input" className="block text-sm font-medium mb-1">Fecha y hora</label> */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Fecha</label>
+                  <input
+                    type="date"
+                    className="border rounded-md px-2 py-1 w-full"
+                    min={new Intl.DateTimeFormat("en-CA", {
+                      timeZone: "America/Costa_Rica",
+                    }).format(new Date())}
+                    value={newAppointment.fechaCita.split("T")[0] || ""}
+                    onChange={(e) => {
+                      const fecha = e.target.value;
+                      const hora = newAppointment.fechaCita.split("T")[1] || "09:00";
+                      setNewAppointment({
+                        ...newAppointment,
+                        fechaCita: `${fecha}T${hora}`,
+                      });
+                    }}
+                  />
+                </div>
+
+                
+
+              </div>
+              <div>
+                  <label className="block text-sm font-medium mb-1">Hora</label>
+                  <select
+                    className="border rounded-md px-2 py-1 w-full"
+                    value={newAppointment.fechaCita.split("T")[1] || ""}
+                    onChange={(e) => {
+                      const hora = e.target.value;
+                      const fecha = newAppointment.fechaCita.split("T")[0] || new Date().toISOString().slice(0,10);
+                      setNewAppointment({
+                        ...newAppointment,
+                        fechaCita: `${fecha}T${hora}`,
+                      });
+                    }}
+                  >
+                    <option value="">Seleccione hora</option>
+                    {halfHourSlots.map(time => (
+                      <option key={time} value={time}>{time}</option>
+                    ))}
+                  </select>
+                </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Duración de la cita</label>
+                <select
                   className="border rounded-md px-2 py-1 w-full"
-                  value={newAppointment.fechaCita}
-                  min={new Date().toISOString().slice(0, 16)}
-                  onChange={(e) =>
+                  id="duracion"
+                  name="duracion"
+                  value={newAppointment.duracionMinutos}
+                  onChange={(e) => {
+                    const value = e.target.value;
                     setNewAppointment({
                       ...newAppointment,
-                      fechaCita: e.target.value,
-                    })
-                  }
-                  aria-label="Fecha y hora de la cita"
-                />
+                      duracionMinutos: value === "" ? "" : parseInt(value, 10),
+                    });
+                  }}
+                  >
+                  <option value="">Seleccione duración</option>
+                  <option value={30}>30 minutos</option>
+                  <option value={60}>1 hora</option>
+                </select>
               </div>
 
               <div>
@@ -600,7 +686,7 @@ export default function CalendarAdmin() {
 
         {/* Diálogo de detalles / editar cita */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-md w-[95vw] sm:w-full overflow-hidden" style={{ maxWidth: '95vw', boxSizing: 'border-box' }}>
+          <DialogContent className="max-w-md w-[95vw] sm:w-full overflow-hidden">
             <DialogHeader>
               <DialogTitle>Detalles de la Cita</DialogTitle>
               <DialogDescription>
@@ -708,7 +794,7 @@ export default function CalendarAdmin() {
                       type="datetime-local"
                       className="border rounded-md px-2 py-1 w-full text-sm"
                       value={selectedAppointment.start ? dfFormat(selectedAppointment.start, "yyyy-MM-dd'T'HH:mm") : ""}
-                      min={new Date().toISOString().slice(0, 16)}
+                      min={formatLocalDateTime(new Date())}
                       onChange={(e) =>
                         setSelectedAppointment({
                           ...selectedAppointment,
@@ -720,13 +806,18 @@ export default function CalendarAdmin() {
                           }
                         })
                       }
+                      step="1800" // pasos de 30 minutos
                       aria-label="Fecha y hora de la cita"
                     />
                     <label htmlFor="duracion-select" className="block text-sm font-medium mb-1 mt-2">Duración</label>
                     <select
                       id="duracion-select"
                       className="border rounded-md px-2 py-1 w-full max-w-full"
-                      value={selectedAppointment.raw?.duracionMinutos ?? 30}
+                      value={
+                        selectedAppointment?.raw?.duracionMinutos !== undefined
+                          ? selectedAppointment.raw.duracionMinutos
+                          : ""
+                      }
                       onChange={(e) =>
                         setSelectedAppointment({
                           ...selectedAppointment,
@@ -738,8 +829,8 @@ export default function CalendarAdmin() {
                         })
                       }
                     >
-                      <option value={30}>30 minutos</option>
-                      <option value={60}>1 hora</option>
+                      <option value="30">30 minutos</option>
+                      <option value="60">1 hora</option>
                     </select>
                   </div>
                 </div>
@@ -755,7 +846,44 @@ export default function CalendarAdmin() {
                 )}
 
                 {/* Botón guardar cambios / confirmar cita */}
-                <div className="pt-3 flex justify-end">
+                <div className="pt-3 flex justify-center gap-3 w-full">
+                  <Button
+                    variant="destructive"
+                    
+                    onClick={async () => {
+                      if (!selectedAppointment) return;
+
+                      const confirmar = confirm("¿Desea cancelar esta cita?");
+                      if (!confirmar) return;
+
+                      try {
+                        await apiClient.put(
+                          apiEndpoints.updateCita(selectedAppointment.id),
+                          { estadoCita: "cancelada" }
+                        );
+
+                        showNotification({
+                          type: "success",
+                          title: "Cita cancelada",
+                          message: "La cita fue marcada como cancelada.",
+                        });
+
+                        setIsDialogOpen(false);
+                        await loadAppointments();
+                      } catch (err: any) {
+                        console.error("❌ Error cancelando cita:", err);
+                        showNotification({
+                          type: "error",
+                          title: "Error",
+                          message:
+                            err?.message || "No se pudo cancelar la cita. Intente de nuevo.",
+                        });
+                      }
+                    }}
+                  >
+                    Cancelar cita
+                  </Button>
+
                   <Button
                     onClick={async () => {
                       try {

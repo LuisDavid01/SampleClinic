@@ -103,6 +103,10 @@ export default function EditTestimony({ testimony,
 		}
 	}, initialState)
 
+	const todayCR = new Intl.DateTimeFormat("en-CA", {
+		timeZone: "America/Costa_Rica"
+	}).format(new Date());
+
 	return (
 		<Form action={formAction}>
 			{state?.message && (
@@ -171,6 +175,7 @@ export default function EditTestimony({ testimony,
 					disabled={isPending || isloading}
 					aria-describedby="fecha-fechaTratamiento-error"
 					className={state?.errors?.fechaTratamiento ? 'border-red-500' : ''}
+					max={todayCR}
 				/>
 				{state?.errors?.fechaTratamiento && (
 					<p id="fecha-error" className="text-sm text-red-500">

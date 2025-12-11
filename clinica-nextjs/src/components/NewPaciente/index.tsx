@@ -211,6 +211,10 @@ export default function NewPaciente({ onSuccess, onCancel }: NewPacienteProps) {
     }
   };
 
+  const todayCR = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Costa_Rica" })
+  );
+
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
@@ -301,6 +305,7 @@ export default function NewPaciente({ onSuccess, onCancel }: NewPacienteProps) {
                       mode="single"
                       selected={formData.fechaNacimiento || undefined}
                       onSelect={(date) => handleInputChange("fechaNacimiento", date || null)}
+                      disabled={{ after: todayCR }} // No permitir fechas futuras
                       initialFocus
                       locale={es}
                       showOutsideDays={false}
@@ -341,9 +346,9 @@ export default function NewPaciente({ onSuccess, onCancel }: NewPacienteProps) {
                   id="telefonoPrincipal"
                   value={formData.telefonoPrincipal}
                   onChange={(e) => handleInputChange("telefonoPrincipal", e.target.value)}
-                  placeholder="+506 8888-8888 (solo números, espacios, +, -, ( y ))"
+                  placeholder="8888-8888 (solo números, espacios, +, -, ( y ))"
                   className={errors.telefonoPrincipal ? "border-red-500" : ""}
-                  maxLength={20}
+                  maxLength={8}
                 />
                 {errors.telefonoPrincipal && (
                   <p className="text-sm text-red-600">{errors.telefonoPrincipal}</p>
@@ -356,9 +361,9 @@ export default function NewPaciente({ onSuccess, onCancel }: NewPacienteProps) {
                   id="telefonoSecundario"
                   value={formData.telefonoSecundario}
                   onChange={(e) => handleInputChange("telefonoSecundario", e.target.value)}
-                  placeholder="+506 8888-8889 (opcional - solo números, espacios, +, -, ( y ))"
+                  placeholder="8888-8889 (opcional - solo números, espacios, +, -, ( y ))"
                   className={errors.telefonoSecundario ? "border-red-500" : ""}
-                  maxLength={20}
+                  maxLength={8}
                 />
                 {errors.telefonoSecundario && (
                   <p className="text-sm text-red-600">{errors.telefonoSecundario}</p>

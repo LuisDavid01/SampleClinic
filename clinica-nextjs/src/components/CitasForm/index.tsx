@@ -33,12 +33,29 @@ export const CitasForm = () => {
 				...prev,
 				[name]: telefonoLimitado
 			}));
-		} else {
+			return;
+		} 
+		if (name === "fecha") {
+			const dia = new Date(value).getDay(); // 5 = sabado, 6 = domingo
+
+			if (dia !== 6 && dia !== 5) {
+				alert("Solo puedes seleccionar días hábiles dentro del horario de anteción.");
+				return; // Impide actualizar el formData
+			}
+		}
+		if (name === "hora") {
+			const disponibles = getHorasDisponibles();
+			if (!disponibles.includes(value)) {
+				alert("La hora seleccionada no está disponible según el horario del día.");
+				return;
+			}
+		}
+		//else {
 			setFormData(prev => ({
 				...prev,
 				[name]: value
 			}));
-		}
+		//}
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -211,10 +228,54 @@ export const CitasForm = () => {
 		}
 	}, [isLoadingServicios, serviciosData, servicios.length, serviciosError]);
 
-	const horas = [
-		"09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-		"14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
+	const todayCR = new Intl.DateTimeFormat("en-CA", {
+		timeZone: "America/Costa_Rica"
+	}).format(new Date());
+
+	// const horas = [
+	// 	"09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+	// 	"14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
+	// ];
+
+	const horasSabado = [
+	"15:00", "15:30",
+	"16:00", "16:30",
+	"17:00", "17:30",
+	"18:00"
 	];
+
+	const horasDomingo = [
+	"08:00", "08:30",
+	"09:00", "09:30",
+	"10:00", "10:30",
+	"11:00", "11:30",
+	"12:00"
+	];
+
+	const getHorasDisponibles = () => {
+		if (!formData.fecha) return [];
+
+		const dia = new Date(formData.fecha).getDay(); 
+		// 5 = sabado, 6 = domingo
+
+		if (dia === 6) return horasDomingo;   // domingo
+		if (dia === 5) return horasSabado;  // sabado
+		return []; // de lunes a viernes no se debe permitir reservar
+	};
+
+	const format12h = (hora24: string): string => {
+		if (!hora24 || !/^\d{2}:\d{2}$/.test(hora24)) {
+			throw new Error(`Hora inválida: ${hora24}`);
+		}
+
+		const [hh, mm] = hora24.split(":").map(Number);
+
+		const period = hh >= 12 ? "PM" : "AM";
+		const hora12 = hh % 12 === 0 ? 12 : hh % 12;
+
+		return `${hora12}:${mm.toString().padStart(2, "0")} ${period}`;
+	};
+
 
 	const inputStyles = "w-full px-4 py-3 border-2 border-card-foreground/20 bg-background/50 backdrop-blur-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300 hover:border-primary/30 placeholder:/50";
 	const selectStyles = "w-full px-4 py-3 border-2 border-card-foreground/20 bg-background/50 backdrop-blur-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300 hover:border-primary/30 cursor-pointer";
@@ -257,7 +318,7 @@ export const CitasForm = () => {
 									</div>
 									<div>
 										<h4 className="font-semibold  mb-1">Teléfono</h4>
-										<p className="/70">+506 8888-8888</p>
+										<p className="/70">+506 8978-5444</p>
 									</div>
 								</div>
 
@@ -406,6 +467,7 @@ export const CitasForm = () => {
 										className="w-full px-4 py-3 border-2 border-card-foreground/20 bg-background/50 backdrop-blur-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300 hover:border-primary/30"
 										required
 										title="Selecciona una fecha para tu cita"
+										min={todayCR}
 									/>
 								</div>
 
@@ -423,9 +485,9 @@ export const CitasForm = () => {
 										aria-label="Selecciona una hora para tu cita"
 									>
 										<option value="">Selecciona una hora</option>
-										{horas.map((hora) => (
+										{getHorasDisponibles().map((hora) => (
 											<option key={hora} value={hora}>
-												{hora}
+												{format12h(hora)}
 											</option>
 										))}
 									</select>
