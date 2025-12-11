@@ -18,6 +18,8 @@ import {
 	Star,
 	Users,
 	Folder,
+    Stethoscope,
+    SearchCheck,
 	CalendarDays
 } from "lucide-react";
 import { checkRole, checkRoles } from "@/utils/roles";
@@ -124,6 +126,18 @@ export const DasboardHeader = async () => {
 									<span>Pacientes</span>
 								</Link>
 							</Button>
+
+							<Button
+  								variant="ghost"
+  								className="w-full justify-start text-text-primary hover:bg-gray-800"
+  								asChild
+>
+  								<Link href={"/admin/appointmentsRecords"}>
+   								<CalendarDays className="w-4 h-4 mr-3" />
+    							<span>Historial Citas</span>
+  							</Link>
+							</Button>
+
 						</>
 					}
 					<Button
@@ -147,6 +161,19 @@ export const DasboardHeader = async () => {
 							<span>Expedientes</span>
 						</Link>
 					</Button>
+
+					<Button
+  						variant="ghost"
+  						className="w-full justify-start text-text-primary hover:bg-gray-800"
+  						asChild
+>
+  						<Link href={"/admin/services"}>
+   						<Stethoscope className="w-4 h-4 mr-3" />
+    					<span>Servicios</span>
+  					</Link>
+				</Button>
+
+
 					<Button
 						variant="ghost"
 						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
@@ -172,6 +199,18 @@ export const DasboardHeader = async () => {
 						</Link>
 					</Button>
 
+					{await checkRoles(["admin"]) && (
+  					<Button
+    					variant="ghost"
+    					className="w-full justify-start text-text-primary hover:bg-gray-800"
+    					asChild
+  >
+    				<Link href={"/admin/audit"}>
+      				<SearchCheck className="w-4 h-4 mr-3" />
+      				<span>Auditoria de Sistema</span>
+    			</Link>
+  				</Button>
+)}
 
 					<Button
 						variant="ghost"

@@ -16,11 +16,14 @@ export const HomeHero = () => {
 				/>
 				video not supported
 			</video>
-			<div className="absolute inset-0 bg-black/45 z-5" aria-label="fondo-negro-frente-al-video" />
+			<div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] z-10" aria-label="fondo-negro-frente-al-video" />
 			<div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 					<div className="text-center lg:text-left ">
-						<h1 className="text-5xl lg:text-6xl  text-white mb-6  font-bold leading-tight  ">
+						<p className="text-emerald-300 font-semibold text-sm tracking-[0.25em] uppercase mb-4">
+ 						 Salud y fisioterapia
+						</p>
+						<h1 className="text-5xl lg:text-6xl font-bold leading-tight text-white drop-shadow-xl">
 							Recupera tu
 							<span className="block text-transparent bg-accent  bg-clip-text">
 								bienestar
@@ -67,7 +70,19 @@ export const HomeHero = () => {
 									></path>
 								</svg>
 							</a>
+							
 						</div>
+						<div className="mt-8 flex flex-col sm:flex-row gap-4 text-gray-200 text-sm">
+  <div className="flex items-center gap-2">
+    <span className="h-2 w-2 rounded-full bg-emerald-300" />
+    Atención personalizada
+  </div>
+  <div className="flex items-center gap-2">
+    <span className="h-2 w-2 rounded-full bg-emerald-300" />
+    Profesionales certificados
+  </div>
+</div>
+
 					</div>
 				</div>
 			</div>
