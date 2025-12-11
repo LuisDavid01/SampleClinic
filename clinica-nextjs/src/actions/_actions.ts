@@ -8,7 +8,6 @@ export async function setRole(userId: string, role: string) {
 	if (!checkRole("admin")) {
 		throw "No eres el admin";
 	}
-	console.log("usuario id: "+ userId + " Role:" +  role)
 	const client = await clerkClient();
 
 	const user = await currentUser();
@@ -69,6 +68,26 @@ export async function setRoleWithoutForm(userId: string, role: string) {
 	// Don't return anything
 }
 
+export async function banUserClerk(userId: string) {
+	if (!checkRole("admin")) {
+		throw "No eres el admin";
+	}
+	const client = await clerkClient();
+
+	await client.users.banUser(userId);
+	revalidatePath("/admin/ManageUsers");
+}
+
+export async function unBanUserClerk(userId: string) {
+	if (!checkRole("admin")) {
+		throw "No eres el admin";
+	}
+	const client = await clerkClient();
+
+	await client.users.unbanUser(userId);
+	revalidatePath("/admin/ManageUsers");
+}
+
 export async function getUsersClerk(query?: string, limit: number = 10, page: number = 1) {
 	const user = await auth();
 	if (!user.userId) {
@@ -88,6 +107,7 @@ export async function getUsersClerk(query?: string, limit: number = 10, page: nu
 		email: user.emailAddresses[0].emailAddress,
 		role: user.publicMetadata.role,
 		imageUrl: user.imageUrl,
+		isBanned: user.banned,
 
 
 	}))
@@ -99,7 +119,6 @@ export async function getUsersClerk(query?: string, limit: number = 10, page: nu
 		totalPages: totalPages,
 		totalCount: totalCount
 	}
-	console.log(usersData)
 
 	return usersData;
 

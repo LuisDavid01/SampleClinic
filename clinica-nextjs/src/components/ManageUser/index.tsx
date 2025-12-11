@@ -36,7 +36,6 @@ export default function ManageUser() {
 		queryFn: async () => {
 			const userData = await getUsersClerk(search, limit, page)
 
-			console.log(userData)
 			return userData
 		}
 	})

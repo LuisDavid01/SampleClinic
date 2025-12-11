@@ -19,9 +19,10 @@ import {
 	Star,
 	Users,
 	Folder,
-    Stethoscope,
-    SearchCheck,
-	CalendarDays
+	Stethoscope,
+	SearchCheck,
+	CalendarDays,
+	UserPlus
 } from "lucide-react";
 import { checkRole, checkRoles } from "@/utils/roles";
 
@@ -38,7 +39,7 @@ export const DasboardHeader = async () => {
 						{/* Marco - alrededor del contenedor */}
 						<div className="absolute inset-0 border-2 border-[#2B8181] rounded-xl group-hover:border-[#EE7132] transition-all duration-300 -z-[1]"></div>
 						{/* Logo */}
-						<LogoImage 
+						<LogoImage
 							width={44}
 							height={44}
 							className="h-11 w-auto object-contain relative z-10 group-hover:scale-110 transition-transform duration-300"
@@ -59,7 +60,7 @@ export const DasboardHeader = async () => {
 				<div className="flex items-center gap-2">
 					<UserRoleDisplay />
 					<div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-[#2B8181]/40 hover:border-[#2B8181] transition-all duration-300 bg-card/80 shadow-sm">
-						<UserButton 
+						<UserButton
 							showName
 							userProfileUrl="/user"
 							appearance={{
@@ -79,8 +80,9 @@ export const DasboardHeader = async () => {
 			<div className="md:hidden">
 				<MobileMenu>
 					<Button
+
 						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+						className="w-full justify-start py-2 hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 						asChild
 					>
 						<Link href={"/admin"}>
@@ -89,72 +91,30 @@ export const DasboardHeader = async () => {
 						</Link>
 					</Button>
 
-					{await checkRole('admin') &&
-
-
-						<Button
-							variant="ghost"
-							className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-							asChild
-						>
-							<Link href={"/admin/ManageUsers"}>
-								<User className="w-4 h-4 mr-3" />
-								<span>Gestionar usuarios</span>
-							</Link>
-						</Button>
-					}
-
-					{await checkRoles(['admin', 'recepcionista']) &&
-						<>
-							<Button
-								variant="ghost"
-								className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-								asChild
-							>
-								<Link href={"/admin/team"}>
-									<Users className="w-4 h-4 mr-3 " />
-									<span>Equipo</span>
-								</Link>
-							</Button>
-
-							<Button
-								variant="ghost"
-								className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-								asChild
-							>
-								<Link href={"/admin/pacientes"}>
-									<User className="w-4 h-4 mr-3" />
-									<span>Pacientes</span>
-								</Link>
-							</Button>
-
-							<Button
-  								variant="ghost"
-  								className="w-full justify-start text-text-primary hover:bg-gray-800"
-  								asChild
->
-  								<Link href={"/admin/appointmentsRecords"}>
-   								<CalendarDays className="w-4 h-4 mr-3" />
-    							<span>Historial Citas</span>
-  							</Link>
-							</Button>
-
-						</>
-					}
 					<Button
 						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+						className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+						asChild
+					>
+						<Link href={"/admin/appointmentsRecords"}>
+							<CalendarDays className="w-4 h-4 mr-3" />
+							<span>Historial Citas</span>
+						</Link>
+					</Button>
+					<Button
+						variant="ghost"
+						className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 						asChild
 					>
 						<Link href={"/admin/appointments"}>
 							<CalendarDays className="w-4 h-4 mr-3" />
-							<span>Citas</span>
+							<span>Agendar Citas</span>
 						</Link>
 					</Button>
 
 					<Button
 						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+						className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 						asChild
 					>
 						<Link href={"/admin/files"}>
@@ -163,59 +123,90 @@ export const DasboardHeader = async () => {
 						</Link>
 					</Button>
 
-					<Button
-  						variant="ghost"
-  						className="w-full justify-start text-text-primary hover:bg-gray-800"
-  						asChild
->
-  						<Link href={"/admin/services"}>
-   						<Stethoscope className="w-4 h-4 mr-3" />
-    					<span>Servicios</span>
-  					</Link>
-				</Button>
+					{await checkRoles(['admin', 'recepcionista']) &&
+						<>
+							<Button
+								variant="ghost"
+								className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+								asChild
+							>
+								<Link href={"/admin/ManageUsers"}>
+									<User className="w-4 h-4 mr-3" />
+									<span>Gestionar usuarios</span>
+								</Link>
+							</Button>
+
+							<Button
+								variant="ghost"
+								className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+								asChild
+							>
+								<Link href={"/admin/pacientes"}>
+									<UserPlus className="w-4 h-4 mr-3" />
+									<span>Pacientes</span>
+								</Link>
+							</Button>
+							<Button
+								variant="ghost"
+								className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+								asChild
+							>
+								<Link href={"/admin/team"}>
+									<Users className="w-4 h-4 mr-3 " />
+									<span>Equipo</span>
+								</Link>
+							</Button>
+							<Button
+								variant="ghost"
+								className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+								asChild
+							>
+								<Link href={"/admin/services"}>
+									<Stethoscope className="w-4 h-4 mr-3" />
+									<span>Servicios</span>
+								</Link>
+							</Button>
+							<Button
+								variant="ghost"
+								className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+								asChild
+							>
+								<Link href={"/admin/testimonials"}>
+									<Star className="w-4 h-4 mr-3 " />
+									<span>Testimonios</span>
+								</Link>
+							</Button>
+
+
+							<Button
+								variant="ghost"
+								className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+								asChild
+							>
+								<Link href={"/admin/audit"}>
+									<SearchCheck className="w-4 h-4 mr-3 " />
+									<span>Auditoria de Sistema</span>
+								</Link>
+							</Button>
+						</>}
+
+					<div className="my-4 border-t border-[#2B8181]/15" />
 
 
 					<Button
 						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+						className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 						asChild
 					>
-						<Link href={"/admin/testimonials"}>
-							<Star className="w-4 h-4 mr-3 " />
-							<span>Testimonios</span>
-						</Link>
-					</Button>
-
-
-
-					<Button
-						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-						asChild
-					>
-						<Link href={"/user"}
-							prefetch={false}>
+						<Link href={"/user"} prefetch={false}>
 							<Settings className="w-4 h-4 mr-3" />
 							Cuenta
 						</Link>
 					</Button>
 
-					{await checkRoles(["admin"]) && (
-  					<Button
-    					variant="ghost"
-    					className="w-full justify-start text-text-primary hover:bg-gray-800"
-    					asChild
-  >
-    				<Link href={"/admin/audit"}>
-      				<SearchCheck className="w-4 h-4 mr-3" />
-      				<span>Auditoria de Sistema</span>
-    			</Link>
-  				</Button>
-)}
-
 					<Button
 						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-[#EE7132]/10 hover:text-[#EE7132] transition-colors"
+						className="w-full justify-start hover:bg-[#EE7132]/10 hover:text-[#EE7132] transition-colors"
 						asChild
 					>
 						<Link href={"/"}>
@@ -224,23 +215,11 @@ export const DasboardHeader = async () => {
 						</Link>
 					</Button>
 
-					<div className="flex justify-start items-start my-3 gap-3">
-						<div className="flex items-center">
-							<UserButton 
-								userProfileUrl="/user"
-								appearance={{
-									elements: {
-										avatarBox: "w-10 h-10 border-2 border-[#2B8181]/30",
-										userButtonPopoverCard: "bg-background border-2 border-[#2B8181]/20 shadow-lg",
-									}
-								}}
-							/>
-						</div>
-					</div>
+
 					<div className="mt-2 pt-3 border-t border-[#2B8181]/20 flex items-center gap-3">
-  <span className="text-xs text-gray-400">Tema</span>
-  <ThemeToggle />
-</div>
+						<span className="text-xs text-gray-400">Tema</span>
+						<ThemeToggle />
+					</div>
 
 				</MobileMenu>
 			</div>

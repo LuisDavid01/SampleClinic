@@ -44,11 +44,11 @@ export default async function dasboardLayout({
 				>
 					<nav className="space-y-2 flex-1 overflow-y-auto">
 						<p className="text-xs tracking-wider text-gray-400 mb-4 uppercase">
-   							 Navegación
-  						</p>
-  
+							Navegación
+						</p>
+
 						<Button
-					
+
 							variant="ghost"
 							className="w-full justify-start py-2 hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
@@ -58,6 +58,39 @@ export default async function dasboardLayout({
 								Vista general
 							</Link>
 						</Button>
+
+						<Button
+							variant="ghost"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+							asChild
+						>
+							<Link href={"/admin/appointmentsRecords"}>
+								<CalendarDays className="w-4 h-4 mr-3" />
+								<span>Historial Citas</span>
+							</Link>
+						</Button>
+						<Button
+							variant="ghost"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+							asChild
+						>
+							<Link href={"/admin/appointments"}>
+								<CalendarDays className="w-4 h-4 mr-3" />
+								<span>Agendar Citas</span>
+							</Link>
+						</Button>
+
+						<Button
+							variant="ghost"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+							asChild
+						>
+							<Link href={"/admin/files"}>
+								<Folder className="w-4 h-4 mr-3" />
+								<span>Expedientes</span>
+							</Link>
+						</Button>
+
 						{await checkRoles(['admin', 'recepcionista']) &&
 							<>
 								<Button
@@ -81,68 +114,49 @@ export default async function dasboardLayout({
 										<span>Pacientes</span>
 									</Link>
 								</Button>
-							</>}
-						<Button
-							variant="ghost"
-							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-							asChild
-						>
-							<Link href={"/admin/appointmentsRecords"}>
-								<CalendarDays className="w-4 h-4 mr-3" />
-								<span>Historial Citas</span>
-							</Link>
-						</Button>	
-						<Button
-							variant="ghost"
-							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-							asChild
-						>
-							<Link href={"/admin/appointments"}>
-								<CalendarDays className="w-4 h-4 mr-3" />
-								<span>Agendar Citas</span>
-							</Link>
-						</Button>
+								<Button
+									variant="ghost"
+									className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+									asChild
+								>
+									<Link href={"/admin/team"}>
+										<Users className="w-4 h-4 mr-3 " />
+										<span>Equipo</span>
+									</Link>
+								</Button>
+								<Button
+									variant="ghost"
+									className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+									asChild
+								>
+									<Link href={"/admin/services"}>
+										<Stethoscope className="w-4 h-4 mr-3" />
+										<span>Servicios</span>
+									</Link>
+								</Button>
+								<Button
+									variant="ghost"
+									className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+									asChild
+								>
+									<Link href={"/admin/testimonials"}>
+										<Star className="w-4 h-4 mr-3 " />
+										<span>Testimonios</span>
+									</Link>
+								</Button>
 
-						<Button
-							variant="ghost"
-							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-							asChild
-						>
-							<Link href={"/admin/files"}>
-								<Folder className="w-4 h-4 mr-3" />
-								<span>Expedientes</span>
-							</Link>
-						</Button>
-						<Button
-							variant="ghost"
-							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-							asChild
-						>
-							<Link href={"/admin/team"}>
-								<Users className="w-4 h-4 mr-3 " />
-								<span>Equipo</span>
-							</Link>
-						</Button>
-						<Button
-							variant="ghost"
-							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-							asChild
-						>
-							<Link href={"/admin/services"}>
-								<Stethoscope className="w-4 h-4 mr-3" />
-								<span>Servicios</span>
-							</Link>
-						</Button>
-						<Button
-							variant="ghost"
-							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-							asChild
-						>
-							<Link href={"/admin/testimonials"}>
-								<Star className="w-4 h-4 mr-3 " />
-								<span>Testimonios</span>
-							</Link>
-						</Button>
+
+								<Button
+									variant="ghost"
+									className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+									asChild
+								>
+									<Link href={"/admin/audit"}>
+										<SearchCheck className="w-4 h-4 mr-3 " />
+										<span>Auditoria de Sistema</span>
+									</Link>
+								</Button>
+							</>}
 
 						<div className="my-4 border-t border-[#2B8181]/15" />
 
@@ -157,19 +171,7 @@ export default async function dasboardLayout({
 								Cuenta
 							</Link>
 						</Button>
-						{await checkRoles(['admin']) &&
-							<>
-						<Button
-							variant="ghost"
-							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
-							asChild
-						>
-							<Link href={"/admin/audit"}>
-								<SearchCheck className="w-4 h-4 mr-3 " />
-								<span>Auditoria de Sistema</span>
-							</Link>
-						</Button>
-							</>}
+
 						<Button
 							variant="ghost"
 							className="w-full justify-start hover:bg-[#EE7132]/10 hover:text-[#EE7132] transition-colors"

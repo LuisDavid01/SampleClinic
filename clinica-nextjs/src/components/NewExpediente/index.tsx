@@ -56,7 +56,7 @@ export default function ExpedienteForm({
 		queryKey: ['currentUser', user?.id],
 		queryFn: async () => {
 			const clerkId = user?.id;
-			
+
 			if (!clerkId) {
 				return null;
 			}
@@ -86,7 +86,7 @@ export default function ExpedienteForm({
 				// Como último recurso, buscar en la lista completa
 				const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?limit=1000`)
 				const foundUser = res?.usuarios?.find((u: any) => u.clerkId === clerkId);
-				
+
 				return foundUser || null;
 			} catch (error) {
 				return null;
@@ -111,8 +111,8 @@ export default function ExpedienteForm({
 					// Obtener todos los usuarios con rol 2 (fisioterapeuta) sin límite de paginación
 					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?limit=1000`)
 					// Filtrar solo los que tienen rol 2 (fisioterapeuta) y están activos
-					const fisioterapeutas = Array.isArray(res?.usuarios) 
-						? res.usuarios.filter((u: any) => u.rol?.idRol === 2 && u.activo !== false) 
+					const fisioterapeutas = Array.isArray(res?.usuarios)
+						? res.usuarios.filter((u: any) => u.rol?.idRol === 2 && u.activo !== false)
 						: [];
 					return fisioterapeutas;
 				}
@@ -287,16 +287,19 @@ export default function ExpedienteForm({
 		<>
 			<div className={`flex items-center space-x-2 `}>
 
+				{isEditing &&
+					<>
+						<Switch
+							checked={isReadOnly}
+							onCheckedChange={() => setIsReadOnly(!isReadOnly)}
+							aria-label="Toggle editing mode"
+						/>
 
-				<Switch
-					checked={isReadOnly}
-					onCheckedChange={() => setIsReadOnly(!isReadOnly)}
-					aria-label="Toggle editing mode"
-				/>
-
-				<div className="text-sm font-medium">
-					{isReadOnly ? "Solo visualizar" : "Editar"}
-				</div>
+						<div className="text-sm font-medium">
+							{isReadOnly ? "Solo visualizar" : "Editar"}
+						</div>
+					</>
+				}
 			</div>
 			<form action={formAction} className="w-full space-y-6">
 				{state?.message && (
@@ -339,8 +342,8 @@ export default function ExpedienteForm({
 							<SelectContent>
 								{/* Si el paciente del expediente no está en la lista, agregarlo */}
 								{expediente?.paciente && !pacients.find((p: AdminPaciente) => p.idUsuario === expediente.paciente.idUsuario) && (
-									<SelectItem 
-										key={`expediente-paciente-${expediente.paciente.idUsuario}`} 
+									<SelectItem
+										key={`expediente-paciente-${expediente.paciente.idUsuario}`}
 										value={expediente.paciente.idUsuario.toString()}
 									>
 										{`${expediente.paciente.nombre || ''} ${expediente.paciente.apellido1 || ''} ${expediente.paciente.apellido2 || ''}`.trim()}

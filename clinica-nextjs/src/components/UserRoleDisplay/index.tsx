@@ -18,16 +18,16 @@ export default function UserRoleDisplay() {
 	};
 
 	const roleColors: Record<string, string> = {
-		admin: 'bg-[#2B8181] text-white border-[#2B8181]',
-		administrador: 'bg-[#2B8181] text-white border-[#2B8181]',
-		fisioterapeuta: 'bg-[#EE7132] text-white border-[#EE7132]',
-		recepcionista: 'bg-[#FECD5C] text-foreground border-[#FECD5C]',
-		paciente: 'bg-[#E8CF9C] text-foreground border-[#E8CF9C]',
+		admin: 'bg-[#2B8181] text-muted-foreground border-[#2B8181]',
+		administrador: 'bg-[#2B8181] text-muted-foreground border-[#2B8181]',
+		fisioterapeuta: 'bg-[#EE7132] text-muted-foreground border-[#EE7132]',
+		recepcionista: 'bg-[#FECD5C] text-muted-foreground border-[#FECD5C]',
+		paciente: 'bg-btn text-muted-foreground',
 	};
 
 	const normalizedRole = role.toLowerCase();
 	const displayRole = roleLabels[normalizedRole] || role;
-	const colorClass = roleColors[normalizedRole] || 'bg-muted text-foreground border-muted';
+	const colorClass = roleColors[normalizedRole] || 'bg-muted text-muted-foreground border-muted';
 
 	return (
 		<Badge 
