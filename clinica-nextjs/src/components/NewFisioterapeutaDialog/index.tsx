@@ -145,32 +145,52 @@ export default function NewFisioterapeutaDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[calc(700px)] max-h-[90vh] overflow-y-auto">
-				<DialogHeader>
-					<DialogTitle className="text-2xl font-bold">{isEditing ? 'Editando miembro del equipo' : 'Nuevo miembro del equipo'}</DialogTitle>
+			<DialogContent className="sm:max-w-[850px] max-h-[90vh] bg-background border-2 border-[#2B8181]/20 overflow-hidden flex flex-col p-0">
+				<DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-[#2B8181]/20">
+					<DialogTitle className="text-2xl font-bold bg-gradient-to-r from-[#2B8181] to-[#EE7132] bg-clip-text text-transparent">
+						{isEditing ? 'Editar Miembro del Equipo' : 'Nuevo Miembro del Equipo'}
+					</DialogTitle>
 				</DialogHeader>
-				<Form action={formAction}>
-					{state?.message && !state.success && (
-						<div
-							className={cn(
-								'mb-4 w-full rounded-md border px-4 py-2',
-								'bg-red-50 text-red-800 border-red-300 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
-							)}
-							role="alert"
-							aria-live="assertive"
-						>
-							{state.message}
-						</div>
-					)}
+				
+				<div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
+					<Form action={formAction} id="team-member-form">
+						{state?.message && !state.success && (
+							<div
+								className={cn(
+									'mb-4 w-full rounded-xl border-2 px-4 py-3',
+									'bg-gradient-to-r from-[#EE7132]/10 to-[#EE7132]/5 border-[#EE7132]/30',
+									'text-[#EE7132] dark:text-[#EE7132]'
+								)}
+								role="alert"
+								aria-live="assertive"
+							>
+								<div className="flex items-center gap-2">
+									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+									{state.message}
+								</div>
+							</div>
+						)}
 
-					<div className="space-y-5 max-h-[60vh]  pr-2">
+						<div className="space-y-6">
 						{/* Información Personal */}
-						<div className="space-y-4">
-							<h3 className="text-lg font-semibold text-foreground">Información Personal</h3>
+						<div className="space-y-5 bg-card rounded-xl p-6 border border-[#2B8181]/20 shadow-sm">
+							<div className="flex items-center gap-3 mb-2">
+								<div className="w-10 h-10 bg-[#2B8181]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+									<svg className="w-5 h-5 text-[#2B8181]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+									</svg>
+								</div>
+								<h3 className="text-lg font-semibold text-foreground">Información Personal</h3>
+							</div>
 
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<FormGroup>
-									<FormLabel htmlFor="idEquipo">Miembro del equipo</FormLabel>
+							{/* Primera fila: Miembro del Equipo y Especialidad */}
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+								<FormGroup className="space-y-2">
+									<FormLabel htmlFor="idEquipo" className="text-sm font-semibold text-foreground">
+										Miembro del Equipo *
+									</FormLabel>
 									<FormSelect
 										key={"testimony-paciente-select"}
 										id="idEquipo"
@@ -182,126 +202,213 @@ export default function NewFisioterapeutaDialog({
 										defaultValue={miembro?.medico.clerkId ?? ''}
 										required
 										disabled={isPending || isloading}
-										aria-describedby="title-error"
-										className={state?.errors?.Equipo ? 'border-red-500' : ''}
+										aria-describedby="idEquipo-error"
+										className={cn(
+											'w-full h-10 border-2 border-card-foreground/20 bg-background rounded-lg px-3 py-2 text-sm',
+											'focus:outline-none focus:ring-2 focus:ring-[#2B8181]/50 focus:border-[#2B8181]/50',
+											'transition-all duration-300 hover:border-[#2B8181]/30',
+											'disabled:cursor-not-allowed disabled:opacity-50',
+											state?.errors?.Equipo && 'border-[#EE7132] focus:ring-[#EE7132]/50'
+										)}
 									/>
-									{state?.errors?.title && (
-										<p id="idPaciente-error" className="text-sm text-red-500">
+									{state?.errors?.idEquipo && (
+										<p id="idEquipo-error" className="text-sm text-[#EE7132] mt-1">
 											{state.errors.idEquipo[0]}
 										</p>
 									)}
 								</FormGroup>
-								<FormGroup>
-									<FormLabel htmlFor="Especialidad">Especialidad *</FormLabel>
+								
+								<FormGroup className="space-y-2">
+									<FormLabel htmlFor="especialidad" className="text-sm font-semibold text-foreground">
+										Especialidad *
+									</FormLabel>
 									<FormInput
 										id="especialidad"
 										name="especialidad"
-										placeholder="Area medica"
+										placeholder="Ej: Fisioterapia Deportiva"
 										required
 										maxLength={200}
 										disabled={isPending}
 										defaultValue={miembro?.especialidad ?? ''}
 										aria-describedby="especialidad-error"
-										className={cn('border-0', state?.errors?.especialidad && 'border border-red-500')}
+										className={cn(
+											'w-full border-2 border-card-foreground/20 bg-background rounded-lg px-3 py-2',
+											'focus:outline-none focus:ring-2 focus:ring-[#2B8181]/50 focus:border-[#2B8181]/50',
+											'transition-all duration-300 hover:border-[#2B8181]/30',
+											state?.errors?.especialidad && 'border-[#EE7132] focus:ring-[#EE7132]/50'
+										)}
 									/>
-									{state?.errors?.telefonoPrincipal && (
-										<p id="telefonoPrincipal-error" className="text-sm text-red-500">
-											{state.errors.especialidad}
-										</p>
-									)}
-								</FormGroup>
-
-								<FormGroup>
-									<FormLabel htmlFor="experienciaProfesional">Cuentanos sobre tu experiencia!</FormLabel>
-									<FormTextarea
-										id="experienciaProfesional"
-										name="experienciaProfesional"
-										placeholder="Cuentanos sobre ti!"
-										required
-										minLength={2}
-										maxLength={100}
-										disabled={isPending}
-										defaultValue={miembro?.experienciaProfesional ?? ''}
-										aria-describedby="apellido1-error"
-										className={cn('border-0', state?.errors?.experienciaProfesional && 'border border-red-500')}
-									/>
-									{state?.errors?.experienciaProfesional && (
-										<p id="apellido1-error" className="text-sm text-red-500">
-											{state.errors.experienciaProfesional[0]}
-										</p>
-									)}
-								</FormGroup>
-
-								<FormGroup>
-									<FormLabel htmlFor="descripcionBreve">Descripcion</FormLabel>
-									<FormTextarea
-										id="descripcionBreve"
-										name="descripcionBreve"
-										placeholder="Describe brevemente que haces!"
-										required
-										minLength={2}
-										maxLength={100}
-										disabled={isPending}
-										defaultValue={miembro?.descripcionBreve ?? ''}
-										aria-describedby="descripcionBreve-error"
-										className={cn('border-0', state?.errors?.descripcionBreve && 'border border-red-500')}
-									/>
-									{state?.errors?.descripcionBreve && (
-										<p id="apellido1-error" className="text-sm text-red-500">
-											{state.errors.descripcionBreve}
+									{state?.errors?.especialidad && (
+										<p id="especialidad-error" className="text-sm text-[#EE7132] mt-1">
+											{state.errors.especialidad[0]}
 										</p>
 									)}
 								</FormGroup>
 							</div>
-						</div>
 
-						<div className="space-y-4">
-							<h3 className="text-lg font-semibold text-foreground">Información de Contacto</h3>
-							<FormGroup>
-								{services.map((servicio: Service) => {
-									return (<div key={servicio.idServicio}>
-
-										<label htmlFor={`servicio-${servicio.idServicio}`}>{servicio.nombreServicio ?? 'Servicio no identificado'}</label>
-										<input
-											checked={serviciosSeleccionados.includes(servicio.idServicio)}
-											onChange={() => toggleServicio(servicio.idServicio)}
-											name={`servicio-${servicio.idServicio}`}
-											id={`servicio-${servicio.idServicio}`}
-											type='checkbox'
-											disabled={isPending}
-											aria-describedby="servicios-miembro-error"
-											className={cn('border-0', state?.errors?.servicios && 'border border-red-500')}
-										/>
-
-									</div>
-									)
-								})
-								}
-								{state?.errors?.servicio && (
-									<p id="servicio-error" className="text-sm text-red-500">
-										{state.errors.servicio}
+							{/* Segunda fila: Experiencia Profesional */}
+							<FormGroup className="space-y-2">
+								<FormLabel htmlFor="experienciaProfesional" className="text-sm font-semibold text-foreground">
+									Experiencia Profesional *
+								</FormLabel>
+								<FormTextarea
+									id="experienciaProfesional"
+									name="experienciaProfesional"
+									placeholder="Describe tu experiencia profesional, años de práctica, certificaciones, etc."
+									required
+									minLength={2}
+									maxLength={500}
+									rows={4}
+									disabled={isPending}
+									defaultValue={miembro?.experienciaProfesional ?? ''}
+									aria-describedby="experienciaProfesional-error"
+									className={cn(
+										'w-full border-2 border-card-foreground/20 bg-background rounded-lg px-3 py-2',
+										'focus:outline-none focus:ring-2 focus:ring-[#2B8181]/50 focus:border-[#2B8181]/50',
+										'transition-all duration-300 hover:border-[#2B8181]/30 resize-none',
+										state?.errors?.experienciaProfesional && 'border-[#EE7132] focus:ring-[#EE7132]/50'
+									)}
+								/>
+								{state?.errors?.experienciaProfesional && (
+									<p id="experienciaProfesional-error" className="text-sm text-[#EE7132] mt-1">
+										{state.errors.experienciaProfesional[0]}
 									</p>
 								)}
 							</FormGroup>
 
-
+							{/* Tercera fila: Descripción Breve */}
+							<FormGroup className="space-y-2">
+								<FormLabel htmlFor="descripcionBreve" className="text-sm font-semibold text-foreground">
+									Descripción Breve *
+								</FormLabel>
+								<FormTextarea
+									id="descripcionBreve"
+									name="descripcionBreve"
+									placeholder="Describe brevemente tu especialidad y enfoque de trabajo..."
+									required
+									minLength={2}
+									maxLength={300}
+									rows={3}
+									disabled={isPending}
+									defaultValue={miembro?.descripcionBreve ?? ''}
+									aria-describedby="descripcionBreve-error"
+									className={cn(
+										'w-full border-2 border-card-foreground/20 bg-background rounded-lg px-3 py-2',
+										'focus:outline-none focus:ring-2 focus:ring-[#2B8181]/50 focus:border-[#2B8181]/50',
+										'transition-all duration-300 hover:border-[#2B8181]/30 resize-none',
+										state?.errors?.descripcionBreve && 'border-[#EE7132] focus:ring-[#EE7132]/50'
+									)}
+								/>
+								{state?.errors?.descripcionBreve && (
+									<p id="descripcionBreve-error" className="text-sm text-[#EE7132] mt-1">
+										{state.errors.descripcionBreve[0]}
+									</p>
+								)}
+							</FormGroup>
 						</div>
-					</div>
 
-					<DialogFooter className="mt-6">
-						<Button
-							type="button"
-							variant="ghost"
-							onClick={() => onOpenChange(false)}
-							disabled={isPending}
-						>
-							Cancelar
-						</Button>
-						<Button type="submit" disabled={isPending}>
-							{isEditing ? 'Editar miembro' : 'Crear Miembro del equipo'}
-						</Button>
-					</DialogFooter>
-				</Form>
+						{/* Servicios */}
+						<div className="space-y-4 bg-card rounded-xl p-6 border border-[#EE7132]/20 shadow-sm">
+							<div className="flex items-center gap-3 mb-2">
+								<div className="w-10 h-10 bg-[#EE7132]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+									<svg className="w-5 h-5 text-[#EE7132]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+									</svg>
+								</div>
+								<h3 className="text-lg font-semibold text-foreground">Servicios Ofrecidos</h3>
+							</div>
+							<FormGroup>
+								{isloading ? (
+									<div className="flex items-center justify-center py-8">
+										<div className="w-6 h-6 border-2 border-[#2B8181] border-t-transparent rounded-full animate-spin" />
+										<span className="ml-2 text-muted-foreground">Cargando servicios...</span>
+									</div>
+								) : services.length === 0 ? (
+									<p className="text-sm text-muted-foreground text-center py-4">
+										No hay servicios disponibles
+									</p>
+								) : (
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+										{services.map((servicio: Service) => {
+											const isSelected = serviciosSeleccionados.includes(servicio.idServicio);
+											return (
+												<label
+													key={servicio.idServicio}
+													htmlFor={`servicio-${servicio.idServicio}`}
+													className={cn(
+														'flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-200',
+														isSelected
+															? 'border-[#2B8181] bg-[#2B8181]/10 shadow-sm'
+															: 'border-card-foreground/20 bg-background hover:border-[#2B8181]/30 hover:bg-[#2B8181]/5'
+													)}
+												>
+													<input
+														checked={isSelected}
+														onChange={() => toggleServicio(servicio.idServicio)}
+														name={`servicio-${servicio.idServicio}`}
+														id={`servicio-${servicio.idServicio}`}
+														type='checkbox'
+														disabled={isPending}
+														aria-describedby="servicios-miembro-error"
+														className={cn(
+															'w-5 h-5 rounded border-2 cursor-pointer transition-all flex-shrink-0',
+															'text-[#2B8181] focus:ring-2 focus:ring-[#2B8181]/50',
+															state?.errors?.servicios && 'border-[#EE7132]'
+														)}
+													/>
+													<span className={cn(
+														'text-sm font-medium flex-1',
+														isSelected ? 'text-[#2B8181]' : 'text-foreground'
+													)}>
+														{servicio.nombreServicio ?? 'Servicio no identificado'}
+													</span>
+													{isSelected && (
+														<svg className="w-5 h-5 text-[#2B8181] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+															<path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+														</svg>
+													)}
+												</label>
+											);
+										})}
+									</div>
+								)}
+								{state?.errors?.servicio && (
+									<p id="servicio-error" className="text-sm text-[#EE7132] mt-2">
+										{state.errors.servicio}
+									</p>
+								)}
+							</FormGroup>
+						</div>
+						</div>
+					</Form>
+				</div>
+
+				<DialogFooter className="flex-shrink-0 px-6 pt-4 pb-6 border-t border-[#2B8181]/20 flex flex-row items-center justify-end gap-3">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => onOpenChange(false)}
+						disabled={isPending}
+						className="border-[#2B8181]/30 hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors min-w-[100px]"
+					>
+						Cancelar
+					</Button>
+					<Button 
+						type="submit" 
+						form="team-member-form"
+						disabled={isPending}
+						className="bg-gradient-to-r from-[#2B8181] to-[#2B8181]/80 hover:from-[#2B8181]/90 hover:to-[#2B8181]/70 text-white font-semibold transition-all duration-300 disabled:opacity-50 min-w-[150px]"
+					>
+						{isPending ? (
+							<div className="flex items-center gap-2">
+								<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+								{isEditing ? 'Guardando...' : 'Creando...'}
+							</div>
+						) : (
+							isEditing ? 'Guardar Cambios' : 'Crear Miembro'
+						)}
+					</Button>
+				</DialogFooter>
 			</DialogContent>
 		</Dialog >
 	)

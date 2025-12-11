@@ -193,10 +193,12 @@ export const ExpedientesList = () => {
 													<TableCell className="text-center font-medium">
 															{file.paciente.nombre + " " + file.paciente.apellido1}
 													</TableCell>
-													<TableCell className="flex justify-center items-center">
-														<Badge className={statusConfig_?.color}>
-															{statusConfig_?.label}
-														</Badge>
+													<TableCell className="text-center">
+														<div className="flex justify-center items-center">
+															<Badge className={statusConfig_?.color}>
+																{statusConfig_?.label}
+															</Badge>
+														</div>
 													</TableCell>
 													<TableCell className="text-center">
 													{file.medico?.nombre ?? 'no hay medico'}
@@ -265,7 +267,7 @@ export const ExpedientesList = () => {
 							const statusConfig_ = statusConfig[file.estado as keyof typeof statusConfig]
 
 							return (
-								<Card key={file.idExpediente}>
+								<Card key={file.idExpediente} className="overflow-hidden">
 									<CardContent className="p-4">
 										<div className="flex items-start justify-between mb-3">
 											<div className="flex items-center gap-2">
@@ -288,13 +290,15 @@ export const ExpedientesList = () => {
 												<p className="text-sm font-medium">{file.fechaCreacion}</p>
 											</div>
 
-											<div className="flex gap-2 pt-2">
-												<Link href={`files/${file.idExpediente}/edit`} className="flex-1">
-													<Button variant="outline" className="w-full mb-3">
+											<div className="flex flex-col gap-2 pt-2 w-full">
+												<Link href={`files/${file.idExpediente}/view`} className="w-full">
+													<Button variant="outline" className="w-full">
 														Ver expediente
 													</Button>
 												</Link>
-												<Button variant="destructive" size="sm" className="w-full mb-3"
+												<Button 
+													variant="destructive" 
+													className="w-full"
 													onClick={async () => {
 														const result = await deleteExpediente(file.idExpediente);
 														if (result.success) {
@@ -313,7 +317,6 @@ export const ExpedientesList = () => {
 														// Usar la función de refresh del hook
 														refreshExpedientes();
 													}}
-
 												>
 													Inactivar
 												</Button>

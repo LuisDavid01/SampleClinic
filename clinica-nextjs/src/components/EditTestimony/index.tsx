@@ -1,5 +1,5 @@
 'use client'
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import {
@@ -12,6 +12,7 @@ import {
 	FormError,
 } from '../FormWithActions'
 import { HistoriaExito } from '@/types/Testimony'
+import { StarRating } from '../StarRating'
 
 import { createTestimony, updateTestimony } from '@/actions/historiasExito'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
@@ -20,6 +21,13 @@ import { getAllServicios, getServicios } from '@/actions/servicios'
 import { Usuario } from '@/types/Usuario'
 import { Servicio } from '@/types/Service'
 import { formatDateForInput } from '@/lib/utils'
+
+type ActionResponse = {
+	success: boolean
+	message: string
+	errors?: Record<string, string[]>
+}
+
 interface ExpedienteFormProps {
 	testimony?: HistoriaExito,
 	isEditing?: boolean
@@ -39,6 +47,7 @@ export default function EditTestimony({ testimony,
 
 	const apiClient = useApiClient();
 	const router = useRouter()
+	const [rating, setRating] = useState<number>(testimony?.rating || 0)
 	const results = useQueries({
 		queries: [
 
@@ -63,7 +72,7 @@ export default function EditTestimony({ testimony,
 		// Extract data from Form
 		const data = {
 			idPaciente: Number(formData.get('idPaciente')),
-			rating: Number(formData.get('rating')),
+			rating: rating, // Use state value instead of form data
 			fechaTratamiento: formData.get('fechaTratamiento') as string,
 			experiencia: formData.get('experiencia') as string,
 		}
@@ -93,14 +102,6 @@ export default function EditTestimony({ testimony,
 			}
 		}
 	}, initialState)
-
-	const ratingOptions = [
-		{ label: 'Deficiente', value: '1' },
-		{ label: 'Insatifecho', value: '2' },
-		{ label: 'Satisfecho', value: '3' },
-		{ label: 'Muy satisfecho', value: '4' },
-		{ label: 'Excelente', value: '5' },
-	]
 
 	return (
 		<Form action={formAction}>
@@ -136,25 +137,25 @@ export default function EditTestimony({ testimony,
 				)}
 			</FormGroup>
 
-
-
 			<FormGroup>
 				<FormLabel htmlFor="rating">Califica la experiencia</FormLabel>
-				<FormSelect
-					key={"testimony-rating-select"}
-					id="rating"
-					name="rating"
-					defaultValue={testimony?.rating || ''}
-					options={ratingOptions}
-					aria-describedby="description-error"
-					className={state?.errors?.rating ? 'border-red-500' : ''}
-					disabled={isPending || isloading}
-				/>
-				{state?.errors?.rating && (
-					<p id="idMedico-error" className="text-sm text-red-500">
-						{state.errors.rating[0]}
-					</p>
-				)}
+				<div className="flex flex-col gap-2">
+					<StarRating
+						value={rating}
+						onChange={(value) => setRating(value)}
+					/>
+					{/* Hidden input to include rating in form submission */}
+					<input
+						type="hidden"
+						name="rating"
+						value={rating}
+					/>
+					{state?.errors?.rating && (
+						<p id="rating-error" className="text-sm text-red-500">
+							{state.errors.rating[0]}
+						</p>
+					)}
+				</div>
 			</FormGroup>
 			
 

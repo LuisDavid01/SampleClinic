@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
+import Image from "next/image";
 import { useApiClient, apiEndpoints } from "@/utils/apiClient";
+import { LogoImage } from "@/components/LogoImage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,33 +36,11 @@ import {
 	Radar,
 } from "recharts"
 
-interface UserData {
-  idUsuario: number;
-  nombre: string;
-  apellido1: string;
-  apellido2: string;
-  correoElectronico: string;
-  clerkId: string;
-  rol?: {
-    nombreRol: string;
-  };
-}
-
-interface UserValidation {
-  status: 'pending' | 'validating' | 'validated' | 'error';
-  message: string;
-  userData: UserData | null;
-}
 
 export default function AdminDashboard() {
   const { user } = useUser();
   const { getToken, isSignedIn } = useAuth();
   const apiClient = useApiClient();
-  const [userValidation, setUserValidation] = useState<UserValidation>({
-    status: 'pending',
-    message: '',
-    userData: null
-  });
   const [stats, setStats] = useState({
     pacientesHoy: 0,
     cambioPacientes: 0,
@@ -75,66 +55,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const loadingRef = useRef(false);
 
-  useEffect(() => {
-    const validateUser = async () => {
-      if (isSignedIn && user) {
-        setUserValidation({ status: 'validating', message: 'Validando usuario...', userData: null });
-        
-        try {
-          const token = await getToken();
-          
-          if (token && token.split('.').length === 3) {
-            console.log("🔄 Validación de usuario en admin iniciada...");
-            
-            try {
-              // Obtener perfil del usuario desde Clerk
-              const profileResult = await apiClient.get(apiEndpoints.clerkProfile());
-              console.log("✅ Usuario validado en admin:", profileResult);
-              
-              if (profileResult.dbUser) {
-                setUserValidation({
-                  status: 'validated',
-                  message: 'Usuario validado correctamente',
-                  userData: profileResult.dbUser
-                });
-                
-              }
-            } catch (apiError) {
-              console.error("❌ Error en validación de admin:", apiError);
-              const errorMessage = apiError instanceof Error ? apiError.message : 'Error desconocido';
-              setUserValidation({
-                status: 'error',
-                message: `Error al validar usuario: ${errorMessage}`,
-                userData: null
-              });
-            }
-          } else {
-            setUserValidation({
-              status: 'error',
-              message: 'Token de autenticación inválido',
-              userData: null
-            });
-          }
-        } catch (error) {
-          console.error("❌ Error obteniendo token en admin:", error);
-          setUserValidation({
-            status: 'error',
-            message: 'Error de autenticación',
-            userData: null
-          });
-        }
-      } else {
-        setUserValidation({
-          status: 'pending',
-          message: 'Esperando autenticación...',
-          userData: null
-        });
-      }
-    };
-
-    validateUser();
-  }, [isSignedIn, user, getToken]);
-
   // Cargar estadísticas del dashboard
   useEffect(() => {
     // Prevenir múltiples llamadas simultáneas
@@ -148,10 +68,29 @@ export default function AdminDashboard() {
       loadingRef.current = true;
       try {
         setLoading(true);
-        const response = await apiClient.get("/citas/dashboard/estadisticas");
+        // Agregar timeout usando Promise.race para evitar que la página se quede colgada
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout: La solicitud tardó más de 10 segundos')), 10000)
+        );
+        
+        const fetchPromise = apiClient.get("/citas/dashboard/estadisticas");
+        
+        const response = await Promise.race([fetchPromise, timeoutPromise]) as any;
         setStats(response);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error cargando estadísticas:", error);
+        // Usar valores por defecto en caso de error o timeout
+        setStats({
+          pacientesHoy: 0,
+          cambioPacientes: 0,
+          citasProgramadas: 0,
+          cambioCitas: 0,
+          tiempoPromedio: 45,
+          citasHoy: [],
+          pacientesRecientes: [],
+          monthlyData: [],
+          treatmentData: []
+        });
       } finally {
         setLoading(false);
         loadingRef.current = false;
@@ -161,168 +100,132 @@ export default function AdminDashboard() {
     cargarEstadisticas();
   }, [isSignedIn]); // Removido apiClient de las dependencias
 	return (
-		<div className="min-h-screen bg-background p-6">
-			<div className="max-w-7xl mx-auto space-y-6">
+		<div className="w-full bg-gradient-to-br from-[#E8CF9C]/5 via-background to-[#2B8181]/5">
+			<div className="max-w-7xl mx-auto p-6 space-y-6">
 				{/* Header */}
-				<div className="flex items-center justify-between">
-					<div>
-						<h1 className="text-3xl font-bold ">Clínica Esteban Porras</h1>
-						<p className="text-muted-foreground mt-1">Dashboard de Administración</p>
+				<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+					<div className="flex items-center gap-3 sm:gap-4">
+						<div className="flex items-center gap-2 sm:gap-3">
+							<LogoImage 
+								width={48}
+								height={48}
+								className="h-10 w-auto sm:h-12 object-contain"
+							/>
+							<div>
+								<h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#2B8181] to-[#EE7132] bg-clip-text text-transparent">Clínica Salena</h1>
+								<p className="text-xs sm:text-sm text-foreground/80 mt-1 font-medium hidden sm:block">Dashboard de Administración</p>
+							</div>
+						</div>
 					</div>
-					<div className="text-right">
-						<p className="text-sm text-muted-foreground">Hoy</p>
-						<p className="text-lg font-semibold ">{new Date().toLocaleDateString("es-ES", { timeZone: "UTC" })}</p>
+					<div className="text-left sm:text-right">
+						<p className="text-xs sm:text-sm text-foreground/70 font-medium">Hoy</p>
+						<p className="text-base sm:text-lg font-bold text-[#2B8181]">{new Date().toLocaleDateString("es-ES", { timeZone: "UTC" })}</p>
 					</div>
 				</div>
 
-				{/* Indicador de estado de validación del usuario */}
-				{userValidation.status !== 'pending' && (
-					<Card className={`border-l-4 ${
-						userValidation.status === 'validated' ? 'border-green-500 bg-green-50 dark:bg-green-950' :
-						userValidation.status === 'validating' ? 'border-blue-500 bg-blue-50 dark:bg-blue-950' :
-						'border-red-500 bg-red-50 dark:bg-red-950'
-					}`}>
-						<CardContent className="p-4">
-							<div className="flex items-center gap-3">
-								<div className={`w-3 h-3 rounded-full ${
-									userValidation.status === 'validated' ? 'bg-green-500' :
-									userValidation.status === 'validating' ? 'bg-blue-500 animate-pulse' :
-									'bg-red-500'
-								}`}></div>
-								<div>
-									<p className={`font-medium ${
-										userValidation.status === 'validated' ? 'text-green-800 dark:text-green-200' :
-										userValidation.status === 'validating' ? 'text-blue-800 dark:text-blue-200' :
-										'text-red-800 dark:text-red-200'
-									}`}>
-										{userValidation.status === 'validated' ? '✅ Usuario validado' :
-										 userValidation.status === 'validating' ? '🔄 Validando usuario...' :
-										 '❌ Error de validación'}
-									</p>
-									<p className={`text-sm ${
-										userValidation.status === 'validated' ? 'text-green-600 dark:text-green-300' :
-										userValidation.status === 'validating' ? 'text-blue-600 dark:text-blue-300' :
-										'text-red-600 dark:text-red-300'
-									}`}>
-										{userValidation.message}
-									</p>
-									{userValidation.userData && (
-										<div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-											<p><strong>ID:</strong> {userValidation.userData.idUsuario}</p>
-											<p><strong>Nombre:</strong> {userValidation.userData.nombre} {userValidation.userData.apellido1} {userValidation.userData.apellido2}</p>
-											<p><strong>Email:</strong> {userValidation.userData.correoElectronico}</p>
-											<p><strong>Rol:</strong> {userValidation.userData.rol?.nombreRol || 'No asignado'}</p>
-										</div>
-									)}
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-				)}
-
 				{/* Stats Cards */}
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-					<Card className="bg-card border-0 shadow-sm h-full flex flex-col">
+					<Card className="bg-card border-2 border-[#2B8181]/30 shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
 						<CardContent className="p-6 flex-1 flex flex-col">
 							<div className="flex items-start justify-between flex-1">
 								<div className="flex-1 min-w-0">
 									<div className="h-5 mb-3 flex items-center">
-										<p className="text-sm font-medium text-muted-foreground">Pacientes Hoy</p>
+										<p className="text-sm font-medium text-foreground">Pacientes Hoy</p>
 									</div>
 									<div className="h-10 flex items-end mb-2">
-										<p className="text-3xl font-bold leading-none">{loading ? "..." : stats.pacientesHoy}</p>
+										<p className="text-3xl font-bold leading-none text-[#2B8181]">{loading ? "..." : stats.pacientesHoy}</p>
 									</div>
 									<div className="flex items-center flex-wrap gap-1 mt-auto">
 										{stats.cambioPacientes >= 0 ? (
-											<TrendingUp className="h-4 w-4 text-accent flex-shrink-0" />
+											<TrendingUp className="h-4 w-4 text-[#2B8181] flex-shrink-0" />
 										) : (
-											<TrendingDown className="h-4 w-4 text-complementario flex-shrink-0" />
+											<TrendingDown className="h-4 w-4 text-[#EE7132] flex-shrink-0" />
 										)}
-										<span className={`text-sm font-medium ${stats.cambioPacientes >= 0 ? 'text-accent' : 'text-complementario'}`}>
+										<span className={`text-sm font-semibold ${stats.cambioPacientes >= 0 ? 'text-[#2B8181]' : 'text-[#EE7132]'}`}>
 											{stats.cambioPacientes >= 0 ? '+' : ''}{stats.cambioPacientes}%
 										</span>
-										<span className="text-sm text-muted-foreground">vs ayer</span>
+										<span className="text-sm text-foreground/70">vs Ayer</span>
 									</div>
 								</div>
-								<div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
-									<Users className="h-6 w-6 text-accent" />
+								<div className="h-12 w-12 bg-[#2B8181]/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
+									<Users className="h-6 w-6 text-[#2B8181]" />
 								</div>
 							</div>
 						</CardContent>
 					</Card>
 
-					<Card className="bg-card border-0 shadow-sm h-full flex flex-col">
+					<Card className="bg-card border-2 border-[#EE7132]/30 shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
 						<CardContent className="p-6 flex-1 flex flex-col">
 							<div className="flex items-start justify-between flex-1">
 								<div className="flex-1 min-w-0">
 									<div className="h-5 mb-3 flex items-center">
-										<p className="text-sm font-medium text-muted-foreground">Citas Programadas</p>
+										<p className="text-sm font-medium text-foreground">Citas Programadas</p>
 									</div>
 									<div className="h-10 flex items-end mb-2">
-										<p className="text-3xl font-bold leading-none">{loading ? "..." : stats.citasProgramadas}</p>
+										<p className="text-3xl font-bold leading-none text-[#EE7132]">{loading ? "..." : stats.citasProgramadas}</p>
 									</div>
 									<div className="flex items-center flex-wrap gap-1 mt-auto">
 										{stats.cambioCitas >= 0 ? (
-											<TrendingUp className="h-4 w-4 text-accent flex-shrink-0" />
+											<TrendingUp className="h-4 w-4 text-[#2B8181] flex-shrink-0" />
 										) : (
-											<TrendingDown className="h-4 w-4 text-complementario flex-shrink-0" />
+											<TrendingDown className="h-4 w-4 text-[#EE7132] flex-shrink-0" />
 										)}
-										<span className={`text-sm font-medium ${stats.cambioCitas >= 0 ? 'text-accent' : 'text-complementario'}`}>
+										<span className={`text-sm font-semibold ${stats.cambioCitas >= 0 ? 'text-[#2B8181]' : 'text-[#EE7132]'}`}>
 											{stats.cambioCitas >= 0 ? '+' : ''}{stats.cambioCitas}%
 										</span>
-										<span className="text-sm text-muted-foreground">esta semana</span>
+										<span className="text-sm text-foreground/70">Esta semana</span>
 									</div>
 								</div>
-								<div className="h-12 w-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
-									<Calendar className="h-6 w-6 text-accent" />
+								<div className="h-12 w-12 bg-[#EE7132]/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
+									<Calendar className="h-6 w-6 text-[#EE7132]" />
 								</div>
 							</div>
 						</CardContent>
 					</Card>
 
-					<Card className="bg-card border-0 shadow-sm h-full flex flex-col">
+					<Card className="bg-card border-2 border-[#EE7132]/30 shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
 						<CardContent className="p-6 flex-1 flex flex-col">
 							<div className="flex items-start justify-between flex-1">
 								<div className="flex-1 min-w-0">
 									<div className="h-5 mb-3 flex items-center">
-										<p className="text-sm font-medium text-muted-foreground">Citas de Hoy</p>
+										<p className="text-sm font-medium text-foreground">Citas de Hoy</p>
 									</div>
 									<div className="h-10 flex items-end mb-2">
-										<p className="text-3xl font-bold leading-none">{loading ? "..." : stats.citasHoy.length}</p>
+										<p className="text-3xl font-bold leading-none text-[#EE7132]">{loading ? "..." : stats.citasHoy.length}</p>
 									</div>
 									<div className="flex items-center flex-wrap gap-1 mt-auto">
-										<Calendar className="h-4 w-4 text-accent flex-shrink-0" />
-										<span className="text-sm text-accent font-medium">Total</span>
-										<span className="text-sm text-muted-foreground">citas programadas</span>
+										<Calendar className="h-4 w-4 text-[#EE7132] flex-shrink-0" />
+										<span className="text-sm text-[#EE7132] font-semibold">Total</span>
+										<span className="text-sm text-foreground/70">Citas programadas</span>
 									</div>
 								</div>
-								<div className="h-12 w-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
-									<Activity className="h-6 w-6 text-accent" />
+								<div className="h-12 w-12 bg-[#EE7132]/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
+									<Activity className="h-6 w-6 text-[#EE7132]" />
 								</div>
 							</div>
 						</CardContent>
 					</Card>
 
-					<Card className="bg-card border-0 shadow-sm h-full flex flex-col">
+					<Card className="bg-card border-2 border-[#1a5f5f]/30 shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
 						<CardContent className="p-6 flex-1 flex flex-col">
 							<div className="flex items-start justify-between flex-1">
 								<div className="flex-1 min-w-0">
 									<div className="h-5 mb-3 flex items-center">
-										<p className="text-sm font-medium text-muted-foreground">Tiempo Promedio</p>
+										<p className="text-sm font-medium text-foreground">Tiempo Promedio</p>
 									</div>
 									<div className="h-10 flex items-end mb-2">
-										<p className="text-3xl font-bold leading-none">
-											{loading ? "..." : stats.tiempoPromedio}<span className="text-lg text-muted-foreground ml-1">min</span>
+										<p className="text-3xl font-bold leading-none text-[#1a5f5f]">
+											{loading ? "..." : stats.tiempoPromedio}<span className="text-lg text-foreground/70 ml-1">min</span>
 										</p>
 									</div>
 									<div className="flex items-center flex-wrap gap-1 mt-auto">
-										<Clock className="h-4 w-4 mr-1 flex-shrink-0" />
-										<span className="text-sm font-medium">Óptimo</span>
-										<span className="text-sm text-muted-foreground">por sesión</span>
+										<Clock className="h-4 w-4 text-[#1a5f5f] mr-1 flex-shrink-0" />
+										<span className="text-sm font-semibold text-[#1a5f5f]">Óptimo</span>
+										<span className="text-sm text-foreground/70">Por sesión</span>
 									</div>
 								</div>
-								<div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
-									<Clock className="h-6 w-6 text-accent" />
+								<div className="h-12 w-12 bg-[#1a5f5f]/10 rounded-lg flex items-center justify-center flex-shrink-0 ml-4">
+									<Clock className="h-6 w-6 text-[#1a5f5f]" />
 								</div>
 							</div>
 						</CardContent>
@@ -332,11 +235,11 @@ export default function AdminDashboard() {
 				{/* Charts Section */}
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 					{/* Monthly Trends */}
-					<Card className="lg:col-span-2 bg-card border-0 shadow-sm">
+					<Card className="lg:col-span-2 bg-card border-2 border-[#2B8181]/20 shadow-md hover:shadow-lg transition-shadow">
 						<CardHeader className="pb-4">
 							<div className="flex items-center justify-between">
 								<CardTitle className="text-lg font-semibold ">Tendencias Mensuales</CardTitle>
-								<Button variant="outline" size="sm" className="text-xs bg-transparent">
+								<Button variant="outline" size="sm" className="text-xs bg-card border-2 border-[#2B8181]/20 hover:bg-[#2B8181]/10 hover:text-[#2B8181]">
 									Este Año
 								</Button>
 							</div>
@@ -379,19 +282,19 @@ export default function AdminDashboard() {
 							</div>
 							<div className="flex items-center justify-center space-x-6 mt-4">
 								<div className="flex items-center">
-									<div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
-									<span className="text-sm text-muted-foreground">Consultas</span>
+									<div className="w-3 h-3 bg-[#2B8181] rounded-full mr-2 border border-[#2B8181]/50"></div>
+									<span className="text-sm font-medium text-foreground">Consultas</span>
 								</div>
 								<div className="flex items-center">
-									<div className="w-3 h-3 bg-text-accent rounded-full mr-2"></div>
-									<span className="text-sm text-muted-foreground">Terapias</span>
+									<div className="w-3 h-3 bg-[#EE7132] rounded-full mr-2 border border-[#EE7132]/50"></div>
+									<span className="text-sm font-medium text-foreground">Terapias</span>
 								</div>
 							</div>
 						</CardContent>
 					</Card>
 
 					{/* Treatment Distribution */}
-					<Card className="bg-card border-0 shadow-sm">
+					<Card className="bg-card border-2 border-[#EE7132]/20 shadow-md hover:shadow-lg transition-shadow">
 						<CardHeader className="pb-4">
 							<CardTitle className="text-lg font-semibold ">Distribución de Tratamientos</CardTitle>
 						</CardHeader>
@@ -424,21 +327,21 @@ export default function AdminDashboard() {
 				{/* Bottom Section */}
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 					{/* Today's Appointments */}
-					<Card className="bg-card border-0 shadow-sm">
+					<Card className="bg-card border-2 border-[#EE7132]/20 shadow-md hover:shadow-lg transition-shadow">
 						<CardHeader className="pb-4">
 							<CardTitle className="text-lg font-semibold ">Citas de Hoy</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							{loading ? (
-								<div className="text-center py-4 text-muted-foreground">Cargando...</div>
+								<div className="text-center py-4 text-foreground/70 font-medium">Cargando...</div>
 							) : stats.citasHoy.length === 0 ? (
-								<div className="text-center py-4 text-muted-foreground">No hay citas programadas para hoy</div>
+								<div className="text-center py-4 text-foreground/70 font-medium">No hay citas programadas para hoy</div>
 							) : (
 								stats.citasHoy.map((appointment) => (
 								<div key={appointment.id} className="flex items-center space-x-3">
 									<Avatar className="h-10 w-10">
 										<AvatarImage src={appointment.avatar || "/placeholder.svg"} />
-										<AvatarFallback className="bg-primary/10 text-primary">
+										<AvatarFallback className="bg-[#2B8181]/10 text-[#2B8181]">
 											{appointment.name
 												.split(" ")
 												.map((n) => n[0])
@@ -446,11 +349,11 @@ export default function AdminDashboard() {
 										</AvatarFallback>
 									</Avatar>
 									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium  truncate">{appointment.name}</p>
-										<p className="text-xs text-muted-foreground">{appointment.treatment}</p>
+										<p className="text-sm font-semibold text-foreground truncate">{appointment.name}</p>
+										<p className="text-xs text-foreground/70">{appointment.treatment}</p>
 									</div>
 									<div className="text-right">
-										<p className="text-sm font-medium ">{appointment.time}</p>
+										<p className="text-sm font-semibold text-[#2B8181]">{appointment.time}</p>
 									</div>
 								</div>
 								))
@@ -459,16 +362,16 @@ export default function AdminDashboard() {
 					</Card>
 
 					{/* Recent Patients */}
-					<Card className="lg:col-span-2 bg-card border-0 shadow-sm">
+					<Card className="lg:col-span-2 bg-card border-2 border-[#2B8181]/20 shadow-md hover:shadow-lg transition-shadow">
 						<CardHeader className="pb-4">
 							<div className="flex items-center justify-between">
 								<CardTitle className="text-lg font-semibold ">Pacientes Recientes</CardTitle>
 								<div className="flex items-center space-x-2">
 									<div className="relative">
 										<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-										<Input placeholder="Buscar paciente..." className="pl-8 w-64 bg-input border-0" />
+										<Input placeholder="Buscar paciente..." className="pl-8 w-64 bg-card border-2 border-[#2B8181]/20 focus:border-[#2B8181]" />
 									</div>
-									<Button variant="outline" size="sm">
+									<Button variant="outline" size="sm" className="border-2 border-[#2B8181]/20 hover:bg-[#2B8181]/10 hover:text-[#2B8181]">
 										<Filter className="h-4 w-4 mr-2" />
 										Filtrar
 									</Button>
@@ -478,48 +381,48 @@ export default function AdminDashboard() {
 						<CardContent>
 							<Table>
 								<TableHeader>
-									<TableRow className="border-muted">
-										<TableHead className="text-muted-foreground">Paciente</TableHead>
-										<TableHead className="text-muted-foreground">Última Visita</TableHead>
-										<TableHead className="text-muted-foreground">Edad</TableHead>
-										<TableHead className="text-muted-foreground">Tratamiento</TableHead>
-										<TableHead className="text-muted-foreground">Estado</TableHead>
-										<TableHead className="text-muted-foreground w-12"></TableHead>
+									<TableRow className="border-[#2B8181]/20 bg-[#2B8181]/5">
+										<TableHead className="text-foreground font-semibold">Paciente</TableHead>
+										<TableHead className="text-foreground font-semibold">Última Visita</TableHead>
+										<TableHead className="text-foreground font-semibold">Edad</TableHead>
+										<TableHead className="text-foreground font-semibold">Tratamiento</TableHead>
+										<TableHead className="text-foreground font-semibold">Estado</TableHead>
+										<TableHead className="text-foreground font-semibold w-12"></TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
 									{loading ? (
 										<TableRow>
-											<TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+											<TableCell colSpan={6} className="text-center py-4 text-foreground/70 font-medium">
 												Cargando...
 											</TableCell>
 										</TableRow>
 									) : stats.pacientesRecientes.length === 0 ? (
 										<TableRow>
-											<TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+											<TableCell colSpan={6} className="text-center py-4 text-foreground/70 font-medium">
 												No hay pacientes recientes
 											</TableCell>
 										</TableRow>
 									) : (
 										stats.pacientesRecientes.map((patient) => (
-										<TableRow key={patient.id} className="border-muted">
+										<TableRow key={patient.id} className="border-[#2B8181]/10 hover:bg-[#2B8181]/5">
 											<TableCell>
 												<div className="flex items-center space-x-3">
 													<Avatar className="h-8 w-8">
 														<AvatarImage src={patient.avatar || "/placeholder.svg"} />
-														<AvatarFallback className="bg-primary/10 text-primary text-xs">
+														<AvatarFallback className="bg-[#2B8181]/10 text-[#2B8181] text-xs">
 															{patient.name
 																.split(" ")
 																.map((n) => n[0])
 																.join("")}
 														</AvatarFallback>
 													</Avatar>
-													<span className="font-medium ">{patient.name}</span>
+													<span className="font-semibold text-foreground">{patient.name}</span>
 												</div>
 											</TableCell>
-											<TableCell className="text-muted-foreground">{patient.lastVisit}</TableCell>
-											<TableCell className="text-muted-foreground">{patient.age}</TableCell>
-											<TableCell className="text-muted-foreground">{patient.treatment}</TableCell>
+											<TableCell className="text-foreground/80">{patient.lastVisit}</TableCell>
+											<TableCell className="text-foreground/80">{patient.age}</TableCell>
+											<TableCell className="text-foreground/80">{patient.treatment}</TableCell>
 											<TableCell>
 												<Badge
 													variant={

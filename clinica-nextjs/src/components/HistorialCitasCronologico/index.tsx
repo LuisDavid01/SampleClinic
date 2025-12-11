@@ -401,36 +401,28 @@ export default function HistorialCitasCronologico() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="mt-6">
+      <div className="flex flex-wrap gap-3 mb-6">
+        <Button variant="outline" onClick={() => setMostrarFiltros(!mostrarFiltros)}>
+          <Filter className="w-4 h-4 mr-2" />
+          Filtros
+        </Button>
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Citas del Día</h1>
-          <p className="text-muted-foreground">Gestiona y completa las citas de hoy</p>
+        <Button
+          variant="outline"
+          onClick={() => setExpandedCitas(new Set(citas.map((c) => c.idCita)))}
+        >
+          <Expand className="w-4 h-4 mr-2" />
+          Expandir todas
+        </Button>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button variant="outline" onClick={() => setMostrarFiltros(!mostrarFiltros)}>
-              <Filter className="w-4 h-4 mr-2" />
-              Filtros
-            </Button>
+        <Button variant="outline" onClick={() => setExpandedCitas(new Set())}>
+          <Minimize className="w-4 h-4 mr-2" />
+          Colapsar todas
+        </Button>
+      </div>
 
-            <Button
-              variant="outline"
-              onClick={() => setExpandedCitas(new Set(citas.map((c) => c.idCita)))}
-            >
-              <Expand className="w-4 h-4 mr-2" />
-              Expandir todas
-            </Button>
-
-            <Button variant="outline" onClick={() => setExpandedCitas(new Set())}>
-              <Minimize className="w-4 h-4 mr-2" />
-              Colapsar todas
-            </Button>
-          </div>
-        </div>
-
-        {/* Filtros */}
+      {/* Filtros */}
         {mostrarFiltros && (
           <Card className="mb-6">
             <CardContent className="p-6">
@@ -451,6 +443,8 @@ export default function HistorialCitasCronologico() {
                   value={filtroEstado}
                   onChange={(e) => setFiltroEstado(e.target.value)}
                   className="px-4 py-2 border rounded-lg bg-background"
+                  aria-label="Filtrar por estado de cita"
+                  title="Filtrar por estado de cita"
                 >
                   <option value="todos">Todos los estados</option>
                   <option value="programada">Programada</option>
@@ -464,6 +458,8 @@ export default function HistorialCitasCronologico() {
                   value={filtroTipo}
                   onChange={(e) => setFiltroTipo(e.target.value)}
                   className="px-4 py-2 border rounded-lg bg-background"
+                  aria-label="Filtrar por tipo de cita"
+                  title="Filtrar por tipo de cita"
                 >
                   <option value="todos">Todos los tipos</option>
                   <option value="consulta">Consulta</option>
@@ -474,19 +470,19 @@ export default function HistorialCitasCronologico() {
               </div>
             </CardContent>
           </Card>
-        )}
+      )}
 
-        {/* Lista de citas */}
-        <div className="space-y-4">
-          {citasFiltradas.length === 0 ? (
+      {/* Lista de citas */}
+      <div className="space-y-4">
+        {citasFiltradas.length === 0 ? (
             <Card>
               <CardContent className="text-center py-16">
                 <CalendarDays className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                 <p className="text-lg text-muted-foreground">No hay citas para hoy</p>
               </CardContent>
             </Card>
-          ) : (
-            citasFiltradas.map((cita) => {
+        ) : (
+          citasFiltradas.map((cita) => {
               const isExpanded = expandedCitas.has(cita.idCita);
               const isEditing = editingCitaId === cita.idCita;
               const evaluacion = obtenerEvaluacion(cita);
@@ -494,189 +490,187 @@ export default function HistorialCitasCronologico() {
                 cita.estadoCita ?? ''
               );
 
-              return (
-                <Card key={cita.idCita} className="overflow-hidden">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="sm" onClick={() => toggleExpansion(cita.idCita)}>
-                          {isExpanded ? (
-                            <ChevronDown className="w-5 h-5" />
-                          ) : (
-                            <ChevronRight className="w-5 h-5" />
-                          )}
-                        </Button>
-
-                        <div className="flex items-center gap-3">
-                          {cita.tipo ? getTipoIcon(cita.tipo) : <Stethoscope className="w-5 h-5" />}
-                          <div>
-                            <div className="font-semibold">
-                              {cita.paciente.nombre} {cita.paciente.apellido1}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {formatFecha(cita.fechaCita)}
-                              {cita.duracionMinutos && ` · ${cita.duracionMinutos} min`}
-                              {cita.servicio && ` · ${cita.servicio.nombreServicio}`}
-                            </div>
-                          </div>
-
-                          <Badge className={getEstadoColor(cita.estadoCita ?? '')}>
-                            {getEstadoText(cita.estadoCita ?? '')}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {puedeEditar && (
-                          <>
-                            <Button
-                              size="sm"
-                              disabled={!evaluacionCompleta(evaluacion)}
-                              onClick={() => cambiarEstadoCita(cita, "completada")}
-                            >
-                              <CheckCircle className="w-4 h-4 mr-1" />
-                              Completar
-                            </Button>
-
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => cambiarEstadoCita(cita, "cancelada")}
-                            >
-                              <AlertCircle className="w-4 h-4 mr-1" />
-                              Cancelar
-                            </Button>
-                          </>
+            return (
+              <Card key={cita.idCita} className="overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Button variant="ghost" size="sm" onClick={() => toggleExpansion(cita.idCita)}>
+                        {isExpanded ? (
+                          <ChevronDown className="w-5 h-5" />
+                        ) : (
+                          <ChevronRight className="w-5 h-5" />
                         )}
+                      </Button>
 
-                        <Button variant="ghost" size="sm" onClick={() => toggleExpansion(cita.idCita)}>
-                          <Eye className="w-4 h-4" />
-                        </Button>
+                      <div className="flex items-center gap-3">
+                        {cita.tipo ? getTipoIcon(cita.tipo) : <Stethoscope className="w-5 h-5" />}
+                        <div>
+                          <div className="font-semibold">
+                            {cita.paciente.nombre} {cita.paciente.apellido1}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatFecha(cita.fechaCita)}
+                            {cita.duracionMinutos && ` · ${cita.duracionMinutos} min`}
+                            {cita.servicio && ` · ${cita.servicio.nombreServicio}`}
+                          </div>
+                        </div>
+
+                        <Badge className={getEstadoColor(cita.estadoCita ?? '')}>
+                          {getEstadoText(cita.estadoCita ?? '')}
+                        </Badge>
                       </div>
                     </div>
-                  </CardHeader>
 
-                  {isExpanded && (
-                    <CardContent className="border-t pt-6">
-                      <div className="space-y-6">
+                    <div className="flex items-center gap-2">
+                      {puedeEditar && (
+                        <>
+                          <Button
+                            size="sm"
+                            disabled={!evaluacionCompleta(evaluacion)}
+                            onClick={() => cambiarEstadoCita(cita, "completada")}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Completar
+                          </Button>
 
-                        {/* Evaluación Diagnóstica */}
-                        <div>
-                          <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-semibold flex items-center gap-2">
-                              <Stethoscope className="w-5 h-5" />
-                              Evaluación Diagnóstica
-                            </h3>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => cambiarEstadoCita(cita, "cancelada")}
+                          >
+                            <AlertCircle className="w-4 h-4 mr-1" />
+                            Cancelar
+                          </Button>
+                        </>
+                      )}
 
-                            {puedeEditar && (
-                              <div className="flex gap-2">
-                                {isEditing ? (
-                                  <>
-                                    <Button size="sm" onClick={guardarEvaluacion}>
-                                      <Save className="w-4 h-4 mr-2" /> Guardar
-                                    </Button>
+                      <Button variant="ghost" size="sm" onClick={() => toggleExpansion(cita.idCita)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
 
-                                    <Button size="sm" variant="outline" onClick={cancelarEdicion}>
-                                      <X className="w-4 h-4 mr-2" /> Cancelar
-                                    </Button>
-                                  </>
-                                ) : (
-                                  <Button size="sm" variant="outline" onClick={() => iniciarEdicion(cita)}>
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    {evaluacion ? "Editar" : "Crear"} Evaluación
+                {isExpanded && (
+                  <CardContent className="border-t pt-6">
+                    <div className="space-y-6">
+                      {/* Evaluación Diagnóstica */}
+                      <div>
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="font-semibold flex items-center gap-2">
+                            <Stethoscope className="w-5 h-5" />
+                            Evaluación Diagnóstica
+                          </h3>
+
+                          {puedeEditar && (
+                            <div className="flex gap-2">
+                              {isEditing ? (
+                                <>
+                                  <Button size="sm" onClick={guardarEvaluacion}>
+                                    <Save className="w-4 h-4 mr-2" /> Guardar
                                   </Button>
-                                )}
-                              </div>
-                            )}
-                          </div>
 
-                          {/* FORM EDICIÓN */}
-                          {isEditing ? (
-                            <div className="space-y-4">
-                              {[
-                                { key: "sintomasReportados", label: "Síntomas Reportados" },
-                                { key: "evaluacionFisica", label: "Evaluación Física" },
-                                { key: "diagnosticoPrincipal", label: "Diagnóstico Principal" },
-                                { key: "planTratamiento", label: "Plan de Tratamiento" },
-                                { key: "recomendaciones", label: "Recomendaciones" },
-                              ].map(({ key, label }) => (
-                                <div key={key}>
-                                  <Label>{label}</Label>
-                                  <Textarea
-                                    value={formData[key as keyof Evaluacion] || ""}
-                                    onChange={(e) =>
-                                      setFormData((prev) => ({ ...prev, [key]: e.target.value }))
-                                    }
-                                    className="mt-1"
-                                    rows={3}
-                                  />
-                                </div>
-                              ))}
+                                  <Button size="sm" variant="outline" onClick={cancelarEdicion}>
+                                    <X className="w-4 h-4 mr-2" /> Cancelar
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button size="sm" variant="outline" onClick={() => iniciarEdicion(cita)}>
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  {evaluacion ? "Editar" : "Crear"} Evaluación
+                                </Button>
+                              )}
                             </div>
-                          ) : evaluacion ? (
-                            <div className="space-y-3 text-sm text-muted-foreground">
-                              <p>
-                                <strong>Síntomas:</strong>{" "}
-                                {evaluacion.sintomasReportados || "—"}
-                              </p>
-                              <p>
-                                <strong>Evaluación Física:</strong>{" "}
-                                {evaluacion.evaluacionFisica || "—"}
-                              </p>
-                              <p>
-                                <strong>Diagnóstico:</strong>{" "}
-                                {evaluacion.diagnosticoPrincipal}
-                              </p>
-                              <p>
-                                <strong>Plan:</strong>{" "}
-                                {evaluacion.planTratamiento || "—"}
-                              </p>
-                              <p>
-                                <strong>Recomendaciones:</strong>{" "}
-                                {evaluacion.recomendaciones || "—"}
-                              </p>
-                            </div>
-                          ) : (
-                            <p className="text-muted-foreground italic">
-                              No hay evaluación registrada para esta cita
-                            </p>
                           )}
                         </div>
 
-                        {/* BOTONES PDF
-                        <div className="flex justify-end gap-2 pt-4 border-t">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              printHistorial([cita as any], (doctor?.nombre ?? "") + " " + (doctor?.apellido1 ?? ""))
-                            }
-                          >
-                            Imprimir Cita
-                          </Button>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              downloadHistorialPDF(
-                                [cita as any],
-                                (doctor?.nombre ?? "") + " " + (doctor?.apellido1 ?? "")
-                              )
-                            }
-                          >
-                            PDF Cita
-                          </Button>
-                        </div> */}
+                        {/* FORM EDICIÓN */}
+                        {isEditing ? (
+                          <div className="space-y-4">
+                            {[
+                              { key: "sintomasReportados", label: "Síntomas Reportados" },
+                              { key: "evaluacionFisica", label: "Evaluación Física" },
+                              { key: "diagnosticoPrincipal", label: "Diagnóstico Principal" },
+                              { key: "planTratamiento", label: "Plan de Tratamiento" },
+                              { key: "recomendaciones", label: "Recomendaciones" },
+                            ].map(({ key, label }) => (
+                              <div key={key}>
+                                <Label>{label}</Label>
+                                <Textarea
+                                  value={formData[key as keyof Evaluacion] || ""}
+                                  onChange={(e) =>
+                                    setFormData((prev) => ({ ...prev, [key]: e.target.value }))
+                                  }
+                                  className="mt-1"
+                                  rows={3}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        ) : evaluacion ? (
+                          <div className="space-y-3 text-sm text-muted-foreground">
+                            <p>
+                              <strong>Síntomas:</strong>{" "}
+                              {evaluacion.sintomasReportados || "—"}
+                            </p>
+                            <p>
+                              <strong>Evaluación Física:</strong>{" "}
+                              {evaluacion.evaluacionFisica || "—"}
+                            </p>
+                            <p>
+                              <strong>Diagnóstico:</strong>{" "}
+                              {evaluacion.diagnosticoPrincipal}
+                            </p>
+                            <p>
+                              <strong>Plan:</strong>{" "}
+                              {evaluacion.planTratamiento || "—"}
+                            </p>
+                            <p>
+                              <strong>Recomendaciones:</strong>{" "}
+                              {evaluacion.recomendaciones || "—"}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground italic">
+                            No hay evaluación registrada para esta cita
+                          </p>
+                        )}
                       </div>
-                    </CardContent>
-                  )}
+
+                      {/* BOTONES PDF
+                      <div className="flex justify-end gap-2 pt-4 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            printHistorial([cita as any], (doctor?.nombre ?? "") + " " + (doctor?.apellido1 ?? ""))
+                          }
+                        >
+                          Imprimir Cita
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            downloadHistorialPDF(
+                              [cita as any],
+                              (doctor?.nombre ?? "") + " " + (doctor?.apellido1 ?? "")
+                            )
+                          }
+                        >
+                          PDF Cita
+                        </Button>
+                      </div> */}
+                    </div>
+                  </CardContent>
+                )}
                 </Card>
               );
             })
           )}
         </div>
-      </div>
     </div>
   );
 }

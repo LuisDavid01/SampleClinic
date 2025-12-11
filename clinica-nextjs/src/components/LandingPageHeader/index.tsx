@@ -9,6 +9,7 @@ import {
 	SignOutButton,
 } from "@clerk/nextjs";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import MobileMenu from "../MobileMenu/index";
 import ThemeToggle from "../ThemeToggle";
@@ -16,6 +17,7 @@ import { LogOut, LogIn } from "lucide-react";
 import { smoothScrollTo } from "@/lib/utils";
 import { EmployeeRoles } from "@/types/roles";
 import { useRouter } from "next/navigation";
+import { LogoImage } from "@/components/LogoImage";
 
 
 
@@ -29,12 +31,19 @@ export const LandingPageHeader: React.FC = () => {
 		<header className="bg-background shadow-sm sticky z-60">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex justify-between items-center sm:px-6 lg:px-8 h-20">
-					<div className="flex items-center  ">
+					<div className="flex items-center gap-3">
 						<Link
 							href={"/"}
-							className="text-lg md:text-2xl text-text-primary font-semibold"
+							className="flex items-center gap-3"
 						>
-							Clinica Esteban Porras
+							<LogoImage 
+								width={80}
+								height={80}
+								className="h-14 w-auto object-contain"
+							/>
+							<span className="text-lg md:text-2xl text-text-primary font-semibold">
+								Clínica Salena
+							</span>
 						</Link>
 					</div>
 

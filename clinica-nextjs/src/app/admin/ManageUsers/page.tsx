@@ -1,19 +1,12 @@
-import { redirect } from "next/navigation";
-import { checkRole } from "@/utils/roles";
 import { Suspense } from "react";
+import { PermissionGuard } from "@/components/PermissionGuard";
 import ManageUserSkeleton from "@/components/ManageUserSkeleton";
 import ManageUser from "@/components/ManageUser";
-import { Card, CardContent } from "@/components/ui/card";
-import { SearchUsers } from "@/components/SearchUsers";
 import {
 	User,
 } from "lucide-react";
-export default function AdminUsersPage() {
-	if (!checkRole("admin")) {
-		redirect("/");
-	}
 
-
+function ManageUsersContent() {
 	return (
 		<main className="min-h-screen bg-background">
 			<div className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
@@ -35,6 +28,14 @@ export default function AdminUsersPage() {
 				</Suspense>
 			</div>
 		</main>
+	);
+}
+
+export default async function AdminUsersPage() {
+	return (
+		<PermissionGuard allowedRoles={['admin', 'recepcionista']}>
+			<ManageUsersContent />
+		</PermissionGuard>
 	);
 }
 

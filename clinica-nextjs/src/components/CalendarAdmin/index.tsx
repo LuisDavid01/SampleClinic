@@ -390,9 +390,9 @@ export default function CalendarAdmin() {
           
 
         {/* Calendario */}
-        <Card className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-2 shadow-sm">
+        <Card className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-2 shadow-sm overflow-hidden">
         
-          <CardContent className="p-1">
+          <CardContent className="p-1 overflow-hidden">
               {/* Controles */}
         <div className="flex flex-wrap items-center justify-between p-1 gap-x-3 gap-y-1 mb-2">
           <div className="flex items-center gap-1.5">
@@ -415,26 +415,26 @@ export default function CalendarAdmin() {
           
         </div>
             {/* Legend - Minimalista */}
-					<div className="flex items-center justify-end gap-3 text-xs">
-						<div className="flex items-center gap-1.5">
-							<div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-							<span>Borrador</span>
+					<div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 text-xs w-full overflow-hidden">
+						<div className="flex items-center gap-1.5 flex-shrink-0">
+							<div className="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></div>
+							<span className="whitespace-nowrap">Borrador</span>
 						</div>
-						<div className="flex items-center gap-1.5">
-							<div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
-							<span>Programada</span>
+						<div className="flex items-center gap-1.5 flex-shrink-0">
+							<div className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0"></div>
+							<span className="whitespace-nowrap">Programada</span>
 						</div>
-						<div className="flex items-center gap-1.5">
-							<div className="w-2.5 h-2.5 rounded-full bg-accent"></div>
-							<span>Completada</span>
+						<div className="flex items-center gap-1.5 flex-shrink-0">
+							<div className="w-2.5 h-2.5 rounded-full bg-accent flex-shrink-0"></div>
+							<span className="whitespace-nowrap">Completada</span>
 						</div>
-						<div className="flex items-center gap-1.5">
-							<div className="w-2.5 h-2.5 rounded-full bg-secondary"></div>
-							<span>En Proceso</span>
+						<div className="flex items-center gap-1.5 flex-shrink-0">
+							<div className="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
+							<span className="whitespace-nowrap">En Proceso</span>
 						</div>
-						<div className="flex items-center gap-1.5">
-							<div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
-							<span>Cancelada</span>
+						<div className="flex items-center gap-1.5 flex-shrink-0">
+							<div className="w-2.5 h-2.5 rounded-full bg-gray-300 flex-shrink-0"></div>
+							<span className="whitespace-nowrap">Cancelada</span>
 						</div>
 					</div>
             {isLoading ? (
@@ -479,7 +479,7 @@ export default function CalendarAdmin() {
 
         {/* Dialogo crear nueva cita */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md w-[95vw] sm:w-full overflow-hidden">
             <DialogHeader>
               <DialogTitle>Crear Nueva Cita</DialogTitle>
             </DialogHeader>
@@ -600,7 +600,7 @@ export default function CalendarAdmin() {
 
         {/* Diálogo de detalles / editar cita */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md w-[95vw] sm:w-full overflow-hidden" style={{ maxWidth: '95vw', boxSizing: 'border-box' }}>
             <DialogHeader>
               <DialogTitle>Detalles de la Cita</DialogTitle>
               <DialogDescription>
@@ -609,7 +609,7 @@ export default function CalendarAdmin() {
             </DialogHeader>
 
             {selectedAppointment && (
-              <div className="space-y-4">
+              <div className="space-y-4 w-full overflow-hidden" style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
                 {/* Estado */}
                 <div className="flex items-center justify-between">
                   <Badge
@@ -628,35 +628,35 @@ export default function CalendarAdmin() {
                 </div>
 
                 {/* Paciente */}
-                <div className="flex items-start gap-3">
-                  <User className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="font-medium">{selectedAppointment.patient.name}</p>
+                <div className="flex items-start gap-3 w-full">
+                  <User className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 w-full overflow-hidden">
+                    <p className="font-medium truncate">{selectedAppointment.patient.name}</p>
                     <div className="text-sm text-muted-foreground space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-3 w-3" />
-                        {selectedAppointment.patient.phone}
+                      <div className="flex items-center gap-2 min-w-0 w-full">
+                        <Phone className="h-3 w-3 flex-shrink-0" />
+                        <span className="break-all overflow-wrap-anywhere min-w-0">{selectedAppointment.patient.phone}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-3 w-3" />
-                        {selectedAppointment.patient.email}
+                      <div className="flex items-center gap-2 min-w-0 w-full">
+                        <Mail className="h-3 w-3 flex-shrink-0" />
+                        <span className="break-all overflow-wrap-anywhere min-w-0">{selectedAppointment.patient.email}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Doctor */}
-                <div className="flex items-start gap-3">
-                  <Stethoscope className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div className="flex-1">
+                <div className="flex items-start gap-3 w-full max-w-full">
+                  <Stethoscope className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 max-w-full overflow-hidden">
                     {selectedAppointment.status === "borrador" ? (
-                      <div>
+                      <div className="w-full max-w-full">
                         <label htmlFor="doctor-select" className="text-sm font-medium mb-1 block">
                           Asignar Médico *
                         </label>
                         <select
                           id="doctor-select"
-                          className="border rounded-md px-2 py-1 w-full text-sm"
+                          className="border rounded-md px-2 py-1 w-full max-w-full text-sm"
                           value={selectedDoctorId || selectedAppointment.idMedico || ""}
                           onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
                           required
@@ -688,9 +688,9 @@ export default function CalendarAdmin() {
                         )}
                       </div>
                     ) : (
-                      <div>
-                        <p className="font-medium">{selectedAppointment.doctor.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="min-w-0 w-full max-w-full overflow-hidden">
+                        <p className="font-medium truncate w-full max-w-full">{selectedAppointment.doctor.name}</p>
+                        <p className="text-sm text-muted-foreground truncate w-full max-w-full" title={selectedAppointment.doctor.specialty}>
                           {selectedAppointment.doctor.specialty}
                         </p>
                       </div>
@@ -699,9 +699,9 @@ export default function CalendarAdmin() {
                 </div>
 
                 {/* Fecha editable */}
-                <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
+                <div className="flex items-start gap-3 w-full max-w-full">
+                  <Clock className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 max-w-full overflow-hidden">
                     <label htmlFor="fecha-cita-edit-input" className="text-sm font-medium mb-1 block">Fecha y hora:</label>
                     <input
                       id="fecha-cita-edit-input"
@@ -725,7 +725,7 @@ export default function CalendarAdmin() {
                     <label htmlFor="duracion-select" className="block text-sm font-medium mb-1 mt-2">Duración</label>
                     <select
                       id="duracion-select"
-                      className="border rounded-md px-2 py-1 w-full"
+                      className="border rounded-md px-2 py-1 w-full max-w-full"
                       value={selectedAppointment.raw?.duracionMinutos ?? 30}
                       onChange={(e) =>
                         setSelectedAppointment({
@@ -746,9 +746,9 @@ export default function CalendarAdmin() {
 
                 {/* Notas */}
                 {selectedAppointment.notes && (
-                  <div className="bg-muted p-3 rounded-lg">
+                  <div className="bg-muted p-3 rounded-lg w-full overflow-hidden">
                     <p className="text-sm font-medium mb-1">Notas:</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground break-words overflow-wrap-anywhere">
                       {selectedAppointment.notes}
                     </p>
                   </div>

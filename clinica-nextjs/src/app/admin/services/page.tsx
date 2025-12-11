@@ -7,11 +7,10 @@ import {
 } from "lucide-react"
 
 import { Suspense } from "react"
+import { PermissionGuard } from "@/components/PermissionGuard"
 import ServiceList from "@/components/ServiceList"
 
-
-
-export default function ServicesPage() {
+function ServicesContent() {
     return (
         <div className="min-h-screen bg-background p-6">
             <div className="max-w-7xl mx-auto space-y-6">
@@ -41,5 +40,13 @@ export default function ServicesPage() {
                 </Suspense>
             </div>
         </div>
+    )
+}
+
+export default async function ServicesPage() {
+    return (
+        <PermissionGuard allowedRoles={['admin', 'recepcionista']}>
+            <ServicesContent />
+        </PermissionGuard>
     )
 }
