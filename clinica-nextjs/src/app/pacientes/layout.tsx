@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { checkRoles } from "@/utils/roles";
 import { redirect } from "next/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default async function pacientesLayout({
 	children,
@@ -26,108 +27,98 @@ export default async function pacientesLayout({
 		redirect('/admin');
 	}
 	return (
-		<PacienteRouteGuard>
-			<UserDasboardHeader />
-			<div className="flex">
+		<div className="flex min-h-screen flex-col">
+			<PacienteRouteGuard>
+				<UserDasboardHeader />
+				<div className="flex min-w-0 relative">
+					{/* Aside fixed - queda fijo debajo del header */}
+					<aside
+						className="
+            hidden md:flex flex-col w-64 shrink-0 p-6 border-r border-[#2B8181]/20
+            fixed left-0 top-[73px] h-[calc(100vh-73px)] overflow-x-hidden
+            bg-gradient-to-b from-[#2B8181]/5 to-background
+			text-foreground z-40
+          "
+					>
+						<nav className="space-y-2 flex-1 overflow-y-auto">
+							<p className="text-xs tracking-wider text-gray-400 mb-4 uppercase">
+								Navegación
+							</p>
 
-				<aside className="hidden md:block w-64 p-6 border-r border-gray-800
-            sticky top-0 self-start h-[calc(100vh)] overflow-auto
-            bg-background">
 
-					<div className="flex items-center justify-center gap-3 mb-8">
-						<UserButton
-							showName
-							userProfileUrl="/user"
-							userProfileMode="navigation"
-						/>
-					</div>
+							<Button
+								variant="ghost"
+								className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+								asChild
+							>
+								<Link href="/pacientes">
+									<Users className="w-4 h-4 mr-3" />
+									Mis Historial
+								</Link>
+							</Button>
 
-					<nav className="space-y-2">
-						<Button
-							variant="ghost"
-							className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-							asChild
-						>
-							<Link href="/pacientes">
-								<Users className="w-4 h-4 mr-3" />
-								Mis Historial
-							</Link>
-						</Button>
-						{/* <Button
-							variant="ghost"
-							className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-							asChild
-						>
-							<Link href="/pacientes/citas">
-								<Calendar className="w-4 h-4 mr-3" />
-								Citas
-							</Link>
-						</Button> */}
-						<Button
-							variant="ghost"
-							className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-							asChild
-						>
-							<Link href="/pacientes/historial-citas">
-								<Calendar className="w-4 h-4 mr-3" />
-								Citas historial
-							</Link>
-						</Button>
-						<Button
-							variant="ghost"
-							className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-							asChild
-						>
-							<Link href="/pacientes/expedientes">
-								<FileText className="w-4 h-4 mr-3" />
-								Expedientes
-							</Link>
-						</Button>
-						<Button
-							variant="ghost"
-							className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-							asChild
-						>
-							<Link href="/pacientes/tratamientos">
-								<Activity className="w-4 h-4 mr-3" />
-								Tratamientos
-							</Link>
-						</Button>
-						<Button
-							variant="ghost"
-							className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-							asChild
-						>
-							<Link href="/pacientes/consentimientos">
-								<FileText className="w-4 h-4 mr-3" />
-								Consentimientos
-							</Link>
-						</Button>
-						<Button
-							variant="ghost"
-							className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-							asChild
-						>
-							<Link href="/user">
-								<Settings className="w-4 h-4 mr-3" />
-								Configuración
-							</Link>
-						</Button>
+							<Button
+								variant="ghost"
+								className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+								asChild
+							>
+								<Link href="/pacientes/historial-citas">
+									<Calendar className="w-4 h-4 mr-3" />
+									Citas historial
+								</Link>
+							</Button>
 
-						<Button
-							variant="ghost"
-							className="w-full justify-start text-text-primary hover:bg-gray-800"
-							asChild
-						>
-							<Link href="/">
-								<Home className="w-4 h-4 mr-3" />
-								Regresar al inicio
-							</Link>
-						</Button>
-					</nav>
-				</aside>
-				<main className="flex-1 p-6 bg-background">{children}</main>
-			</div>
-		</PacienteRouteGuard>
+
+							<Button
+								variant="ghost"
+								className="w-full justify-start text-foreground hover:bg-muted hover:text-foreground data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+								asChild
+							>
+								<Link href="/pacientes/consentimientos">
+									<FileText className="w-4 h-4 mr-3" />
+									Consentimientos
+								</Link>
+							</Button>
+
+							<div className="my-4 border-t border-[#2B8181]/15" />
+
+
+							<Button
+								variant="ghost"
+								className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+								asChild
+							>
+								<Link href={"/user"} prefetch={false}>
+									<Settings className="w-4 h-4 mr-3" />
+									Cuenta
+								</Link>
+							</Button>
+
+							<Button
+								variant="ghost"
+								className="w-full justify-start hover:bg-[#EE7132]/10 hover:text-[#EE7132] transition-colors"
+								asChild
+							>
+								<Link href={"/"}>
+									<Home className="w-4 h-4 mr-3" />
+									Regresar al inicio
+								</Link>
+							</Button>
+
+						</nav>
+
+						{/* Theme Toggle al final del sidebar */}
+						<div className="mt-auto pt-4 border-t border-[#2B8181]/20">
+							<div className="flex items-center justify-center px-3 py-2 rounded-lg bg-card border-2 border-[#2B8181]/20 hover:bg-[#2B8181]/10 hover:border-[#2B8181]/40 transition-all duration-300">
+								<ThemeToggle />
+							</div>
+						</div>
+					</aside>
+					<main className="flex-1 min-w-0 md:ml-64 min-h-screen overflow-x-hidden bg-gradient-to-br from-[#E8CF9C]/5 via-background to-[#2B8181]/5" style={{ paddingTop: '85px' }}>
+						{children}
+					</main>
+				</div>
+			</PacienteRouteGuard >
+		</div >
 	);
 } 
