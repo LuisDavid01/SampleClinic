@@ -328,7 +328,7 @@ export default function CalendarAdmin() {
   const generateHalfHourSlots = () => {
     const slots: string[] = [];
     for (let h = 0; h < 24; h++) {
-      for (let m of [0, 30]) {
+      for (const m of [0, 30]) {
         const hour = h.toString().padStart(2, "0");
         const minute = m.toString().padStart(2, "0");
         slots.push(`${hour}:${minute}`);
