@@ -1,6 +1,6 @@
 "use client"
 import { clerkClient } from "@clerk/nextjs/server";
-import { getUsersClerk, removeRole, setRole } from "@/actions/_actions";
+import {  getUsersClerk, removeRole, setRole, toggleBanUserClerk } from "@/actions/_actions";
 import { SearchUsers } from "@/components/SearchUsers";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,9 @@ import {
 	ChevronsRight,
 	X,
 	Search,
-	Loader2
+	Loader2,
+	Ban,
+	ShieldCheck
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -31,7 +33,7 @@ export default function ManageUser() {
 	const [limit, setLimit] = useState(10);
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
-	const { data, isLoading } = useQuery({
+	const { data, isLoading, refetch } = useQuery({
 		queryKey: ['users', limit, page, search],
 		queryFn: async () => {
 			const userData = await getUsersClerk(search, limit, page)
@@ -210,70 +212,107 @@ export default function ManageUser() {
 													</div>
 												</div>
 											</div>
-
 											{/* Acciones */}
-											<div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+											<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+												{/* Selector de Rol */}
+												<div className="flex gap-1.5 rounded-md border border-input bg-muted/30 p-1">
+													<Button
+														size="sm"
+														onClick={async () => {
+															await setRole(user.id, "admin")
+															queryClient.invalidateQueries({
+																queryKey: ['users']
+															})
+														}}
+														disabled={currentRole === "admin"}
+														className={`h-8 flex-1 text-xs transition-all ${currentRole === "admin"
+																? "bg-accent text-accent-foreground shadow-sm"
+																: "bg-transparent text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+															}`}
+													>
+														Admin
+													</Button>
 
-												<Button
-													size="sm"
-													onClick={async () => {
-														await setRole(user.id, "admin")
-														queryClient.invalidateQueries({
-															queryKey: ['users']
-														})
-													}}
-													disabled={currentRole === "admin"}
-													className="w-full min-w-0 truncate bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground text-xs sm:text-sm"
-												>
-													<span className="truncate">Hacer Administrador</span>
-												</Button>
+													<Button
+														size="sm"
+														onClick={async () => {
+															await setRole(user.id, "fisioterapeuta")
+															queryClient.invalidateQueries({
+																queryKey: ['users']
+															})
+														}}
+														disabled={currentRole === "fisioterapeuta"}
+														className={`h-8 flex-1 text-xs transition-all ${currentRole === "fisioterapeuta"
+																? "bg-secondary text-secondary-foreground shadow-sm"
+																: "bg-transparent text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground"
+															}`}
+													>
+														Fisio
+													</Button>
 
+													<Button
+														size="sm"
+														onClick={async () => {
+															await setRole(user.id, "recepcionista")
+															queryClient.invalidateQueries({
+																queryKey: ['users']
+															})
+														}}
+														disabled={currentRole === "recepcionista"}
+														className={`h-8 flex-1 text-xs transition-all ${currentRole === "recepcionista"
+																? "bg-secondary text-secondary-foreground shadow-sm"
+																: "bg-transparent text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground"
+															}`}
+													>
+														Recep
+													</Button>
 
-												<Button
-													size="sm"
-													onClick={async () => {
-														await setRole(user.id, "fisioterapeuta")
-														queryClient.invalidateQueries({
-															queryKey: ['users']
-														})
-													}}
-													disabled={currentRole === "fisioterapeuta"}
-													className="w-full min-w-0 truncate bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:bg-muted disabled:text-muted-foreground text-xs sm:text-sm"
-												>
-													<span className="truncate">Hacer fisioterapeuta</span>
-												</Button>
+													<Button
+														size="sm"
+														onClick={async () => {
+															await setRole(user.id, "paciente")
+															queryClient.invalidateQueries({
+																queryKey: ['users']
+															})
+														}}
+														disabled={currentRole === "paciente"}
+														className={`h-8 flex-1 text-xs transition-all ${currentRole === "paciente"
+																? "bg-destructive/20 text-destructive shadow-sm"
+																: "bg-transparent text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+															}`}
+													>
+														Paciente
+													</Button>
+												</div>
 
-
-
-												<Button
-													size="sm"
-													onClick={async () => {
-														await setRole(user.id, "recepcionista")
-														queryClient.invalidateQueries({
-															queryKey: ['users']
-														})
-													}}
-													disabled={currentRole === "recepcionista"}
-													className="w-full min-w-0 truncate bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:bg-muted disabled:text-muted-foreground text-xs sm:text-sm"
-												>
-													<span className="truncate">Hacer recepcionista</span>
-												</Button>
-
-												<Button
-													size="sm"
-													variant={"destructive"}
-													onClick={async () => {
-														await setRole(user.id, "paciente")
-														queryClient.invalidateQueries({
-															queryKey: ['users']
-														})
-													}}
-													disabled={currentRole === "paciente"}
-													className="w-full min-w-0 truncate disabled:bg-muted disabled:text-muted-foreground text-xs sm:text-sm"
-												>
-													<span className="truncate">Paciente</span>
-												</Button>
+												{/* Botón de Baneo */}
+												{currentRole !== "admin" && currentRole !== "fisioterapeuta" && (
+													<Button
+														size="sm"
+														variant={user.isBanned ? "outline" : "destructive"}
+														onClick={async () => {
+															await toggleBanUserClerk(user.id, user.isBanned)
+															queryClient.invalidateQueries({
+																queryKey: ['users']
+															})
+														}}
+														className="h-8 shrink-0 text-xs sm:w-auto"
+													>
+														{user.isBanned ? (
+															<>
+																<ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
+																Desbanear
+															</>
+														) : (
+															<>
+																<Ban className="mr-1.5 h-3.5 w-3.5" />
+																Banear
+															</>
+														)}
+													</Button>
+												)}
 											</div>
+
 										</div>
 									</CardContent>
 								</Card>
@@ -326,7 +365,7 @@ export default function ManageUser() {
 								</Button>
 
 								<span className="text-sm px-4">
-									Página 1 de {data?.totalPages}
+									Página {page} de {data?.totalPages}
 								</span>
 
 								<Button
@@ -363,11 +402,19 @@ function RoleBadge({ role }: { role?: string }) {
 			</Badge>
 		);
 	}
-	if (role === "moderator") {
+	if (role === "fisioterapeuta") {
 		return (
 			<Badge className="gap-1 bg-secondary text-secondary-foreground border-secondary">
 				<UserCheck className="h-3.5 w-3.5" />
-				Moderador
+				Fisioterapeuta
+			</Badge>
+		);
+	}
+		if (role === "recepcionista") {
+		return (
+			<Badge className="gap-1 bg-btn text-accent border-secondary">
+				<UserCheck className="h-3.5 w-3.5" />
+				Recepcionista
 			</Badge>
 		);
 	}

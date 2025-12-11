@@ -18,10 +18,10 @@ export default function UserRoleDisplay() {
 	};
 
 	const roleColors: Record<string, string> = {
-		admin: 'bg-[#2B8181] text-muted-foreground border-[#2B8181]',
-		administrador: 'bg-[#2B8181] text-muted-foreground border-[#2B8181]',
-		fisioterapeuta: 'bg-[#EE7132] text-muted-foreground border-[#EE7132]',
-		recepcionista: 'bg-[#FECD5C] text-muted-foreground border-[#FECD5C]',
+		admin: 'bg-[#2B8181] text-white border-[#2B8181]',
+		administrador: 'bg-[#2B8181] text-white border-[#2B8181]',
+		fisioterapeuta: 'bg-[#EE7132] text-white border-[#EE7132]',
+		recepcionista: 'bg-[#FECD5C] text-white border-[#FECD5C]',
 		paciente: 'bg-btn text-muted-foreground',
 	};
 

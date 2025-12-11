@@ -68,25 +68,21 @@ export async function setRoleWithoutForm(userId: string, role: string) {
 	// Don't return anything
 }
 
-export async function banUserClerk(userId: string) {
+export async function toggleBanUserClerk(userId: string, isBanned: boolean) {
 	if (!checkRole("admin")) {
 		throw "No eres el admin";
 	}
 	const client = await clerkClient();
-
-	await client.users.banUser(userId);
-	revalidatePath("/admin/ManageUsers");
-}
-
-export async function unBanUserClerk(userId: string) {
-	if (!checkRole("admin")) {
-		throw "No eres el admin";
+	if (isBanned) {
+		await client.users.unbanUser(userId);
+		revalidatePath("/admin/ManageUsers");
+	} else {
+		await client.users.banUser(userId);
+		revalidatePath("/admin/ManageUsers");
 	}
-	const client = await clerkClient();
-
-	await client.users.unbanUser(userId);
-	revalidatePath("/admin/ManageUsers");
 }
+
+
 
 export async function getUsersClerk(query?: string, limit: number = 10, page: number = 1) {
 	const user = await auth();
@@ -99,7 +95,7 @@ export async function getUsersClerk(query?: string, limit: number = 10, page: nu
 	const { data, totalCount } = query
 		? (await client.users.getUserList({ query, limit: limit, offset: offset }))
 		: (await client.users.getUserList({ limit: limit, offset: offset }));
-		
+
 	const users = data.map(user => ({
 		id: user.id,
 		firstName: user.firstName,
@@ -111,7 +107,7 @@ export async function getUsersClerk(query?: string, limit: number = 10, page: nu
 
 
 	}))
-	
+
 	const totalPages = Math.ceil(totalCount / limit);
 
 	const usersData = {
