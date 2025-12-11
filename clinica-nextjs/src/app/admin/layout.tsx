@@ -1,6 +1,7 @@
 import { UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { DasboardHeader } from "@/components/DashboardHeader";
+import ThemeToggle from "@/components/ThemeToggle";
 import {
 	BarChart3,
 	Settings,
@@ -31,24 +32,25 @@ export default async function dasboardLayout({
 		<div className="flex min-h-screen flex-col">
 			<DasboardHeader />
 
-			<div className="flex min-w-0">
-				{/* Aside sticky */}
+			<div className="flex min-w-0 relative">
+				{/* Aside fixed - queda fijo debajo del header */}
 				<aside
 					className="
-            hidden md:block w-64 shrink-0 p-6 border-r border-gray-800
-            sticky top-0 self-start h-[calc(100vh)] overflow-y-auto overflow-x-hidden
-            bg-background
-			text-foreground
+            hidden md:flex flex-col w-64 shrink-0 p-6 border-r border-[#2B8181]/20
+            fixed left-0 top-[73px] h-[calc(100vh-73px)] overflow-x-hidden
+            bg-gradient-to-b from-[#2B8181]/5 to-background
+			text-foreground z-40
           "
 				>
-
-					<UserButtonClient />
-
-
-					<nav className="space-y-2">
+					<nav className="space-y-2 flex-1 overflow-y-auto">
+						<p className="text-xs tracking-wider text-gray-400 mb-4 uppercase">
+   							 Navegación
+  						</p>
+  
 						<Button
+					
 							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
+							className="w-full justify-start py-2 hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/admin"}>
@@ -60,7 +62,7 @@ export default async function dasboardLayout({
 							<>
 								<Button
 									variant="ghost"
-									className="w-full justify-start  hover:bg-gray-800"
+									className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 									asChild
 								>
 									<Link href={"/admin/ManageUsers"}>
@@ -71,7 +73,7 @@ export default async function dasboardLayout({
 
 								<Button
 									variant="ghost"
-									className="w-full justify-start  hover:bg-gray-800"
+									className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 									asChild
 								>
 									<Link href={"/admin/pacientes"}>
@@ -82,7 +84,7 @@ export default async function dasboardLayout({
 							</>}
 						<Button
 							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/admin/appointmentsRecords"}>
@@ -92,7 +94,7 @@ export default async function dasboardLayout({
 						</Button>	
 						<Button
 							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/admin/appointments"}>
@@ -103,7 +105,7 @@ export default async function dasboardLayout({
 
 						<Button
 							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/admin/files"}>
@@ -113,7 +115,7 @@ export default async function dasboardLayout({
 						</Button>
 						<Button
 							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/admin/team"}>
@@ -123,7 +125,7 @@ export default async function dasboardLayout({
 						</Button>
 						<Button
 							variant="ghost"
-							className="w-full justify-start hover:bg-gray-800"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/admin/services"}>
@@ -133,7 +135,7 @@ export default async function dasboardLayout({
 						</Button>
 						<Button
 							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/admin/testimonials"}>
@@ -142,14 +144,12 @@ export default async function dasboardLayout({
 							</Link>
 						</Button>
 
-						
-
-
+						<div className="my-4 border-t border-[#2B8181]/15" />
 
 
 						<Button
 							variant="ghost"
-							className="w-full  justify-start  hover:bg-gray-800"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/user"} prefetch={false}>
@@ -161,7 +161,7 @@ export default async function dasboardLayout({
 							<>
 						<Button
 							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
+							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/admin/audit"}>
@@ -172,7 +172,7 @@ export default async function dasboardLayout({
 							</>}
 						<Button
 							variant="ghost"
-							className="w-full justify-start  hover:bg-gray-800"
+							className="w-full justify-start hover:bg-[#EE7132]/10 hover:text-[#EE7132] transition-colors"
 							asChild
 						>
 							<Link href={"/"}>
@@ -182,10 +182,19 @@ export default async function dasboardLayout({
 						</Button>
 
 					</nav>
+
+					{/* Theme Toggle al final del sidebar */}
+					<div className="mt-auto pt-4 border-t border-[#2B8181]/20">
+						<div className="flex items-center justify-center px-3 py-2 rounded-lg bg-card border-2 border-[#2B8181]/20 hover:bg-[#2B8181]/10 hover:border-[#2B8181]/40 transition-all duration-300">
+							<ThemeToggle />
+						</div>
+					</div>
 				</aside>
 
-				{/* Contenido principal; permite scroll sin afectar el sticky */}
-				<main className="flex-1 min-w-0 p-4 sm:p-6 min-h-[calc(100vh)] overflow-x-hidden">{children}</main>
+				{/* Contenido principal; permite scroll sin afectar el fixed sidebar */}
+				<main className="flex-1 min-w-0 md:ml-64 min-h-screen overflow-x-hidden bg-gradient-to-br from-[#E8CF9C]/5 via-background to-[#2B8181]/5" style={{ paddingTop: '85px' }}>
+					{children}
+				</main>
 			</div>
 		</div>
 	);

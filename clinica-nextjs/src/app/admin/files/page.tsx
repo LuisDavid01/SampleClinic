@@ -7,10 +7,9 @@ import {
 } from "lucide-react"
 import { ExpedientesList } from "@/components/ExpedientesList"
 import { Suspense } from "react"
+import { PermissionGuard } from "@/components/PermissionGuard"
 
-
-
-export default function FilesPage() {
+function FilesContent() {
 	return (
 		<div className="min-h-screen bg-background p-6">
 			<div className="max-w-7xl mx-auto space-y-6">
@@ -38,5 +37,13 @@ export default function FilesPage() {
 					<ExpedientesList />
 			</div>
 		</div>
+	)
+}
+
+export default async function FilesPage() {
+	return (
+		<PermissionGuard allowedRoles={['admin', 'fisioterapeuta', 'recepcionista']}>
+			<FilesContent />
+		</PermissionGuard>
 	)
 }

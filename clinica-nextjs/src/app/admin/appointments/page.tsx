@@ -1,8 +1,9 @@
-
 import { CalendarDays } from 'lucide-react'
 import CalendarAdmin from "@/components/CalendarAdmin"
 import { Suspense } from 'react'
-export default function AppointmentsDashboard() {
+import { PermissionGuard } from "@/components/PermissionGuard"
+
+function AppointmentsContent() {
 	return (
 		<div className="min-h-screen bg-background p-6">
 			<div className="max-w-7xl mx-auto space-y-6">
@@ -45,5 +46,13 @@ export default function AppointmentsDashboard() {
 				</Suspense>
 			</div>
 		</div>
+	)
+}
+
+export default async function AppointmentsDashboard() {
+	return (
+		<PermissionGuard allowedRoles={['admin', 'fisioterapeuta', 'recepcionista']}>
+			<AppointmentsContent />
+		</PermissionGuard>
 	)
 }

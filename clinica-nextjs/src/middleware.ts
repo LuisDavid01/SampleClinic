@@ -11,8 +11,11 @@ import { setRoleWithoutForm } from './actions/_actions';
  */
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isPacienteRoute = createRouteMatcher(["/pacientes(.*)"]);
+// Rutas que ahora usan PermissionGuard - no redirigir aquí, dejar que PermissionGuard muestre el mensaje
 const isProtectedAdminRoute = createRouteMatcher(["/admin/ManageUsers(.*)",
-	"/admin/team(.*)", "/admin/services(.*)"]);
+	"/admin/team(.*)", "/admin/services(.*)", "/admin/pacientes(.*)", 
+	"/admin/testimonials(.*)", "/admin/files(.*)", "/admin/appointments(.*)",
+	"/admin/appointmentsRecords(.*)", "/admin/audit(.*)"]);
 
 //estas rutas estan protegidas independiente del rol.
 const isProtectedRoute = createRouteMatcher([
@@ -39,12 +42,14 @@ export default clerkMiddleware(async (auth, req) => {
 			return NextResponse.redirect(url);
 		}
 	}
-	if (isProtectedAdminRoute(req)) {
-		if (!userRole || (userRole !== "admin" && userRole !== "recepcionista")) {
-			const url = new URL("/", req.url);
-			return NextResponse.redirect(url)
-		}
-	}
+	// Comentado: Estas rutas ahora usan PermissionGuard que muestra un mensaje amigable
+	// en lugar de redirigir. El PermissionGuard maneja la verificación de permisos.
+	// if (isProtectedAdminRoute(req)) {
+	// 	if (!userRole || (userRole !== "admin" && userRole !== "recepcionista")) {
+	// 		const url = new URL("/", req.url);
+	// 		return NextResponse.redirect(url)
+	// 	}
+	// }
 
 	// Para rutas de pacientes: usar la misma lógica que checkRole
 	//const isPacienteRoute = req.url.includes('/pacientes');

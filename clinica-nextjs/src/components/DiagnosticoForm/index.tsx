@@ -69,7 +69,8 @@ export default function DiagnosticoForm({
 		queryKey: ['currentUser'],
 		queryFn: async () => {
 			const res = await apiClient.get('/usuarios')
-			return res.usuarios.find((u: any) => u.clerkId === user?.id)
+			const foundUser = res.usuarios.find((u: any) => u.clerkId === user?.id)
+			return foundUser || null;
 		},
 		enabled: !!user?.id,
 		staleTime: 10 * 60 * 1000,

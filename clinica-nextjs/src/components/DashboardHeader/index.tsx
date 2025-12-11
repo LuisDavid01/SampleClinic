@@ -1,7 +1,11 @@
-import ThemeToggle from "@/components/ThemeToggle";
 import MobileMenu from "@/components/MobileMenu";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
+import { UserButton } from "@clerk/nextjs";
+import ThemeToggle from "@/components/ThemeToggle";
+import UserRoleDisplay from "@/components/UserRoleDisplay";
+import { LogoImage } from "@/components/LogoImage";
 import {
 	BarChart3,
 	Settings,
@@ -15,6 +19,8 @@ import {
 	Star,
 	Users,
 	Folder,
+    Stethoscope,
+    SearchCheck,
 	CalendarDays
 } from "lucide-react";
 import { checkRole, checkRoles } from "@/utils/roles";
@@ -22,25 +28,50 @@ import { checkRole, checkRoles } from "@/utils/roles";
 
 export const DasboardHeader = async () => {
 	return (
-		<header className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+		<header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-2 border-b-2 border-[#2B8181] bg-gradient-to-r from-[#2B8181]/15 via-background to-[#EE7132]/15 backdrop-blur-md shadow-lg">
 			<div className="flex items-center gap-3">
 				<Link
 					href={"/"}
-					className="text-lg md:text-2xl text-text-primary font-semibold"
+					className="flex items-center gap-3 group transition-all duration-300"
 				>
-					Clinica Esteban Porras
+					<div className="relative flex items-center justify-center p-2">
+						{/* Marco - alrededor del contenedor */}
+						<div className="absolute inset-0 border-2 border-[#2B8181] rounded-xl group-hover:border-[#EE7132] transition-all duration-300 -z-[1]"></div>
+						{/* Logo */}
+						<LogoImage 
+							width={44}
+							height={44}
+							className="h-11 w-auto object-contain relative z-10 group-hover:scale-110 transition-transform duration-300"
+						/>
+					</div>
+					<div className="flex flex-col">
+						<span className="text-lg md:text-xl font-bold bg-gradient-to-r from-[#2B8181] via-[#2B8181] to-[#EE7132] bg-clip-text text-transparent drop-shadow-sm">
+							Clínica Salena
+						</span>
+						<span className="text-[10px] text-foreground font-semibold hidden md:block tracking-wide">
+							Panel de Administración
+						</span>
+					</div>
 				</Link>
 			</div>
 
-			<nav className="hidden md:flex items-center gap-6">
-				<Link
-					href="#"
-					className="flex items-center gap-1 text-sm text-text-primary"
-				>
-					Ayuda <ExternalLink className="w-4 h-4" />
-				</Link>
-				<div className="flex justify-center items-center">
-					<ThemeToggle />
+			<nav className="hidden md:flex items-center gap-3">
+				<div className="flex items-center gap-2">
+					<UserRoleDisplay />
+					<div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 border-[#2B8181]/40 hover:border-[#2B8181] transition-all duration-300 bg-card/80 shadow-sm">
+						<UserButton 
+							showName
+							userProfileUrl="/user"
+							appearance={{
+								elements: {
+									avatarBox: "w-8 h-8 border-2 border-[#2B8181] hover:border-[#EE7132] transition-colors shadow-sm",
+									userButtonPopoverCard: "bg-background border-2 border-[#2B8181]/40 shadow-xl",
+									userButtonTrigger: "flex items-center gap-2",
+									userButtonBox: "flex items-center gap-2",
+								}
+							}}
+						/>
+					</div>
 				</div>
 			</nav>
 
@@ -49,7 +80,7 @@ export const DasboardHeader = async () => {
 				<MobileMenu>
 					<Button
 						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-gray-800"
+						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 						asChild
 					>
 						<Link href={"/admin"}>
@@ -63,7 +94,7 @@ export const DasboardHeader = async () => {
 
 						<Button
 							variant="ghost"
-							className="w-full justify-start text-text-primary hover:bg-gray-800"
+							className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/admin/ManageUsers"}>
@@ -77,7 +108,7 @@ export const DasboardHeader = async () => {
 						<>
 							<Button
 								variant="ghost"
-								className="w-full justify-start text-text-primary hover:bg-gray-800"
+								className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 								asChild
 							>
 								<Link href={"/admin/team"}>
@@ -88,7 +119,7 @@ export const DasboardHeader = async () => {
 
 							<Button
 								variant="ghost"
-								className="w-full justify-start text-text-primary hover:bg-gray-800"
+								className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 								asChild
 							>
 								<Link href={"/admin/pacientes"}>
@@ -96,11 +127,23 @@ export const DasboardHeader = async () => {
 									<span>Pacientes</span>
 								</Link>
 							</Button>
+
+							<Button
+  								variant="ghost"
+  								className="w-full justify-start text-text-primary hover:bg-gray-800"
+  								asChild
+>
+  								<Link href={"/admin/appointmentsRecords"}>
+   								<CalendarDays className="w-4 h-4 mr-3" />
+    							<span>Historial Citas</span>
+  							</Link>
+							</Button>
+
 						</>
 					}
 					<Button
 						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-gray-800"
+						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 						asChild
 					>
 						<Link href={"/admin/appointments"}>
@@ -111,7 +154,7 @@ export const DasboardHeader = async () => {
 
 					<Button
 						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-gray-800"
+						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 						asChild
 					>
 						<Link href={"/admin/files"}>
@@ -119,9 +162,22 @@ export const DasboardHeader = async () => {
 							<span>Expedientes</span>
 						</Link>
 					</Button>
+
+					<Button
+  						variant="ghost"
+  						className="w-full justify-start text-text-primary hover:bg-gray-800"
+  						asChild
+>
+  						<Link href={"/admin/services"}>
+   						<Stethoscope className="w-4 h-4 mr-3" />
+    					<span>Servicios</span>
+  					</Link>
+				</Button>
+
+
 					<Button
 						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-gray-800"
+						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 						asChild
 					>
 						<Link href={"/admin/testimonials"}>
@@ -134,7 +190,7 @@ export const DasboardHeader = async () => {
 
 					<Button
 						variant="ghost"
-						className="w-full  justify-start text-text-primary hover:bg-gray-800"
+						className="w-full justify-start text-text-primary hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 						asChild
 					>
 						<Link href={"/user"}
@@ -144,10 +200,22 @@ export const DasboardHeader = async () => {
 						</Link>
 					</Button>
 
+					{await checkRoles(["admin"]) && (
+  					<Button
+    					variant="ghost"
+    					className="w-full justify-start text-text-primary hover:bg-gray-800"
+    					asChild
+  >
+    				<Link href={"/admin/audit"}>
+      				<SearchCheck className="w-4 h-4 mr-3" />
+      				<span>Auditoria de Sistema</span>
+    			</Link>
+  				</Button>
+)}
 
 					<Button
 						variant="ghost"
-						className="w-full justify-start text-text-primary hover:bg-gray-800"
+						className="w-full justify-start text-text-primary hover:bg-[#EE7132]/10 hover:text-[#EE7132] transition-colors"
 						asChild
 					>
 						<Link href={"/"}>
@@ -156,23 +224,24 @@ export const DasboardHeader = async () => {
 						</Link>
 					</Button>
 
-					<Button
-						variant="link"
-						className="w-full justify-start text-text-primary "
-						asChild
-					>
-						<Link
-							href="#"
-							className="flex items-center gap-1 text-sm text-text-primary"
-						>
-							<ExternalLink className="w-4 h-4" />
-							Ayuda
-						</Link>
-					</Button>
-
-					<div className="flex justify-start items-start my-3">
-						<ThemeToggle />
+					<div className="flex justify-start items-start my-3 gap-3">
+						<div className="flex items-center">
+							<UserButton 
+								userProfileUrl="/user"
+								appearance={{
+									elements: {
+										avatarBox: "w-10 h-10 border-2 border-[#2B8181]/30",
+										userButtonPopoverCard: "bg-background border-2 border-[#2B8181]/20 shadow-lg",
+									}
+								}}
+							/>
+						</div>
 					</div>
+					<div className="mt-2 pt-3 border-t border-[#2B8181]/20 flex items-center gap-3">
+  <span className="text-xs text-gray-400">Tema</span>
+  <ThemeToggle />
+</div>
+
 				</MobileMenu>
 			</div>
 		</header>

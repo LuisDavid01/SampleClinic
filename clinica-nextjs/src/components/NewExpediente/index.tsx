@@ -1,5 +1,5 @@
 'use client'
-import { useActionState, useMemo, useState } from 'react'
+import { useActionState, useMemo, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { EXPEDIENTE_STATUS, Expediente } from '@/types/Expediente'
 import { createExpediente, updateExpediente } from '@/actions/expedientes'
-import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query'
 import { apiEndpoints, useApiClient } from '@/utils/apiClient'
 import { AdminPaciente } from '@/types/AdminPaciente'
 import { cn } from '@/lib/utils'
@@ -51,57 +51,97 @@ export default function ExpedienteForm({
 	
 		})
 	*/
-	const results = useQueries({
-		queries: [
-			{
-				queryKey: ['currentUser'],
-				queryFn: async () => {
-					// Obtener el usuario actual desde la base de datos
-					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}`)
-					const currentUser = res.usuarios.find((u: any) => u.clerkId === user?.id);
-					return currentUser;
-				},
-				staleTime: 10 * 60 * 1000,
-				enabled: !!user?.id
-			},
-			{
-				queryKey: ['doctors'],
-				queryFn: async () => {
-					// Obtener el usuario actual primero
-					const currentUserRes = await apiClient.get(`${apiEndpoints.getUsuarios()}`)
-					const currentUser = currentUserRes.usuarios.find((u: any) => u.clerkId === user?.id);
-
-					if (!currentUser) return [];
-
-					// Si es admin o recepcionista, obtener todos los doctores
-					if (currentUser.rol?.idRol === 1 || currentUser.rol?.idRol === 3) { // admin o recepcionista
-						const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=fisioterapeuta`)
-						return res.usuarios;
-					}
-					// Si es doctor, solo obtener su propio perfil
-					else if (currentUser.rol?.idRol === 2) { // fisioterapeuta
-						return [currentUser];
-					}
-					// Si no tiene rol o es paciente, no puede crear expedientes
-					return [];
-				},
-				staleTime: 10 * 60 * 1000,
-				enabled: !!user?.id
-			},
-			{
-				queryKey: ['pacients'],
-				queryFn: async () => {
-					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=paciente`)
-					return res.usuarios;
-				},
-				staleTime: 3 * 60 * 1000,
+	// Primero obtener el usuario actual
+	const { data: currentUser, isLoading: isLoadingUser, error: currentUserError } = useQuery({
+		queryKey: ['currentUser', user?.id],
+		queryFn: async () => {
+			const clerkId = user?.id;
+			
+			if (!clerkId) {
+				return null;
 			}
-		]
+
+			try {
+				// Primero intentar crear/validar el usuario con /usuarios/validaClerk
+				// Este endpoint crea el usuario automáticamente si no existe
+				try {
+					const validateRes = await apiClient.get(`/usuarios/validaClerk/${clerkId}`);
+					if (validateRes?.user) {
+						return validateRes.user;
+					}
+				} catch (validateError) {
+					// Silenciar error y continuar con siguiente método
+				}
+
+				// Si validaClerk falla, intentar con /usuarios/me (requiere clerkAuth)
+				try {
+					const meRes = await apiClient.get('/usuarios/me');
+					if (meRes?.user) {
+						return meRes.user;
+					}
+				} catch (meError) {
+					// Silenciar error y continuar con siguiente método
+				}
+
+				// Como último recurso, buscar en la lista completa
+				const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?limit=1000`)
+				const foundUser = res?.usuarios?.find((u: any) => u.clerkId === clerkId);
+				
+				return foundUser || null;
+			} catch (error) {
+				return null;
+			}
+		},
+		staleTime: 10 * 60 * 1000,
+		enabled: !!user?.id
 	});
-	const isLoading = results.some((r) => r.isLoading);
-	const currentUser = results[0].data;
-	const doctors = results[1].data ?? [];
-	const pacients = results[2].data ?? [];
+
+
+	// Luego obtener los doctores basado en el usuario actual
+	const { data: doctors = [], isLoading: isLoadingDoctors, error: doctorsError } = useQuery({
+		queryKey: ['doctors', currentUser?.idUsuario, currentUser?.rol?.idRol],
+		queryFn: async () => {
+			try {
+				if (!currentUser) {
+					return [];
+				}
+
+				// Si es admin o recepcionista, obtener todos los doctores (rol 2 = fisioterapeuta)
+				if (currentUser.rol?.idRol === 1 || currentUser.rol?.idRol === 3) { // admin o recepcionista
+					// Obtener todos los usuarios con rol 2 (fisioterapeuta) sin límite de paginación
+					const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?limit=1000`)
+					// Filtrar solo los que tienen rol 2 (fisioterapeuta) y están activos
+					const fisioterapeutas = Array.isArray(res?.usuarios) 
+						? res.usuarios.filter((u: any) => u.rol?.idRol === 2 && u.activo !== false) 
+						: [];
+					return fisioterapeutas;
+				}
+				// Si es fisioterapeuta (rol 2), solo obtener su propio perfil
+				else if (currentUser.rol?.idRol === 2) { // fisioterapeuta
+					return [currentUser];
+				}
+				// Si no tiene rol o es paciente, no puede crear expedientes
+				return [];
+			} catch (error) {
+				return [];
+			}
+		},
+		staleTime: 10 * 60 * 1000,
+		enabled: !!user?.id && !!currentUser
+	});
+
+	// Obtener pacientes
+	const { data: pacients = [], isLoading: isLoadingPacients } = useQuery({
+		queryKey: ['pacients'],
+		queryFn: async () => {
+			const res = await apiClient.get(`${apiEndpoints.getUsuarios()}?rol=paciente`)
+			return res.usuarios || [];
+		},
+		staleTime: 3 * 60 * 1000,
+	});
+
+	const isLoading = isLoadingUser || isLoadingDoctors || isLoadingPacients;
+
 
 
 
@@ -189,15 +229,6 @@ export default function ExpedienteForm({
 		// Limpiar errores de validación si la validación es exitosa
 		setValidationErrors({});
 
-		// Debug: Log the data being sent
-		console.log('Form data being sent:', {
-			...data,
-			formDataIdDoctor: formData.get('idDoctor'),
-			currentUserRole: currentUser?.rol?.idRol,
-			doctorsLength: doctors.length,
-			defaultDoctorId
-		});
-
 		try {
 			// Call the appropriate action based on whether we're editing or creating
 			const result = isEditing
@@ -249,6 +280,9 @@ export default function ExpedienteForm({
 		);
 	}
 
+	// Calcular el valor de aria-live antes del render
+	const ariaLiveValue: 'polite' | 'assertive' = state?.success === true ? 'polite' : 'assertive';
+
 	return (
 		<>
 			<div className={`flex items-center space-x-2 `}>
@@ -274,7 +308,7 @@ export default function ExpedienteForm({
 								: 'bg-red-50 text-red-800 border-red-300'
 						)}
 						role="status"
-						aria-live={state.success ? 'polite' : 'assertive'}
+						{...(ariaLiveValue === 'polite' ? { 'aria-live': 'polite' } : { 'aria-live': 'assertive' })}
 					>
 						{state.message}
 					</div>
@@ -282,22 +316,44 @@ export default function ExpedienteForm({
 
 				<div className="space-y-2 w-full">
 					<Label htmlFor="idPaciente" className="text-sm font-medium">Nombre del paciente</Label>
-					<Select
-						name="idPaciente"
-						defaultValue={expediente?.idPaciente?.toString() || ''}
-						disabled={isLoading || isEditing}
-					>
-						<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idPaciente || state?.errors?.title ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
-							<SelectValue placeholder="Seleccionar paciente" />
-						</SelectTrigger>
-						<SelectContent>
-							{pacients.map((p: AdminPaciente) => (
-								<SelectItem key={p.nombre + p.idUsuario} value={p.idUsuario.toString()}>
-									{p.nombre + ' ' + p.apellido1 + ' ' + p.apellido2}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					{/* Si está en modo lectura y el expediente tiene información del paciente, mostrarlo directamente */}
+					{(isEditing || isReadOnly) && expediente?.paciente ? (
+						<Input
+							id="idPaciente"
+							name="idPaciente"
+							value={`${expediente.paciente.nombre || ''} ${expediente.paciente.apellido1 || ''} ${expediente.paciente.apellido2 || ''}`.trim()}
+							disabled={true}
+							className="w-full bg-gray-50 border-2 border-gray-300"
+						/>
+					) : (
+						<Select
+							name="idPaciente"
+							defaultValue={expediente?.idPaciente?.toString() || ''}
+							disabled={isLoading || isEditing}
+						>
+							<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idPaciente || state?.errors?.title ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
+								<SelectValue placeholder="Seleccionar paciente">
+									{expediente?.paciente && `${expediente.paciente.nombre || ''} ${expediente.paciente.apellido1 || ''} ${expediente.paciente.apellido2 || ''}`.trim()}
+								</SelectValue>
+							</SelectTrigger>
+							<SelectContent>
+								{/* Si el paciente del expediente no está en la lista, agregarlo */}
+								{expediente?.paciente && !pacients.find((p: AdminPaciente) => p.idUsuario === expediente.paciente.idUsuario) && (
+									<SelectItem 
+										key={`expediente-paciente-${expediente.paciente.idUsuario}`} 
+										value={expediente.paciente.idUsuario.toString()}
+									>
+										{`${expediente.paciente.nombre || ''} ${expediente.paciente.apellido1 || ''} ${expediente.paciente.apellido2 || ''}`.trim()}
+									</SelectItem>
+								)}
+								{pacients.map((p: AdminPaciente) => (
+									<SelectItem key={p.nombre + p.idUsuario} value={p.idUsuario.toString()}>
+										{p.nombre + ' ' + p.apellido1 + ' ' + p.apellido2}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
 					{(validationErrors.idPaciente || state?.errors?.title) && (
 						<p id="idPaciente-error" className="text-sm text-red-500">
 							{validationErrors.idPaciente?.[0] || state?.errors?.title?.[0]}
@@ -356,15 +412,21 @@ export default function ExpedienteForm({
 						disabled={isLoading || (currentUser?.rol?.idRol === 2) || isReadOnly} // Deshabilitar si es fisioterapeuta o solo lectura
 					>
 						<SelectTrigger className={`w-full bg-white border-2 ${validationErrors.idDoctor || state?.errors?.idDoctor ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'} focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}>
-							<SelectValue placeholder="Seleccionar doctor" />
+							<SelectValue placeholder={isLoading ? "Cargando doctores..." : doctors.length === 0 ? "No hay doctores disponibles" : "Seleccionar doctor"} />
 						</SelectTrigger>
 						<SelectContent>
-							{doctors.map((d: AdminPaciente) => (
-								<SelectItem key={d.nombre + d.idUsuario}
-									value={d.idUsuario.toString()}>
-									{d.nombre + ' ' + d.apellido1 + ' ' + d.apellido2}
-								</SelectItem>
-							))}
+							{doctors.length === 0 ? (
+								<div className="px-2 py-1.5 text-sm text-muted-foreground text-center">
+									{isLoading ? "Cargando..." : "No hay doctores disponibles"}
+								</div>
+							) : (
+								doctors.map((d: AdminPaciente) => (
+									<SelectItem key={d.idUsuario || d.nombre + d.idUsuario}
+										value={d.idUsuario?.toString() || '0'}>
+										{d.nombre || ''} {d.apellido1 || ''} {d.apellido2 || ''}
+									</SelectItem>
+								))
+							)}
 						</SelectContent>
 					</Select>
 					{/* Campo oculto para asegurar que el valor se envíe cuando está deshabilitado */}

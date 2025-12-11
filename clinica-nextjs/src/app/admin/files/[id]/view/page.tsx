@@ -1,5 +1,5 @@
 
-import { ArrowLeftIcon, Eye, FileSignatureIcon, FileText, LucideBookUser } from 'lucide-react'
+import { ArrowLeftIcon, Eye, FileText, LucideBookUser, FileSignatureIcon } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
 
@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card"
 import DocumentosExpediente from '@/components/DocuementosExpediente'
 import ConsentManagement from '@/components/ConsentManagment'
-import DiagnosticoTable from '@/components/DiagnosticoTable'
 import AntecedentesManager from '@/components/AntecedentesManager'
 import { Button } from '@/components/ui/button'
 
@@ -59,52 +58,27 @@ export default async function ViewFilePage({ params }) {
 
 			<h2 className='pb-4 text-xl md:text-3xl font-semibold text-center'>Contenidos del expediente</h2>
 
-			{/* Grid para Diagnósticos y Consentimientos */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				{/* Diagnósticos */}
-				<Card className="bg-card shadow-sm">
-					<CardHeader className="pb-4">
-						<CardTitle>
-							<div className="flex items-center gap-2">
-								<FileSignatureIcon className="w-5 h-5 text-text-primary" />
-								<h3 className="text-lg font-semibold text-text-primary">
-									Diagnósticos
-								</h3>
-							</div>
-						</CardTitle>
-						<CardDescription>
-							Registro de diagnósticos médicos
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<Suspense fallback={<div>Cargando diagnósticos...</div>}>
-							<DiagnosticoTable expedienteId={Number(id)} />
-						</Suspense>
-					</CardContent>
-				</Card>
-
-				{/* Consentimientos */}
-				<Card className="bg-card shadow-sm">
-					<CardHeader className="pb-4">
-						<CardTitle>
-							<div className="flex items-center gap-2">
-								<LucideBookUser className="w-5 h-5 text-text-primary" />
-								<h3 className="text-lg font-semibold text-text-primary">
-									Consentimientos
-								</h3>
-							</div>
-						</CardTitle>
-						<CardDescription>
-							Documentos de consentimiento del paciente
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<Suspense fallback={<div>Cargando consentimientos...</div>}>
-							<ConsentManagement expedienteId={Number(id)} pacienteId={pacienteId} />
-						</Suspense>
-					</CardContent>
-				</Card>
-			</div>
+			{/* Consentimientos */}
+			<Card className="bg-card shadow-sm">
+				<CardHeader className="pb-4">
+					<CardTitle>
+						<div className="flex items-center gap-2">
+							<LucideBookUser className="w-5 h-5 text-text-primary" />
+							<h3 className="text-lg font-semibold text-text-primary">
+								Consentimientos
+							</h3>
+						</div>
+					</CardTitle>
+					<CardDescription>
+						Documentos de consentimiento del paciente
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<Suspense fallback={<div>Cargando consentimientos...</div>}>
+						<ConsentManagement expedienteId={Number(id)} pacienteId={pacienteId} />
+					</Suspense>
+				</CardContent>
+			</Card>
 
 			{/* Antecedentes Clínicos */}
 			<Card className="bg-card shadow-sm">

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,10 +22,40 @@ export const CitasForm = () => {
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
 		const { name, value } = e.target;
-		setFormData(prev => ({
-			...prev,
-			[name]: value
-		}));
+		
+		// Si es el campo de teléfono, solo permitir números y máximo 8 dígitos
+		if (name === "telefono") {
+			// Remover todo lo que no sea número
+			const soloNumeros = value.replace(/\D/g, "");
+			// Limitar a 8 dígitos
+			const telefonoLimitado = soloNumeros.slice(0, 8);
+			setFormData(prev => ({
+				...prev,
+				[name]: telefonoLimitado
+			}));
+			return;
+		} 
+		if (name === "fecha") {
+			const dia = new Date(value).getDay(); // 5 = sabado, 6 = domingo
+
+			if (dia !== 6 && dia !== 5) {
+				alert("Solo puedes seleccionar días hábiles dentro del horario de anteción.");
+				return; // Impide actualizar el formData
+			}
+		}
+		if (name === "hora") {
+			const disponibles = getHorasDisponibles();
+			if (!disponibles.includes(value)) {
+				alert("La hora seleccionada no está disponible según el horario del día.");
+				return;
+			}
+		}
+		//else {
+			setFormData(prev => ({
+				...prev,
+				[name]: value
+			}));
+		//}
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -86,25 +116,166 @@ export const CitasForm = () => {
 	};
 
 	// Obtener servicios reales del API
-	const { data: serviciosData, isLoading: isLoadingServicios } = useQuery({
+	const { data: serviciosData, isLoading: isLoadingServicios, error: serviciosError, refetch: refetchServicios } = useQuery({
 		queryKey: ['servicios-public'],
 		queryFn: async () => {
-			const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
-			const res = await fetch(`${baseUrl}/servicios/public`);
-			if (!res.ok) {
-				throw new Error('Error al obtener servicios');
+			try {
+				// Usar el proxy de Next.js (/api) para evitar problemas de CORS en móvil
+				// El proxy está configurado en next.config.ts y redirige a NEXT_PUBLIC_API_BASE_URL
+				const url = '/api/servicios/public';
+				
+				console.log('🔧 [CitasForm] Cargando servicios usando proxy:', url);
+				
+				// Usar un enfoque más simple y robusto para móvil
+				const response = await Promise.race([
+					fetch(url, {
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json',
+							'Accept': 'application/json',
+						},
+						// No usar cache en móvil para evitar problemas
+						cache: 'no-cache',
+						// No usar credentials ya que es un endpoint público
+						credentials: 'omit',
+					}),
+					// Timeout de 20 segundos
+					new Promise<Response>((_, reject) => {
+						setTimeout(() => reject(new Error('Timeout: La solicitud tardó demasiado')), 20000);
+					})
+				]);
+				
+				if (!response.ok) {
+					const errorText = await response.text().catch(() => response.statusText);
+					throw new Error(`Error ${response.status}: ${errorText || 'Error desconocido'}`);
+				}
+				
+				const data = await response.json();
+				
+				// Validar estructura de respuesta
+				if (!data || typeof data !== 'object') {
+					throw new Error('Respuesta inválida del servidor');
+				}
+				
+				if (!Array.isArray(data.servicios)) {
+					// Si no viene en el formato esperado, intentar otros formatos
+					if (Array.isArray(data)) {
+						return { servicios: data };
+					}
+					throw new Error('Formato de respuesta inválido: se esperaba un array de servicios');
+				}
+				
+				return data;
+			} catch (error: any) {
+				// Manejar diferentes tipos de errores
+				if (error.message?.includes('Timeout')) {
+					throw new Error('La conexión tardó demasiado. Verifica tu internet.');
+				}
+				if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError') || error.name === 'TypeError') {
+					throw new Error('Error de conexión. Verifica tu conexión a internet y vuelve a intentar.');
+				}
+				if (error.message?.includes('CORS') || error.message?.includes('CORS')) {
+					throw new Error('Error de configuración del servidor. Contacta al administrador.');
+				}
+				// Re-lanzar el error con un mensaje más amigable
+				throw new Error(error.message || 'Error desconocido al cargar servicios');
 			}
-			return res.json();
 		},
 		staleTime: 5 * 60 * 1000, // Cache por 5 minutos
+		retry: (failureCount, error: any) => {
+			// Solo reintentar si no es un error de formato o configuración
+			if (error?.message?.includes('formato') || error?.message?.includes('configurada')) {
+				return false;
+			}
+			return failureCount < 2; // Máximo 2 reintentos
+		},
+		retryDelay: 2000, // 2 segundos entre reintentos
+		refetchOnWindowFocus: false, // Desactivar para evitar problemas en móvil
+		refetchOnMount: true,
+		refetchOnReconnect: true, // Reintentar cuando se reconecta
 	});
 
 	const servicios = serviciosData?.servicios || [];
 
-	const horas = [
-		"09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-		"14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
+	// Debug: Log para verificar el estado en móvil
+	useEffect(() => {
+		if (typeof window !== 'undefined') {
+			const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+			const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 
+				`${window.location.protocol}//${window.location.hostname}:3001/api`;
+			
+			console.log('🔍 Estado de servicios en CitasForm:', {
+				isLoading: isLoadingServicios,
+				hasData: !!serviciosData,
+				serviciosCount: servicios.length,
+				error: serviciosError?.message || serviciosError,
+				baseUrl: baseUrl,
+				isMobile: isMobile,
+				userAgent: navigator.userAgent,
+				timestamp: new Date().toISOString()
+			});
+			
+			// Si hay error, log más detallado
+			if (serviciosError) {
+				console.error('❌ Error al cargar servicios:', {
+					error: serviciosError,
+					message: serviciosError instanceof Error ? serviciosError.message : String(serviciosError),
+					stack: serviciosError instanceof Error ? serviciosError.stack : undefined,
+					baseUrl: baseUrl,
+					isMobile: isMobile
+				});
+			}
+		}
+	}, [isLoadingServicios, serviciosData, servicios.length, serviciosError]);
+
+	const todayCR = new Intl.DateTimeFormat("en-CA", {
+		timeZone: "America/Costa_Rica"
+	}).format(new Date());
+
+	// const horas = [
+	// 	"09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+	// 	"14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
+	// ];
+
+	const horasSabado = [
+	"15:00", "15:30",
+	"16:00", "16:30",
+	"17:00", "17:30",
+	"18:00"
 	];
+
+	const horasDomingo = [
+	"08:00", "08:30",
+	"09:00", "09:30",
+	"10:00", "10:30",
+	"11:00", "11:30",
+	"12:00"
+	];
+
+	const getHorasDisponibles = () => {
+		if (!formData.fecha) return [];
+
+		const dia = new Date(formData.fecha).getDay(); 
+		// 5 = sabado, 6 = domingo
+
+		if (dia === 6) return horasDomingo;   // domingo
+		if (dia === 5) return horasSabado;  // sabado
+		return []; // de lunes a viernes no se debe permitir reservar
+	};
+
+	const format12h = (hora24: string): string => {
+		if (!hora24 || !/^\d{2}:\d{2}$/.test(hora24)) {
+			throw new Error(`Hora inválida: ${hora24}`);
+		}
+
+		const [hh, mm] = hora24.split(":").map(Number);
+
+		const period = hh >= 12 ? "PM" : "AM";
+		const hora12 = hh % 12 === 0 ? 12 : hh % 12;
+
+		return `${hora12}:${mm.toString().padStart(2, "0")} ${period}`;
+	};
+
 
 	const inputStyles = "w-full px-4 py-3 border-2 border-card-foreground/20 bg-background/50 backdrop-blur-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300 hover:border-primary/30 placeholder:/50";
 	const selectStyles = "w-full px-4 py-3 border-2 border-card-foreground/20 bg-background/50 backdrop-blur-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300 hover:border-primary/30 cursor-pointer";
@@ -147,7 +318,7 @@ export const CitasForm = () => {
 									</div>
 									<div>
 										<h4 className="font-semibold  mb-1">Teléfono</h4>
-										<p className="/70">+506 8888-8888</p>
+										<p className="/70">+506 8978-5444</p>
 									</div>
 								</div>
 
@@ -159,7 +330,7 @@ export const CitasForm = () => {
 									</div>
 									<div>
 										<h4 className="font-semibold  mb-1">Email</h4>
-										<p className="/70">info@clinicaestebanporras.com</p>
+										<p className="/70">clinicasalena@gmail.com</p>
 									</div>
 								</div>
 
@@ -171,9 +342,9 @@ export const CitasForm = () => {
 									</div>
 									<div>
 										<h4 className="font-semibold  mb-1">WhatsApp</h4>
-										<p className="/70">+506 8888-8888</p>
+										<p className="/70">+506 8978-5444</p>
 										<a
-											href="https://wa.me/+50688888888?text=Hola,%20me%20gustaría%20agendar%20una%20cita%20en%20la%20Clínica%20Esteban%20Porras"
+											href="https://wa.me/+506897854444?text=Hola,%20me%20gustaría%20agendar%20una%20cita%20en%20la%20Clínica%20Esteban%20Porras"
 											target="_blank"
 											rel="noopener noreferrer"
 											className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
@@ -194,8 +365,8 @@ export const CitasForm = () => {
 									</div>
 									<div>
 										<h4 className="font-semibold  mb-1">Horarios</h4>
-										<p className="/70">Lunes - Viernes: 9:00 AM - 6:00 PM</p>
-										<p className="/70">Sábados: 9:00 AM - 2:00 PM</p>
+										<p className="/70">Sabados: 3:00 PM - 6:00 PM</p>
+										<p className="/70">Domingos: 8:00 AM - 12:00 MD</p>
 									</div>
 								</div>
 							</div>
@@ -275,7 +446,9 @@ export const CitasForm = () => {
 									value={formData.telefono}
 									onChange={handleInputChange}
 									className={inputStyles}
-									placeholder="+506 8888-8888"
+									placeholder="8888-8888"
+									maxLength={8}
+									inputMode="numeric"
 								/>
 							</div>
 
@@ -289,10 +462,12 @@ export const CitasForm = () => {
 										id="fecha"
 										name="fecha"
 										value={formData.fecha}
+										placeholder="Selecciona una fecha"
 										onChange={handleInputChange}
 										className="w-full px-4 py-3 border-2 border-card-foreground/20 bg-background/50 backdrop-blur-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300 hover:border-primary/30"
 										required
 										title="Selecciona una fecha para tu cita"
+										min={todayCR}
 									/>
 								</div>
 
@@ -306,13 +481,13 @@ export const CitasForm = () => {
 										required
 										value={formData.hora}
 										onChange={handleInputChange}
-										className={inputStyles}
+										className={selectStyles}
 										aria-label="Selecciona una hora para tu cita"
 									>
 										<option value="">Selecciona una hora</option>
-										{horas.map((hora) => (
+										{getHorasDisponibles().map((hora) => (
 											<option key={hora} value={hora}>
-												{hora}
+												{format12h(hora)}
 											</option>
 										))}
 									</select>
@@ -323,25 +498,59 @@ export const CitasForm = () => {
 								<Label htmlFor="servicio" className=" font-semibold text-sm">
 									Servicio de Interés *
 								</Label>
-								<select
-									id="servicio"
-									name="servicio"
-									required
-									value={formData.servicio}
-									onChange={handleInputChange}
-									className={inputStyles}
-									aria-label="Selecciona un servicio de interés"
-									disabled={isLoadingServicios}
-								>
-									<option value="">
-										{isLoadingServicios ? 'Cargando servicios...' : 'Selecciona un servicio'}
-									</option>
-									{servicios.map((servicio: { idServicio: number; nombreServicio: string }) => (
-										<option key={servicio.idServicio} value={servicio.idServicio}>
-											{servicio.nombreServicio}
+								<div className="relative">
+									<select
+										id="servicio"
+										name="servicio"
+										required
+										value={formData.servicio}
+										onChange={handleInputChange}
+										className={inputStyles}
+										aria-label="Selecciona un servicio de interés"
+										disabled={isLoadingServicios || !!serviciosError}
+									>
+										<option value="">
+											{isLoadingServicios 
+												? 'Cargando servicios...' 
+												: serviciosError 
+													? 'Error al cargar servicios' 
+													: servicios.length === 0
+														? 'No hay servicios disponibles'
+														: 'Selecciona un servicio'}
 										</option>
-									))}
-								</select>
+										{servicios.map((servicio: { idServicio: number; nombreServicio: string }) => (
+											<option key={servicio.idServicio} value={servicio.idServicio}>
+												{servicio.nombreServicio}
+											</option>
+										))}
+									</select>
+									{isLoadingServicios && (
+										<div className="absolute right-4 top-1/2 -translate-y-1/2">
+											<div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+										</div>
+									)}
+								</div>
+								{serviciosError && (
+									<div className="space-y-2">
+										<p className="text-sm text-red-500">
+											{serviciosError instanceof Error ? serviciosError.message : 'Error al cargar los servicios'}
+										</p>
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											onClick={() => refetchServicios()}
+											className="text-xs"
+										>
+											Reintentar
+										</Button>
+									</div>
+								)}
+								{!isLoadingServicios && !serviciosError && servicios.length === 0 && (
+									<p className="text-sm text-amber-500">
+										No hay servicios disponibles en este momento.
+									</p>
+								)}
 							</div>
 
 							<div className="space-y-3">

@@ -100,7 +100,7 @@ export default function CalendarAdmin() {
     idMedico: "" as number | "",
     idServicio: "" as number | "",
     fechaCita: "",
-    duracionMinutos: 30,
+    duracionMinutos: "" as number | "",
     descripcion: "",
   });
 
@@ -121,7 +121,8 @@ export default function CalendarAdmin() {
         id: cita.idCita,
         title: `${cita.servicio?.nombreServicio || "Cita"} - ${cita.paciente?.nombre || ""}`,
         start: new Date(cita.fechaCita),
-        end: new Date(new Date(cita.fechaCita).getTime() + 30 * 60000),
+        //end: new Date(new Date(cita.fechaCita).getTime() + 30 * 60000),
+        end: new Date(new Date(cita.fechaCita).getTime() + (cita.duracionMinutos || 30) * 60000),
         status: cita.estadoCita?.toLowerCase() || "programada",
         idMedico: cita.idMedico || null,
         idPaciente: cita.idPaciente,
@@ -139,6 +140,7 @@ export default function CalendarAdmin() {
           id: cita.medico?.idUsuario || null,
         },
         notes: cita.descripcion,
+        duracionMinutos: Number(cita.duracionMinutos ?? 30),
       }));
 
       setAppointments(citas);
@@ -197,7 +199,7 @@ export default function CalendarAdmin() {
         idMedico: Number(newAppointment.idMedico),
         idServicio: newAppointment.idServicio ? Number(newAppointment.idServicio) : null,
         fechaCita: new Date(newAppointment.fechaCita).toISOString(),
-        duracionMinutos: Number(newAppointment.duracionMinutos || 30),
+        duracionMinutos: Number(newAppointment.duracionMinutos),
         descripcion: newAppointment.descripcion || "",
         estadoCita: "programada",
       };
@@ -209,7 +211,7 @@ export default function CalendarAdmin() {
         showNotification({
           type: "warning",
           title: "Conflicto de horario",
-          message: response.message || "No es posible agendar dos citas en el mismo horario.",
+          message: "No es posible agendar dos citas en el mismo horario.",
         });
         return; // No cerrar el diálogo ni recargar citas
       }
@@ -323,6 +325,32 @@ export default function CalendarAdmin() {
   };
   const handleViewChange = (newView: View) => setCurrentView(newView);
 
+  const generateHalfHourSlots = () => {
+    const slots: string[] = [];
+    for (let h = 0; h < 24; h++) {
+      for (const m of [0, 30]) {
+        const hour = h.toString().padStart(2, "0");
+        const minute = m.toString().padStart(2, "0");
+        slots.push(`${hour}:${minute}`);
+      }
+    }
+    return slots;
+  };
+
+  const halfHourSlots = generateHalfHourSlots();
+
+  const formatLocalDateTime = (date: Date) => {
+    const pad = (n: number) => n.toString().padStart(2, "0");
+
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1);
+    const day = pad(date.getDate());
+    const hour = pad(date.getHours());
+    const minute = pad(date.getMinutes());
+
+    return `${year}-${month}-${day}T${hour}:${minute}`;
+  };
+
   return (
     <div className="min-h-screen bg-background p-1">
       <div className="max-w-7xl mx-auto space-y-2">
@@ -390,9 +418,9 @@ export default function CalendarAdmin() {
           
 
         {/* Calendario */}
-        <Card className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-2 shadow-sm">
+        <Card className="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-2 shadow-sm overflow-hidden">
         
-          <CardContent className="p-1">
+          <CardContent className="p-1 overflow-hidden">
               {/* Controles */}
         <div className="flex flex-wrap items-center justify-between p-1 gap-x-3 gap-y-1 mb-2">
           <div className="flex items-center gap-1.5">
@@ -415,26 +443,26 @@ export default function CalendarAdmin() {
           
         </div>
             {/* Legend - Minimalista */}
-					<div className="flex items-center justify-end gap-3 text-xs">
-						<div className="flex items-center gap-1.5">
-							<div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-							<span>Borrador</span>
+					<div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 text-xs w-full overflow-hidden">
+						<div className="flex items-center gap-1.5 flex-shrink-0">
+							<div className="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0"></div>
+							<span className="whitespace-nowrap">Borrador</span>
 						</div>
-						<div className="flex items-center gap-1.5">
-							<div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
-							<span>Programada</span>
+						<div className="flex items-center gap-1.5 flex-shrink-0">
+							<div className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0"></div>
+							<span className="whitespace-nowrap">Programada</span>
 						</div>
-						<div className="flex items-center gap-1.5">
-							<div className="w-2.5 h-2.5 rounded-full bg-accent"></div>
-							<span>Completada</span>
+						<div className="flex items-center gap-1.5 flex-shrink-0">
+							<div className="w-2.5 h-2.5 rounded-full bg-accent flex-shrink-0"></div>
+							<span className="whitespace-nowrap">Completada</span>
 						</div>
-						<div className="flex items-center gap-1.5">
-							<div className="w-2.5 h-2.5 rounded-full bg-secondary"></div>
-							<span>En Proceso</span>
+						<div className="flex items-center gap-1.5 flex-shrink-0">
+							<div className="w-2.5 h-2.5 rounded-full bg-secondary flex-shrink-0"></div>
+							<span className="whitespace-nowrap">En Proceso</span>
 						</div>
-						<div className="flex items-center gap-1.5">
-							<div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
-							<span>Cancelada</span>
+						<div className="flex items-center gap-1.5 flex-shrink-0">
+							<div className="w-2.5 h-2.5 rounded-full bg-gray-300 flex-shrink-0"></div>
+							<span className="whitespace-nowrap">Cancelada</span>
 						</div>
 					</div>
             {isLoading ? (
@@ -451,7 +479,16 @@ export default function CalendarAdmin() {
                   onNavigate={setCurrentDate}
                   onView={setCurrentView}
                   onSelectEvent={(e) => {
-                    setSelectedAppointment(e);
+                    setSelectedAppointment({
+                      ...e,
+                      raw: {
+                        ...e.raw,
+                        duracionMinutos:
+                          e.duracionMinutos ??
+                          e.raw?.duracionMinutos ??
+                          30
+                      }
+                    });
                     setSelectedDoctorId(e.idMedico || null);
                     setIsDialogOpen(true);
                   }}
@@ -479,7 +516,7 @@ export default function CalendarAdmin() {
 
         {/* Dialogo crear nueva cita */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md w-[95vw] sm:w-full overflow-hidden">
             <DialogHeader>
               <DialogTitle>Crear Nueva Cita</DialogTitle>
             </DialogHeader>
@@ -557,21 +594,70 @@ export default function CalendarAdmin() {
               </div>
 
               <div>
-                <label htmlFor="fecha-cita-input" className="block text-sm font-medium mb-1">Fecha y hora</label>
-                <input
-                  id="fecha-cita-input"
-                  type="datetime-local"
+                {/* <label htmlFor="fecha-cita-input" className="block text-sm font-medium mb-1">Fecha y hora</label> */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Fecha</label>
+                  <input
+                    type="date"
+                    className="border rounded-md px-2 py-1 w-full"
+                    min={new Intl.DateTimeFormat("en-CA", {
+                      timeZone: "America/Costa_Rica",
+                    }).format(new Date())}
+                    value={newAppointment.fechaCita.split("T")[0] || ""}
+                    onChange={(e) => {
+                      const fecha = e.target.value;
+                      const hora = newAppointment.fechaCita.split("T")[1] || "09:00";
+                      setNewAppointment({
+                        ...newAppointment,
+                        fechaCita: `${fecha}T${hora}`,
+                      });
+                    }}
+                  />
+                </div>
+
+                
+
+              </div>
+              <div>
+                  <label className="block text-sm font-medium mb-1">Hora</label>
+                  <select
+                    className="border rounded-md px-2 py-1 w-full"
+                    value={newAppointment.fechaCita.split("T")[1] || ""}
+                    onChange={(e) => {
+                      const hora = e.target.value;
+                      const fecha = newAppointment.fechaCita.split("T")[0] || new Date().toISOString().slice(0,10);
+                      setNewAppointment({
+                        ...newAppointment,
+                        fechaCita: `${fecha}T${hora}`,
+                      });
+                    }}
+                  >
+                    <option value="">Seleccione hora</option>
+                    {halfHourSlots.map(time => (
+                      <option key={time} value={time}>{time}</option>
+                    ))}
+                  </select>
+                </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Duración de la cita</label>
+                <select
                   className="border rounded-md px-2 py-1 w-full"
-                  value={newAppointment.fechaCita}
-                  min={new Date().toISOString().slice(0, 16)}
-                  onChange={(e) =>
+                  id="duracion"
+                  name="duracion"
+                  value={newAppointment.duracionMinutos}
+                  onChange={(e) => {
+                    const value = e.target.value;
                     setNewAppointment({
                       ...newAppointment,
-                      fechaCita: e.target.value,
-                    })
-                  }
-                  aria-label="Fecha y hora de la cita"
-                />
+                      duracionMinutos: value === "" ? "" : parseInt(value, 10),
+                    });
+                  }}
+                  >
+                  <option value="">Seleccione duración</option>
+                  <option value={30}>30 minutos</option>
+                  <option value={60}>1 hora</option>
+                </select>
               </div>
 
               <div>
@@ -600,7 +686,7 @@ export default function CalendarAdmin() {
 
         {/* Diálogo de detalles / editar cita */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md w-[95vw] sm:w-full overflow-hidden">
             <DialogHeader>
               <DialogTitle>Detalles de la Cita</DialogTitle>
               <DialogDescription>
@@ -609,7 +695,7 @@ export default function CalendarAdmin() {
             </DialogHeader>
 
             {selectedAppointment && (
-              <div className="space-y-4">
+              <div className="space-y-4 w-full overflow-hidden" style={{ width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
                 {/* Estado */}
                 <div className="flex items-center justify-between">
                   <Badge
@@ -628,35 +714,35 @@ export default function CalendarAdmin() {
                 </div>
 
                 {/* Paciente */}
-                <div className="flex items-start gap-3">
-                  <User className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="font-medium">{selectedAppointment.patient.name}</p>
+                <div className="flex items-start gap-3 w-full">
+                  <User className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 w-full overflow-hidden">
+                    <p className="font-medium truncate">{selectedAppointment.patient.name}</p>
                     <div className="text-sm text-muted-foreground space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-3 w-3" />
-                        {selectedAppointment.patient.phone}
+                      <div className="flex items-center gap-2 min-w-0 w-full">
+                        <Phone className="h-3 w-3 flex-shrink-0" />
+                        <span className="break-all overflow-wrap-anywhere min-w-0">{selectedAppointment.patient.phone}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-3 w-3" />
-                        {selectedAppointment.patient.email}
+                      <div className="flex items-center gap-2 min-w-0 w-full">
+                        <Mail className="h-3 w-3 flex-shrink-0" />
+                        <span className="break-all overflow-wrap-anywhere min-w-0">{selectedAppointment.patient.email}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Doctor */}
-                <div className="flex items-start gap-3">
-                  <Stethoscope className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div className="flex-1">
+                <div className="flex items-start gap-3 w-full max-w-full">
+                  <Stethoscope className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 max-w-full overflow-hidden">
                     {selectedAppointment.status === "borrador" ? (
-                      <div>
+                      <div className="w-full max-w-full">
                         <label htmlFor="doctor-select" className="text-sm font-medium mb-1 block">
                           Asignar Médico *
                         </label>
                         <select
                           id="doctor-select"
-                          className="border rounded-md px-2 py-1 w-full text-sm"
+                          className="border rounded-md px-2 py-1 w-full max-w-full text-sm"
                           value={selectedDoctorId || selectedAppointment.idMedico || ""}
                           onChange={(e) => setSelectedDoctorId(Number(e.target.value))}
                           required
@@ -688,9 +774,9 @@ export default function CalendarAdmin() {
                         )}
                       </div>
                     ) : (
-                      <div>
-                        <p className="font-medium">{selectedAppointment.doctor.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="min-w-0 w-full max-w-full overflow-hidden">
+                        <p className="font-medium truncate w-full max-w-full">{selectedAppointment.doctor.name}</p>
+                        <p className="text-sm text-muted-foreground truncate w-full max-w-full" title={selectedAppointment.doctor.specialty}>
                           {selectedAppointment.doctor.specialty}
                         </p>
                       </div>
@@ -699,16 +785,16 @@ export default function CalendarAdmin() {
                 </div>
 
                 {/* Fecha editable */}
-                <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
+                <div className="flex items-start gap-3 w-full max-w-full">
+                  <Clock className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 max-w-full overflow-hidden">
                     <label htmlFor="fecha-cita-edit-input" className="text-sm font-medium mb-1 block">Fecha y hora:</label>
                     <input
                       id="fecha-cita-edit-input"
                       type="datetime-local"
                       className="border rounded-md px-2 py-1 w-full text-sm"
                       value={selectedAppointment.start ? dfFormat(selectedAppointment.start, "yyyy-MM-dd'T'HH:mm") : ""}
-                      min={new Date().toISOString().slice(0, 16)}
+                      min={formatLocalDateTime(new Date())}
                       onChange={(e) =>
                         setSelectedAppointment({
                           ...selectedAppointment,
@@ -720,13 +806,18 @@ export default function CalendarAdmin() {
                           }
                         })
                       }
+                      step="1800" // pasos de 30 minutos
                       aria-label="Fecha y hora de la cita"
                     />
                     <label htmlFor="duracion-select" className="block text-sm font-medium mb-1 mt-2">Duración</label>
                     <select
                       id="duracion-select"
-                      className="border rounded-md px-2 py-1 w-full"
-                      value={selectedAppointment.raw?.duracionMinutos ?? 30}
+                      className="border rounded-md px-2 py-1 w-full max-w-full"
+                      value={
+                        selectedAppointment?.raw?.duracionMinutos !== undefined
+                          ? selectedAppointment.raw.duracionMinutos
+                          : ""
+                      }
                       onChange={(e) =>
                         setSelectedAppointment({
                           ...selectedAppointment,
@@ -738,24 +829,61 @@ export default function CalendarAdmin() {
                         })
                       }
                     >
-                      <option value={30}>30 minutos</option>
-                      <option value={60}>1 hora</option>
+                      <option value="30">30 minutos</option>
+                      <option value="60">1 hora</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Notas */}
                 {selectedAppointment.notes && (
-                  <div className="bg-muted p-3 rounded-lg">
+                  <div className="bg-muted p-3 rounded-lg w-full overflow-hidden">
                     <p className="text-sm font-medium mb-1">Notas:</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground break-words overflow-wrap-anywhere">
                       {selectedAppointment.notes}
                     </p>
                   </div>
                 )}
 
                 {/* Botón guardar cambios / confirmar cita */}
-                <div className="pt-3 flex justify-end">
+                <div className="pt-3 flex justify-center gap-3 w-full">
+                  <Button
+                    variant="destructive"
+                    
+                    onClick={async () => {
+                      if (!selectedAppointment) return;
+
+                      const confirmar = confirm("¿Desea cancelar esta cita?");
+                      if (!confirmar) return;
+
+                      try {
+                        await apiClient.put(
+                          apiEndpoints.updateCita(selectedAppointment.id),
+                          { estadoCita: "cancelada" }
+                        );
+
+                        showNotification({
+                          type: "success",
+                          title: "Cita cancelada",
+                          message: "La cita fue marcada como cancelada.",
+                        });
+
+                        setIsDialogOpen(false);
+                        await loadAppointments();
+                      } catch (err: any) {
+                        console.error("❌ Error cancelando cita:", err);
+                        showNotification({
+                          type: "error",
+                          title: "Error",
+                          message:
+                            err?.message || "No se pudo cancelar la cita. Intente de nuevo.",
+                        });
+                      }
+                    }}
+                  >
+                    Cancelar cita
+                  </Button>
+
                   <Button
                     onClick={async () => {
                       try {

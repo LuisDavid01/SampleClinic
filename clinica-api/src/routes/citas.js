@@ -1046,7 +1046,7 @@ router.get("/dashboard/estadisticas", clerkAuth, async (req, res) => {
  *               $ref: '#/components/schemas/Error'
  */
 // POST /api/citas - Crear nueva cita
-router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA]), validateCita, async (req, res) => {
+router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA, 'fisioterapeuta']), validateCita, async (req, res) => {
   try {
     const { fechaCita, idPaciente, idMedico, idServicio, descripcion, estadoCita } = req.body;
 		const estadoFinal = estadoCita || 'programada';
