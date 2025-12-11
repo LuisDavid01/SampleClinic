@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { UserButton } from "@clerk/nextjs";
+import ThemeToggle from "@/components/ThemeToggle";
 import UserRoleDisplay from "@/components/UserRoleDisplay";
 import { LogoImage } from "@/components/LogoImage";
 import {
@@ -236,6 +237,11 @@ export const DasboardHeader = async () => {
 							/>
 						</div>
 					</div>
+					<div className="mt-2 pt-3 border-t border-[#2B8181]/20 flex items-center gap-3">
+  <span className="text-xs text-gray-400">Tema</span>
+  <ThemeToggle />
+</div>
+
 				</MobileMenu>
 			</div>
 		</header>

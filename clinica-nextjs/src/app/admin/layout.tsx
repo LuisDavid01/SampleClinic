@@ -43,9 +43,14 @@ export default async function dasboardLayout({
           "
 				>
 					<nav className="space-y-2 flex-1 overflow-y-auto">
+						<p className="text-xs tracking-wider text-gray-400 mb-4 uppercase">
+   							 Navegación
+  						</p>
+  
 						<Button
+					
 							variant="ghost"
-							className="w-full justify-start hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
+							className="w-full justify-start py-2 hover:bg-[#2B8181]/10 hover:text-[#2B8181] transition-colors"
 							asChild
 						>
 							<Link href={"/admin"}>
@@ -139,9 +144,7 @@ export default async function dasboardLayout({
 							</Link>
 						</Button>
 
-						
-
-
+						<div className="my-4 border-t border-[#2B8181]/15" />
 
 
 						<Button
