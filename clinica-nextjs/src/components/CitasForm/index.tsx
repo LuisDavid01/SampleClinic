@@ -344,7 +344,7 @@ export const CitasForm = () => {
 										<h4 className="font-semibold  mb-1">WhatsApp</h4>
 										<p className="/70">+506 8978-5444</p>
 										<a
-											href="https://wa.me/+506897854444?text=Hola,%20me%20gustaría%20agendar%20una%20cita%20en%20la%20Clínica%20Esteban%20Porras"
+											href="https://wa.me/+50689785444?text=Hola,%20me%20gustaría%20agendar%20una%20cita"
 											target="_blank"
 											rel="noopener noreferrer"
 											className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"

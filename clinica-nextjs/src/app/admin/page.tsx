@@ -362,16 +362,23 @@ export default function AdminDashboard() {
 					</Card>
 
 					{/* Recent Patients */}
-					<Card className="lg:col-span-2 bg-card border-2 border-[#2B8181]/20 shadow-md hover:shadow-lg transition-shadow">
+					<Card className="lg:col-span-2 bg-card border-2 border-[#2B8181]/20 shadow-md hover:shadow-lg transition-shadow overflow-hidden">
 						<CardHeader className="pb-4">
-							<div className="flex items-center justify-between">
-								<CardTitle className="text-lg font-semibold ">Pacientes Recientes</CardTitle>
-								<div className="flex items-center space-x-2">
-									<div className="relative">
+							<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 w-full">
+								<CardTitle className="text-lg font-semibold">Pacientes Recientes</CardTitle>
+								<div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 w-full sm:w-auto min-w-0">
+									<div className="relative w-full sm:w-auto min-w-0 flex-1 sm:flex-initial">
 										<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-										<Input placeholder="Buscar paciente..." className="pl-8 w-64 bg-card border-2 border-[#2B8181]/20 focus:border-[#2B8181]" />
+										<Input 
+											placeholder="Buscar paciente..." 
+											className="pl-8 w-full sm:w-64 bg-card border-2 border-[#2B8181]/20 focus:border-[#2B8181] min-w-0" 
+										/>
 									</div>
-									<Button variant="outline" size="sm" className="border-2 border-[#2B8181]/20 hover:bg-[#2B8181]/10 hover:text-[#2B8181]">
+									<Button 
+										variant="outline" 
+										size="sm" 
+										className="border-2 border-[#2B8181]/20 hover:bg-[#2B8181]/10 hover:text-[#2B8181] w-full sm:w-auto flex-shrink-0"
+									>
 										<Filter className="h-4 w-4 mr-2" />
 										Filtrar
 									</Button>
