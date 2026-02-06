@@ -30,7 +30,7 @@ func NewRetentionMap(ctx context.Context, retentionPeriod time.Duration) Retenti
 
 func (rm RetentionMap) NewOTP(username, rol, userID string) OTP {
 
-	o := OTP{
+	newOtp := OTP{
 		Key:      uuid.NewString(),
 		Created:  time.Now(),
 		Rol:      rol,
@@ -38,8 +38,8 @@ func (rm RetentionMap) NewOTP(username, rol, userID string) OTP {
 		UserID:   userID,
 	}
 
-	rm[o.Key] = o
-	return o
+	rm[newOtp.Key] = newOtp
+	return newOtp
 }
 
 func (rm RetentionMap) ValidateOTP(otp string) (OTP, bool) {
