@@ -74,7 +74,7 @@ export default function FloatingChat() {
 		try {
 
 			const token = await getToken();
-			const otp = await fetch('/chat/otp', {
+			const otp = await fetch(`/chat/otp`, {
 				headers: {
 					"Authorization": `Bearer ${token}`,
 					"Content-Type": "application/json",
