@@ -11,7 +11,9 @@ func TestValidateOTP(t *testing.T) {
 	t.Run("OTP válido - validación exitosa", func(t *testing.T) {
 		// Crear retention map sin iniciar el goroutine de retención
 		// para evitar interferencia durante la prueba
-		rm := make(RetentionMap)
+		rm := &RetentionMap{
+			data: make(map[string]OTP),
+		}
 
 		// Crear un OTP de prueba
 		testOTP := rm.NewOTP("testuser", "user", "123")
@@ -36,7 +38,7 @@ func TestValidateOTP(t *testing.T) {
 		}
 
 		// Verificar que el OTP fue eliminado después de la validación
-		_, exists := rm[testOTP.Key]
+		_, exists := rm.data[testOTP.Key]
 		if exists {
 			t.Error("El OTP debería haber sido eliminado después de la validación")
 		}
@@ -48,7 +50,9 @@ func TestValidateOTP(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		rm := make(RetentionMap)
+		rm := &RetentionMap{
+			data: make(map[string]OTP),
+		}
 
 		// Crear un OTP de prueba
 		testOTP := rm.NewOTP("testuser2", "admin", "456")
@@ -75,7 +79,7 @@ func TestValidateOTP(t *testing.T) {
 		}
 
 		// Verificar explícitamente que el OTP ya no existe en el mapa
-		_, exists := rm[testOTP.Key]
+		_, exists := rm.data[testOTP.Key]
 		if exists {
 			t.Error("El OTP expirado debería haber sido eliminado por el retention map")
 		}
@@ -83,7 +87,9 @@ func TestValidateOTP(t *testing.T) {
 
 	// Caso adicional: Validar OTP que no existe
 	t.Run("OTP inexistente", func(t *testing.T) {
-		rm := make(RetentionMap)
+		rm := &RetentionMap{
+			data: make(map[string]OTP),
+		}
 
 		// Intentar validar un OTP que nunca existió
 		otpData, isValid := rm.ValidateOTP("otp-inexistente")

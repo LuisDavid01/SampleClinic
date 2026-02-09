@@ -53,11 +53,17 @@ func sendMessage(event Event, c *Client) error {
 	}
 
 	room := c.Manager.getRoomByID(c.chatroom)
+	isRoomUpdated := routeUpdateLatestMessage(room, c, broadMessage)
+	if isRoomUpdated != nil {
+		fmt.Printf("Failed to update the room %v", isRoomUpdated)
+	}
+
+	return nil
+}
+
+func routeUpdateLatestMessage(room *Room, c *Client, msg NewMessageEvent) error {
 	if room != nil {
-		room.History = append(room.History, broadMessage)
-		if len(room.History) > 50 {
-			room.History = room.History[len(room.History)-50:]
-		}
+		room.History = append(room.History, msg)
 	}
 	var updatedRoom UpdateRoomEvent
 	if len(room.History) > 0 {
@@ -65,15 +71,11 @@ func sendMessage(event Event, c *Client) error {
 		updatedRoom.LastMessage = lastMsg.Message
 		updatedRoom.LastMessageAt = lastMsg.Sent
 		updatedRoom.ID = room.ID
-	} else {
-		updatedRoom.LastMessage = ""
-		updatedRoom.LastMessageAt = time.Now()
-		updatedRoom.ID = room.ID
 	}
 
-	data, err = json.Marshal(updatedRoom)
+	data, err := json.Marshal(updatedRoom)
 	if err != nil {
-		log.Printf("Couldnt update %s room, %v+", updatedRoom.ID, err)
+		return fmt.Errorf("Couldnt update %s room, %v+", updatedRoom.ID, err)
 	}
 	updateOutgoingEvent := Event{
 		Type:    EventUpdateRoom,
@@ -86,6 +88,7 @@ func sendMessage(event Event, c *Client) error {
 		}
 	}
 	return nil
+
 }
 
 func errorMessageHandler(message string, sent time.Time, c *Client) error {
@@ -154,6 +157,8 @@ func chatRoomHandler(event Event, c *Client) error {
 			}
 		}
 
+		// una vez se une al chat, se envia el historial
+
 		historyEvent := GetHistoryEvent{
 			History: room.History,
 		}
@@ -174,8 +179,8 @@ func chatRoomHandler(event Event, c *Client) error {
 }
 
 func (m *Manager) getRoomByID(roomID string) *Room {
-	m.RLock()
-	defer m.RUnlock()
+	m.Lock()
+	defer m.Unlock()
 	if room, ok := m.Rooms[roomID]; ok {
 		return room
 	}

@@ -52,7 +52,7 @@ type Manager struct {
 	Clients ClientList
 	sync.RWMutex
 	Rooms    RoomList
-	opts     auth.RetentionMap
+	opts     *auth.RetentionMap
 	handlers map[string]EventHanlder
 }
 
