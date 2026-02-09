@@ -3,13 +3,13 @@ BUILD_TAG := $(if $(BUILD_TAG),$(BUILD_TAG),latest)
 
 
 build-chat-windows:
-	cd clinica-chat-api &&  go build -o ../chatApi.exe .
+	cd clinica-chat-api &&  go build -o ./chatApi.exe .
 build-chat:
-	cd clinica-chat-api && GOOS=linux GOARCH=amd64 go build -o ../chatApi .
+	cd clinica-chat-api && GOOS=linux GOARCH=amd64 go build -o ./chatApi .
 
-run-chat-windows: 
+run-chat-windows: build-chat-windows
 	chatApi.exe
-run-chat:
+run-chat: build-chat
 	chatApi
 
 build-image-chat:
