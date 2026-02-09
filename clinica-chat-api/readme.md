@@ -33,13 +33,10 @@ Microservicio  encargado de manejar alta carga de conexiones de forma eficiente 
 ## Diagrama
 ![Diagrama del chat](./diagrama-chat.png)
 
-#### To do:
+## TESTS
 
-- [x] Autorizar acciones dependiendo del rol paciente, recepcionista 
-- [x] Crear salas entre  paciente y recepcionista
-- [x] Persistir los  mensajes en memoria
-- [x] Persistir chats en memoria
-- [x] Enviar notificaciones en tiempo real
-- [x] Enviar errores al cliente
-- [ ] enviar  chats activos  y actualizarlos
-- [x] Encuestas de satisfaccion
+Para ejecutar los tests:
+
+```bash
+go test ./...
+```
