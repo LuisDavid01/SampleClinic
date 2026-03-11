@@ -204,6 +204,7 @@ export default function FloatingChat() {
 	function sendEvent(eventName: string, payload: SendMessageEvent | NewMessageEvent) {
 		try {
 			const event = new chatEvent(eventName, payload);
+			console.log("enviando evento: ", JSON.stringify(event));
 			wsRef.current?.send(JSON.stringify(event));
 		} catch (err) {
 			console.log("err: ", err);

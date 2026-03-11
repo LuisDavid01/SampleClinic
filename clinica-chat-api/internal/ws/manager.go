@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -20,7 +21,9 @@ import (
 
 func checkOrigin(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
-
+	if os.Getenv("GO_ENV") == "development" {
+		return true
+	}
 	switch origin {
 	case "http://localhost:3000":
 		return true
@@ -148,6 +151,7 @@ func (m *Manager) RemoveClient(client *Client) {
 }
 
 func (m *Manager) RouteEvent(event Event, c *Client) error {
+	log.Printf("Evento recibido %v+", event)
 	if handler, ok := m.handlers[event.Type]; ok {
 		if err := handler(event, c); err != nil {
 			return err
