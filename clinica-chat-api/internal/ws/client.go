@@ -23,26 +23,27 @@ const (
 )
 
 type Client struct {
-	ID       string          `json:"user_id"`
-	Username string          `json:"username"`
-	Rol      string          `json:"-"`
-	Conn     *websocket.Conn `json:"-"`
-	Manager  *Manager        `json:"-"`
-	chatroom string          `json:"-"`
-	// channel to avoid blocking messages
-	egress chan Event `json:"-"`
+	ID          string          `json:"user_id"`
+	Username    string          `json:"username"`
+	Rol         string          `json:"-"`
+	Conn        *websocket.Conn `json:"-"`
+	Manager     *Manager        `json:"-"`
+	chatroom    string          `json:"-"`
+	egress      chan Event      `json:"-"`
+	rateLimiter *SlidingWindowLimiter
 }
 
 type ClientList map[*Client]bool
 
 func NewClient(conn *websocket.Conn, manager *Manager, id string, username string, rol string) *Client {
 	return &Client{
-		ID:       id,
-		Username: username,
-		Conn:     conn,
-		Manager:  manager,
-		Rol:      rol,
-		egress:   make(chan Event),
+		ID:          id,
+		Username:    username,
+		Conn:        conn,
+		Manager:     manager,
+		Rol:         rol,
+		egress:      make(chan Event),
+		rateLimiter: NewSlidingWindowLimiter(20, time.Minute),
 	}
 }
 
@@ -74,6 +75,11 @@ func (c *Client) Read() {
 
 		if err := json.Unmarshal(payload, &request); err != nil {
 			log.Printf("error parsing the event: %v", err)
+			continue
+		}
+
+		if request.Type == EventSendMessage && !c.rateLimiter.Allow() {
+			errorMessageHandler("Demasiados mensajes, espere un minuto", time.Now(), c)
 			continue
 		}
 
