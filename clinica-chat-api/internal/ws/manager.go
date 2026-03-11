@@ -151,7 +151,6 @@ func (m *Manager) RemoveClient(client *Client) {
 }
 
 func (m *Manager) RouteEvent(event Event, c *Client) error {
-	log.Printf("Evento recibido %v+", event)
 	if handler, ok := m.handlers[event.Type]; ok {
 		if err := handler(event, c); err != nil {
 			return err
@@ -217,6 +216,10 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			clientID = usr.ID
+			if usr.FirstName == nil && usr.LastName == nil {
+				http.Error(w, "Introduce tu nombre y apellido en tu perfil por favor", http.StatusInternalServerError)
+				return
+			}
 			if usr.LastName == nil {
 				req.Username = *usr.FirstName
 			} else {

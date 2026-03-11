@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: clinica-postgres
+    environment:
+      POSTGRES_DB: salena_fisio
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: CHANGE_ME_DB_PASSWORD
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/docker-init-mejorado.sql:/docker-entrypoint-initdb.d/docker-init-mejorado.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d salena_fisio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+
+volumes:
+  postgres_data:
