@@ -1047,6 +1047,8 @@ router.get("/dashboard/estadisticas", clerkAuth, async (req, res) => {
  */
 // POST /api/citas - Crear nueva cita
 router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RECEPCIONISTA, ROLES.FISIOTERAPEUTA, 'fisioterapeuta']), validateCita, async (req, res) => {
+  console.log("Body completo recibido:", req.body);
+console.log("fechaCita recibida:", req.body.fechaCita);
   try {
     const { fechaCita, idPaciente, idMedico, idServicio, descripcion, estadoCita } = req.body;
 		const estadoFinal = estadoCita || 'programada';
@@ -1143,10 +1145,11 @@ router.post('/', auditMiddleware, clerkAuth, requireClerkRole(['admin', ROLES.RE
 				}
 			}
 		}
-
+    const fechaUTC = new Date(fechaCita);
 		const cita = await prisma.cita.create({
 			data: {
-				fechaCita: fechaCita ? new Date(fechaCita) : null,
+				//fechaCita: fechaCita ? new Date(fechaCita) : null,
+        fechaCita: fechaUTC,
 				duracionMinutos: req.body.duracionMinutos ? Number(req.body.duracionMinutos) : 30,
 				idPaciente,
 				idMedico: esBorrador ? (idMedico || null) : idMedico,
