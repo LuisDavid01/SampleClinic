@@ -130,7 +130,7 @@ const validateUsuarioUpdate = [
 // Validaciones para citas
 const validateCita = [
 	body('fechaCita')
-		.isISO8601()
+		.isISO8601({ strict: true })
 		.withMessage('La fecha de la cita debe ser válida'),
 
 	body('idPaciente')

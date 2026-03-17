@@ -121,8 +121,13 @@ export default function CalendarAdmin() {
         id: cita.idCita,
         title: `${cita.servicio?.nombreServicio || "Cita"} - ${cita.paciente?.nombre || ""}`,
         start: new Date(cita.fechaCita),
+        //start: new Date(cita.fechaCita.replace(" ", "T")),
         //end: new Date(new Date(cita.fechaCita).getTime() + 30 * 60000),
         end: new Date(new Date(cita.fechaCita).getTime() + (cita.duracionMinutos || 30) * 60000),
+        /*end: new Date(
+          new Date(cita.fechaCita.replace(" ", "T")).getTime() +
+          (cita.duracionMinutos || 30) * 60000
+        ),*/
         status: cita.estadoCita?.toLowerCase() || "programada",
         idMedico: cita.idMedico || null,
         idPaciente: cita.idPaciente,
@@ -199,10 +204,15 @@ export default function CalendarAdmin() {
         idMedico: Number(newAppointment.idMedico),
         idServicio: newAppointment.idServicio ? Number(newAppointment.idServicio) : null,
         fechaCita: new Date(newAppointment.fechaCita).toISOString(),
+        //fechaCita: newAppointment.fechaCita,
         duracionMinutos: Number(newAppointment.duracionMinutos),
         descripcion: newAppointment.descripcion || "",
         estadoCita: "programada",
       };
+
+      // Prueba de formato de fecha
+      console.log("Fecha enviada:", payload.fechaCita);
+      console.log("Objeto completo:", payload);
 
       const response = await apiClient.post(apiEndpoints.createCita(), payload);
 
@@ -901,7 +911,8 @@ export default function CalendarAdmin() {
                         }
 
                         const updated: any = {
-                          fechaCita: selectedAppointment.start.toISOString(),
+                          //fechaCita: selectedAppointment.start.toISOString(),
+                          fechaCita: dfFormat(selectedAppointment.start, "yyyy-MM-dd'T'HH:mm")
                         };
 
                         // Si es borrador, cambiar estado a programada y asignar médico
