@@ -66,9 +66,9 @@ export default function TeamContent() {
 		total: number
 		totalPaginas: number
 	}>({
-		queryKey: ['team-members', page, search, limit],
+		queryKey: ['team-members', page, search, limit, memberStatus],
 		queryFn: async () => {
-			const res = await getEquipo(page, limit, search)
+			const res = await getEquipo(page, limit, search, memberStatus)
 			console.log(res)
 			return {
 				perfiles: res.perfiles,

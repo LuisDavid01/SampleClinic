@@ -7,40 +7,50 @@ const TeamMemberSchema = z.object({
 	experienciaProfesional: z.string().min(10).max(500),
 	especialidad: z.string().min(1).max(100),
 	fotografia: z.string().max(300).optional().nullable(),
-	servicios: z.array(z.number()).min(1).max(5)
+	servicios: z.array(z.number()).min(1).max(5),
+	activo: z.boolean().optional().nullable(),
 })
 
 export type teamMemberData = z.infer<typeof TeamMemberSchema>
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
 export const createTeamMember = async (data: teamMemberData) => {
-	console.log(data.idEquipo, data.descripcionBreve, data.experienciaProfesional,data.servicios)
 
 	const user = await auth()
 	if (!user.userId) {
 		return {
 			success: false,
 			message: 'Unauthorized access',
+
 			error: 'Unauthorized',
 		}
 	}
 	const token = await user.getToken()
 	const client = await clerkClient();
+
 	let imageProfile = ""
 	try {
 		const { imageUrl } = await client.users.getUser(data.idEquipo);
+
 		console.log("url de la imagen: ", imageUrl)
 		imageProfile = imageUrl
+
+
 	} catch (e) {
 		console.log(e)
 	}
 	const uploadData = {
+
 		...data,
 		fotografia: imageProfile
+
+
+
 	}
 	// Validate with Zod
 	const validationResult = TeamMemberSchema.safeParse(uploadData)
 	if (!validationResult.success) {
+
 		return {
 			success: false,
 			message: 'Validation failed',
@@ -53,6 +63,7 @@ export const createTeamMember = async (data: teamMemberData) => {
 
 	const res = await fetch(`${baseUrl}/perfiles`, {
 		method: 'POST',
+
 		headers: {
 			"content-type": 'application/json',
 			"authorization": `Bearer ${token}`
@@ -74,6 +85,7 @@ export const deleteTeamMember = async (idPerfil: number) => {
 	if (!user.userId) {
 		return {
 			success: false,
+
 			message: 'Unauthorized access',
 			error: 'Unauthorized',
 		}
@@ -96,12 +108,13 @@ export const deleteTeamMember = async (idPerfil: number) => {
 		message: 'Miembro eliminado correctamente!',
 	}
 }
-export async function getEquipo(page: number, limit: number, search: string) {
+export async function getEquipo(page: number, limit: number, search: string, activo: boolean) {
 
 	const params = new URLSearchParams({
 		page: page.toString(),
 		limit: limit.toString(),
 		...(search && { search }),
+		activo: activo.toString(),
 	});
 	const res = await fetch(`${baseUrl}/perfiles?${params}`, {
 		method: 'GET',

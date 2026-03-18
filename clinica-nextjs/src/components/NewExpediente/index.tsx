@@ -215,19 +215,8 @@ export default function ExpedienteForm({
 			})(),
 		}
 
-		// VALIDAR CON ZOD
-		const validation = validateFormData(expedienteSchema, data);
-		if (!validation.success) {
-			setValidationErrors(validation.errors || {});
-			return {
-				success: false,
-				message: 'Por favor corrige los errores en el formulario',
-				errors: validation.errors || undefined
-			};
-		}
 
-		// Limpiar errores de validación si la validación es exitosa
-		setValidationErrors({});
+
 
 		try {
 			// Call the appropriate action based on whether we're editing or creating

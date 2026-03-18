@@ -70,7 +70,7 @@ const router = express.Router();
 // GET /api/perfiles - Obtener todos los perfiles
 router.get('/', async (req, res) => {
 	try {
-		const { page = 1, limit = 10, search, especialidad } = req.query;
+		const { page = 1, limit = 10, search, especialidad, activo } = req.query;
 		const skip = (page - 1) * limit;
 
 		// Construir filtros
@@ -94,6 +94,9 @@ router.get('/', async (req, res) => {
 
 		if (especialidad) {
 			where.especialidad = { contains: especialidad, mode: 'insensitive' };
+		}
+		if(activo){
+			where.activo = activo === "true";
 		}
 
 		const [perfiles, total] = await Promise.all([
