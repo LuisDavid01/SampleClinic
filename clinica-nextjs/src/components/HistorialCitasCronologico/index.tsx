@@ -471,7 +471,7 @@ export default function HistorialCitasCronologico() {
                   <option value="cancelada">Cancelada</option>
                 </select>
 
-                {esStaff && (
+                {/*{esStaff && (
 
                 <select
                   value={filtroTipo}
@@ -486,7 +486,7 @@ export default function HistorialCitasCronologico() {
                   <option value="evaluacion">Evaluación</option>
                   <option value="seguimiento">Seguimiento</option>
                 </select>
-                )}
+                )}*/}
 
               </div>
             </CardContent>
