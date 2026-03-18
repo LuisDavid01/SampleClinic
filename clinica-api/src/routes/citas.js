@@ -599,6 +599,72 @@ router.get("/hoy/mis-citas", clerkAuth, async (req, res) => {
   }
 });
 
+// GET /api/citas/historial/paciente - Historial de citas donde el usuario logueado es paciente
+router.get("/historial/paciente", clerkAuth, async (req, res) => {
+  try {
+    const clerkUserId = req.user.id;
+ 
+    if (!clerkUserId) {
+      return res.status(401).json({ error: "No se pudo obtener información del usuario" });
+    }
+ 
+    // Buscar el usuario en la BD por clerk_id
+    const usuario = await prisma.usuario.findUnique({
+      where: { clerkId: clerkUserId }
+    });
+ 
+    if (!usuario) {
+      return res.status(404).json({ error: "No se encontró un usuario asociado a este Clerk ID" });
+    }
+ 
+    // Obtener TODAS las citas donde el usuario es paciente, de más reciente a más antigua
+    const citas = await prisma.cita.findMany({
+      where: {
+        idPaciente: usuario.idUsuario
+      },
+      orderBy: {
+        fechaCita: "desc"
+      },
+      include: {
+        // Incluir paciente
+        paciente: {
+          include: {
+            expedientesComoPaciente: {
+              include: {
+                evaluaciones: true,
+                documentos: true,
+                archivos: true
+              }
+            }
+          }
+        },
+ 
+        // Incluir médico para que el frontend lo muestre en la card
+        medico: true,
+ 
+        // Incluir servicio
+        servicio: true,
+ 
+        // Traer todas las evaluaciones de la cita
+        evaluaciones: {
+          include: {
+            expediente: true,
+            doctor: true,
+            paciente: true
+          }
+        }
+      }
+    });
+ 
+    return res.json({ citas });
+ 
+  } catch (error) {
+    console.error("ERROR en historial paciente:", error);
+    return res.status(500).json({ error: "Error al obtener historial de citas" });
+  }
+});
+
+
 // GET /api/citas/dashboard/estadisticas - Obtener estadísticas para el dashboard
 router.get("/dashboard/estadisticas", clerkAuth, async (req, res) => {
   try {

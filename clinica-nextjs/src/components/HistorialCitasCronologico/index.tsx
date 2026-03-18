@@ -42,8 +42,8 @@ export interface Expediente {
   descripcion?: string;
   fechaCreacion: string;
   evaluaciones: Evaluacion[];
-  documentos: any[]; // puedes tipar si tienes estructura
-  archivos: any[];   // idem
+  documentos: any[];
+  archivos: any[];
 }
 
 export interface Paciente {
@@ -88,7 +88,7 @@ interface Cita {
   tipo?: string;
   descripcion?: string | null;
   idPaciente: number;
-  paciente: Paciente;
+  paciente?: Paciente | null;
   medico?: {
     idUsuario: number;
     nombre: string;
@@ -103,9 +103,23 @@ interface Cita {
   evaluaciones: Evaluacion[];
 }
 
+function useRoleConfig(role: string | undefined) {
+  const esPaciente = role === "paciente";
+  const esStaff = role === "admin" || role === "fisioterapeuta";
+ 
+  const endpoint = esPaciente
+    ? "/citas/historial/paciente"
+    : "/citas/hoy/mis-citas";
+ 
+  return { esPaciente, esStaff, endpoint };
+}
+
 export default function HistorialCitasCronologico() {
   const api = useApiClient();
   const { user } = useUser();
+
+  const userRole = user?.publicMetadata?.role as string | undefined;
+  const { esPaciente, esStaff, endpoint } = useRoleConfig(userRole);
 
   const [citas, setCitas] = useState<Cita[]>([]);
   const [doctor, setDoctor] = useState<{ nombre?: string; apellido1?: string } | null>(null);
@@ -131,6 +145,7 @@ export default function HistorialCitasCronologico() {
   // Cargar citas del día
   useEffect(() => {
     if (!user || !api) return;
+    if (!esPaciente && !esStaff) return;
 
     let isMounted = true;
 
@@ -139,7 +154,8 @@ export default function HistorialCitasCronologico() {
         setLoading(true);
         setError(null);
 
-        const response = await api.get("/citas/hoy/mis-citas");
+        //const response = await api.get("/citas/hoy/mis-citas");
+        const response = await api.get(endpoint);
 
         if (!isMounted) return;
 
@@ -180,15 +196,7 @@ export default function HistorialCitasCronologico() {
     return () => {
       isMounted = false;
     };
-  }, [user]);
-
-  // const toggleExpansion = (id: number) => {
-  //   setExpandedCitas((prev) => {
-  //     const nuevo = new Set(prev);
-  //     nuevo.has(id) ? nuevo.delete(id) : nuevo.add(id);
-  //     return nuevo;
-  //   });
-  // };
+  }, [user, endpoint]);
 
 
   const toggleExpansion = (id: number) => {
@@ -246,7 +254,7 @@ export default function HistorialCitasCronologico() {
   const iniciarEdicion = (cita: Cita) => {
     const evaluacion = obtenerEvaluacion(cita);
     const idExpediente =
-    cita.paciente.expedientesComoPaciente?.[0]?.idExpediente ?? null;
+    cita.paciente?.expedientesComoPaciente?.[0]?.idExpediente ?? null;
     setEditingCitaId(cita.idCita);
     setFormData({
       idEvaluacion: evaluacion?.idEvaluacion || undefined,
@@ -283,7 +291,6 @@ export default function HistorialCitasCronologico() {
 
       if (formData.idEvaluacion) {
         // Actualizar
-        console.log("Actualizando evaluación:", formData);
         evaluacionGuardada = await api.put(`/diagnosticos/diagCita/${formData.idEvaluacion}`, formData);
       } else {
         // Crear nueva
@@ -347,9 +354,14 @@ export default function HistorialCitasCronologico() {
   const citasFiltradas = citas.filter((c) => {
     const matchEstado = filtroEstado === "todos" || c.estadoCita === filtroEstado;
     const matchTipo = filtroTipo === "todos" || c.tipo === filtroTipo;
+    // Pacientes buscan por nombre del médico; staff busca por nombre del paciente
+    const textoBusqueda = esPaciente
+      ? `${c.medico?.nombre ?? ""} ${c.medico?.apellido1 ?? ""}`.toLowerCase()
+      : `${c.paciente?.nombre ?? ""} ${c.paciente?.apellido1 ?? ""}`.toLowerCase();
+
     const matchTexto =
       !busqueda ||
-      `${c.paciente.nombre} ${c.paciente.apellido1}`.toLowerCase().includes(busqueda.toLowerCase()) ||
+      textoBusqueda.includes(busqueda.toLowerCase()) ||
       c.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
 
     return matchEstado && matchTipo && matchTexto;
@@ -380,7 +392,9 @@ export default function HistorialCitasCronologico() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Cargando citas del día...</p>
+          <p className="mt-4 text-muted-foreground">
+            {esPaciente ? "Cargando tu historial de citas..." : "Cargando citas del día..."}
+          </p>
         </div>
       </div>
     );
@@ -427,17 +441,20 @@ export default function HistorialCitasCronologico() {
           <Card className="mb-6">
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
+                {/* Búsqueda: paciente busca médico, staff busca paciente */}
+                
                 <div className="relative">
                   <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <input
                     type="text"
-                    placeholder="Buscar paciente..."
+                    placeholder={esPaciente ? "Buscar médico..." : "Buscar paciente..."}
                     className="w-full pl-10 pr-4 py-2 border rounded-lg bg-background"
                     value={busqueda}
                     onChange={(e) => setBusqueda(e.target.value)}
                   />
                 </div>
+                
+
 
                 <select
                   value={filtroEstado}
@@ -454,6 +471,8 @@ export default function HistorialCitasCronologico() {
                   <option value="cancelada">Cancelada</option>
                 </select>
 
+                {esStaff && (
+
                 <select
                   value={filtroTipo}
                   onChange={(e) => setFiltroTipo(e.target.value)}
@@ -467,6 +486,8 @@ export default function HistorialCitasCronologico() {
                   <option value="evaluacion">Evaluación</option>
                   <option value="seguimiento">Seguimiento</option>
                 </select>
+                )}
+
               </div>
             </CardContent>
           </Card>
@@ -478,7 +499,9 @@ export default function HistorialCitasCronologico() {
             <Card>
               <CardContent className="text-center py-16">
                 <CalendarDays className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                <p className="text-lg text-muted-foreground">No hay citas para hoy</p>
+                <p className="text-lg text-muted-foreground">
+                  {esPaciente ? "No tienes citas registradas" : "No hay citas para hoy"}
+                </p>
               </CardContent>
             </Card>
         ) : (
@@ -486,9 +509,9 @@ export default function HistorialCitasCronologico() {
               const isExpanded = expandedCitas.has(cita.idCita);
               const isEditing = editingCitaId === cita.idCita;
               const evaluacion = obtenerEvaluacion(cita);
-              const puedeEditar = ["programada", "confirmada", "en_proceso"].includes(
-                cita.estadoCita ?? ''
-              );
+              const puedeEditar =
+                esStaff &&
+                ["programada", "confirmada", "en_proceso"].includes(cita.estadoCita ?? "");
 
             return (
               <Card key={cita.idCita} className="overflow-hidden">
@@ -506,8 +529,15 @@ export default function HistorialCitasCronologico() {
                       <div className="flex items-center gap-3">
                         {cita.tipo ? getTipoIcon(cita.tipo) : <Stethoscope className="w-5 h-5" />}
                         <div>
+                          {/* Paciente ve el nombre del médico; staff ve el nombre del paciente */}
                           <div className="font-semibold">
-                            {cita.paciente.nombre} {cita.paciente.apellido1}
+                            {esPaciente
+                              ? cita.medico
+                                ? `Dr. ${cita.medico.nombre} ${cita.medico.apellido1}`
+                                : "Médico no asignado"
+                              : cita.paciente
+                              ? `${cita.paciente.nombre} ${cita.paciente.apellido1}`
+                              : "Paciente no disponible"}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {formatFecha(cita.fechaCita)}
