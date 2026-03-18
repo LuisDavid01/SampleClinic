@@ -14,13 +14,14 @@ import {
 } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-
 	User,
 	RefreshCw,
 	Filter,
 	Search,
 	ChevronRight,
 	ChevronLeft,
+	Eye,
+	Archive,
 } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils"
 import { Expediente } from "@/types/Expediente"
@@ -209,12 +210,12 @@ export const ExpedientesList = () => {
 													<TableCell>
 														<div className="flex justify-center items-center gap-2">
 															<Link href={`files/${file.idExpediente}/view`}>
-																<Button variant="outline" size="sm">
-																	Ver
+																<Button variant="outline" size="sm" className="h-8 w-8 p-0">
+																	<Eye className="h-4 w-4" />
 																</Button>
 															</Link>
 
-															<Button variant="destructive" size="sm"
+															<Button variant="destructive" size="sm" className="h-8 w-8 p-0"
 																onClick={async () => {
 																	const result = await deleteExpediente(file.idExpediente);
 																	if (result.success) {
@@ -233,7 +234,7 @@ export const ExpedientesList = () => {
 																	refetch();
 																}}
 															>
-																Archivar
+																<Archive className="h-4 w-4" />
 															</Button>
 														</div>
 													</TableCell>
@@ -293,6 +294,7 @@ export const ExpedientesList = () => {
 											<div className="flex flex-col gap-2 pt-2 w-full">
 												<Link href={`files/${file.idExpediente}/view`} className="w-full">
 													<Button variant="outline" className="w-full">
+														<Eye className="h-4 w-4 mr-2" />
 														Ver expediente
 													</Button>
 												</Link>
@@ -314,10 +316,10 @@ export const ExpedientesList = () => {
 																message: result.message || 'Error al inactivar el expediente'
 															});
 														}
-														// Usar la función de refresh del hook
 														refreshExpedientes();
 													}}
 												>
+													<Archive className="h-4 w-4 mr-2" />
 													Inactivar
 												</Button>
 											</div>

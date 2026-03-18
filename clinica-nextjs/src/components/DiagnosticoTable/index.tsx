@@ -284,8 +284,7 @@ export default function DiagnosticoTable({ expedienteId }: DiagnosticoTableProps
 												onClick={() => setEditingDiagnostico(diagnostico)}
 												className="flex-1"
 											>
-												<Edit className="w-4 h-4 mr-2" />
-												Editar
+												<Edit className="w-4 h-4" />
 											</Button>
 											<Button 
 												variant="destructive" 
@@ -293,8 +292,7 @@ export default function DiagnosticoTable({ expedienteId }: DiagnosticoTableProps
 												onClick={() => handleDelete(diagnostico.idEvaluacion)}
 												className="flex-1"
 											>
-												<Trash2 className="w-4 h-4 mr-2" />
-												Eliminar
+												<Trash2 className="w-4 h-4" />
 											</Button>
 										</div>
 									)}

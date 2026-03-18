@@ -26,7 +26,9 @@ import {
 	ChevronsLeft,
 	ChevronsRight,
 	Star,
-	Users
+	Users,
+	Edit,
+	UserX,
 } from "lucide-react"
 import { formatRelativeTime } from "@/lib/utils"
 import { useApiClient, apiEndpoints } from "@/utils/apiClient"
@@ -203,7 +205,8 @@ export default function TeamContent() {
 												<TableCell className="gap-2">
 													<Button
 														variant={"outline"}
-														size={"sm"}
+														size="sm"
+														className="h-8 w-8 p-0"
 														disabled={processingUserId === member.medico.idUsuario}
 														onClick={() => {
 															setEditingMember(member)
@@ -211,11 +214,12 @@ export default function TeamContent() {
 														}}
 
 													>
-														Editar
+														<Edit className="h-4 w-4" />
 													</Button>
 													<Button
 														variant="destructive"
 														size="sm"
+														className="h-8 w-8 p-0"
 														disabled={processingUserId === member.medico.idUsuario}
 														onClick={async () => {
 															setProcessingUserId(member.medico.idUsuario)
@@ -245,7 +249,7 @@ export default function TeamContent() {
 																<div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
 															</div>
 														) : (
-															'Inactivar'
+															<UserX className="h-4 w-4" />
 														)}
 													</Button>
 												</TableCell>
@@ -301,10 +305,10 @@ export default function TeamContent() {
 											<p className="text-sm text-muted-foreground">Registrado</p>
 										</div>
 
-										<div className="flex gap-2 pt-2">
+												<div className="flex gap-2 pt-2">
 											<Button
 												variant="destructive"
-												className="w-full mb-3"
+												className="flex-1"
 												disabled={processingUserId === member.medico.idUsuario || !member.medico.activo}
 												onClick={async () => {
 													setProcessingUserId(member.medico.idUsuario)
@@ -332,10 +336,9 @@ export default function TeamContent() {
 												{processingUserId === member.medico.idUsuario ? (
 													<div className="flex items-center justify-center gap-2">
 														<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-														<span>Procesando...</span>
 													</div>
 												) : (
-													'Inactivar'
+													<><UserX className="h-4 w-4 mr-2" />Inactivar</>
 												)}
 											</Button>
 										</div>

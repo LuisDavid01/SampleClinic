@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-	RefreshCw, Filter, Search, ChevronRight, ChevronLeft, Package, Plus
+	RefreshCw, Filter, Search, ChevronRight, ChevronLeft, Package, Plus, Edit, Power
 } from "lucide-react"
 import { useNotification } from "@/components/UseNotification"
 import EditServiceDialog from "@/components/EditServiceDialog"
@@ -194,19 +194,19 @@ export default function ServiceList() {
 													<div className="flex items-center gap-2">
 														<Button 
 															variant="outline" 
-															size="sm" 
-															className="w-[90px]"
+															size="sm"
+															className="h-8 w-8 p-0"
 															onClick={() => {
 																setEditingService(service)
 																setIsEditDialogOpen(true)
 															}}
 														>
-															Editar
+															<Edit className="h-4 w-4" />
 														</Button>
 														<Button
 															variant={service.estado === 'Activo' ? "destructive" : "default"} 
 															size="sm"
-															className="w-[90px]"
+															className="h-8 w-8 p-0"
 															disabled={processingServiceId === service.id}
 															onClick={async () => {
 																setProcessingServiceId(service.id)
@@ -236,7 +236,7 @@ export default function ServiceList() {
 																	<div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
 																</div>
 															) : (
-																service.estado === 'Activo' ? 'Inactivar' : 'Activar'
+																<Power className="h-4 w-4" />
 															)}
 														</Button>
 													</div>
@@ -290,17 +290,18 @@ export default function ServiceList() {
 										<div className="flex gap-2 pt-2">
 											<Button 
 												variant="outline" 
-												className="w-full mb-3"
+												className="flex-1"
 												onClick={() => {
 													setEditingService(service)
 													setIsEditDialogOpen(true)
 												}}
 											>
+												<Edit className="h-4 w-4 mr-2" />
 												Editar
 											</Button>
 											<Button
 												variant={service.estado === 'Activo' ? "destructive" : "default"} 
-												className="w-full mb-3"
+												className="flex-1"
 												disabled={processingServiceId === service.id}
 												onClick={async () => {
 													setProcessingServiceId(service.id)
@@ -328,10 +329,9 @@ export default function ServiceList() {
 												{processingServiceId === service.id ? (
 													<div className="flex items-center justify-center gap-2">
 														<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-														<span>Procesando...</span>
 													</div>
 												) : (
-													service.estado === 'Activo' ? 'Inactivar' : 'Activar'
+													<><Power className="h-4 w-4 mr-2" />{service.estado === 'Activo' ? 'Inactivar' : 'Activar'}</>
 												)}
 											</Button>
 										</div>
