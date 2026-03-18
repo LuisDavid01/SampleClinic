@@ -24,7 +24,10 @@ import {
 	ChevronsLeft,
 	ChevronsRight,
 	Star,
-	Loader2
+	Loader2,
+	Eye,
+	EyeOff,
+	Globe,
 } from "lucide-react"
 import { cn, formatRelativeTime } from "@/lib/utils"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -264,21 +267,21 @@ export default function TestimonialsContent() {
 														<TableCell>
 															<Button 
 																variant="outline" 
-																size="sm" 
-																className="mr-3"
+																size="sm"
+																className="h-8 w-8 p-0 mr-3"
 																onClick={async () => {
 																	const testimonyData = await getTestimony(review.idHistoria)
 																	setEditingTestimony(testimonyData)
 																	setIsEditDialogOpen(true)
 																}}
 															>
-																Ver
+																<Eye className="h-4 w-4" />
 															</Button>
 															{review.publicado ? (
 																<Button 
 																	variant="destructive" 
-																	size="sm" 
-																	className="mr-3"
+																	size="sm"
+																	className="h-8 w-8 p-0 mr-3"
 																	disabled={processingTestimonyId === review.idHistoria}
 																	onClick={async () => {
 																		setProcessingTestimonyId(review.idHistoria)
@@ -294,19 +297,16 @@ export default function TestimonialsContent() {
 																	}}
 																>
 																	{processingTestimonyId === review.idHistoria ? (
-																		<div className="flex items-center gap-2">
-																			<Loader2 className="w-4 h-4 animate-spin" />
-																			<span>Procesando...</span>
-																		</div>
+																		<Loader2 className="w-4 h-4 animate-spin" />
 																	) : (
-																		'despublicar'
+																		<EyeOff className="h-4 w-4" />
 																	)}
 																</Button>
 															) : (
 																<Button 
 																	variant="secondary" 
-																	size="sm" 
-																	className="mr-3"
+																	size="sm"
+																	className="h-8 w-8 p-0 mr-3"
 																	disabled={processingTestimonyId === review.idHistoria}
 																	onClick={async () => {
 																		setProcessingTestimonyId(review.idHistoria)
@@ -322,12 +322,9 @@ export default function TestimonialsContent() {
 																	}}
 																>
 																	{processingTestimonyId === review.idHistoria ? (
-																		<div className="flex items-center gap-2">
-																			<Loader2 className="w-4 h-4 animate-spin" />
-																			<span>Procesando...</span>
-																		</div>
+																		<Loader2 className="w-4 h-4 animate-spin" />
 																	) : (
-																		'publicar'
+																		<Globe className="h-4 w-4" />
 																	)}
 																</Button>
 															)}
@@ -381,21 +378,21 @@ export default function TestimonialsContent() {
 											<div className="flex gap-2 pt-2">
 												<Button 
 													variant="outline" 
-													className="w-full flex-1"
+													className="flex-1"
 													onClick={async () => {
 														const testimonyData = await getTestimony(review.idHistoria)
 														setEditingTestimony(testimonyData)
 														setIsEditDialogOpen(true)
 													}}
 												>
+													<Eye className="h-4 w-4 mr-2" />
 													Ver testimonio
 												</Button>
 
 												{review.publicado ? (
 													<Button 
 														variant="destructive" 
-														size="sm" 
-														className="w-full mb-3"
+														className="flex-1"
 														disabled={processingTestimonyId === review.idHistoria}
 														onClick={async () => {
 															setProcessingTestimonyId(review.idHistoria)
@@ -413,17 +410,16 @@ export default function TestimonialsContent() {
 														{processingTestimonyId === review.idHistoria ? (
 															<div className="flex items-center justify-center gap-2">
 																<Loader2 className="w-4 h-4 animate-spin" />
-																<span>Procesando...</span>
 															</div>
 														) : (
-															'Despublicar'
+															<EyeOff className="h-4 w-4 mr-2" />
 														)}
+														Despublicar
 													</Button>
 												) : (
 													<Button 
 														variant="secondary" 
-														size="sm" 
-														className="w-full mb-3"
+														className="flex-1"
 														disabled={processingTestimonyId === review.idHistoria}
 														onClick={async () => {
 															setProcessingTestimonyId(review.idHistoria)
@@ -441,11 +437,11 @@ export default function TestimonialsContent() {
 														{processingTestimonyId === review.idHistoria ? (
 															<div className="flex items-center justify-center gap-2">
 																<Loader2 className="w-4 h-4 animate-spin" />
-																<span>Procesando...</span>
 															</div>
 														) : (
-															'Publicar'
+															<Globe className="h-4 w-4 mr-2" />
 														)}
+														Publicar
 													</Button>
 												)}
 											</div>

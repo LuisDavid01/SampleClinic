@@ -267,7 +267,7 @@ export default function ManageUser() {
 														Recep
 													</Button>
 
-													<Button
+												<Button
 														size="sm"
 														onClick={async () => {
 															await setRole(user.id, "paciente")
@@ -283,34 +283,28 @@ export default function ManageUser() {
 													>
 														Paciente
 													</Button>
-												</div>
 
-												{/* Botón de Baneo */}
-												{currentRole !== "admin" && currentRole !== "fisioterapeuta" && (
-													<Button
-														size="sm"
-														variant={user.isBanned ? "outline" : "destructive"}
-														onClick={async () => {
-															await toggleBanUserClerk(user.id, user.isBanned)
-															queryClient.invalidateQueries({
-																queryKey: ['users']
-															})
-														}}
-														className="h-8 shrink-0 text-xs sm:w-auto"
-													>
-														{user.isBanned ? (
-															<>
-																<ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
-																Desbanear
-															</>
-														) : (
-															<>
-																<Ban className="mr-1.5 h-3.5 w-3.5" />
-																Banear
-															</>
-														)}
-													</Button>
-												)}
+													{currentRole !== "admin" && (
+														<Button
+															size="sm"
+															variant={user.isBanned ? "outline" : "destructive"}
+															onClick={async () => {
+																await toggleBanUserClerk(user.id, user.isBanned)
+																queryClient.invalidateQueries({
+																	queryKey: ['users']
+																})
+															}}
+															className="h-8 w-8 p-0"
+															title={user.isBanned ? "activar usuario" : "inactivar usuario"}
+														>
+															{user.isBanned ? (
+																<ShieldCheck className="h-4 w-4" />
+															) : (
+																<Ban className="h-4 w-4" />
+															)}
+														</Button>
+													)}
+												</div>
 											</div>
 
 										</div>

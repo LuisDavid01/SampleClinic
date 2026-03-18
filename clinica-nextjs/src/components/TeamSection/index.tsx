@@ -70,7 +70,7 @@ export const TeamSection = () => {
 			{
 				queryKey: ['team-members'],
 				queryFn: async () => {
-					const res = await getEquipo(1, 10, "")
+					const res = await getEquipo(1, 10, "", true)
 					console.log(res)
 					return res.perfiles
 				},

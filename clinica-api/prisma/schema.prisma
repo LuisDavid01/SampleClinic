@@ -61,7 +61,7 @@ model Perfil {
   certificaciones        PerfilCertificacion[]
   servicios              PerfilServicio[]
   medico                 Usuario               @relation(fields: [idMedico], references: [idUsuario], onDelete: Cascade)
-
+  activo                 Boolean               @default(true)
   @@map("perfiles")
 }
 

@@ -186,6 +186,7 @@ export async function updateExpediente(
 				error: 'Acceso no autorizado',
 			}
 		}
+		console.log("id paciente ", data.idPaciente)
 
 		// Allow partial validation for updates with more flexible schema
 		const UpdateExpedienteSchema = ExpedienteSchema.partial().extend({

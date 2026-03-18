@@ -33,3 +33,9 @@ down:
 
 up: down
 	docker compose up --detach
+
+down-db:
+	cd clinica-api && docker compose -f compose-postgres.yaml down --remove-orphans
+
+up-db: down-db
+	cd clinica-api && docker compose -f compose-postgres.yaml up --detach
