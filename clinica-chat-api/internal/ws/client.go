@@ -23,26 +23,29 @@ const (
 )
 
 type Client struct {
-	ID       string          `json:"user_id"`
-	Username string          `json:"username"`
-	Rol      string          `json:"-"`
-	Conn     *websocket.Conn `json:"-"`
-	Manager  *Manager        `json:"-"`
-	chatroom string          `json:"-"`
-	// channel to avoid blocking messages
-	egress chan Event `json:"-"`
+	ID              string          `json:"user_id"`
+	Username        string          `json:"username"`
+	Rol             string          `json:"-"`
+	Conn            *websocket.Conn `json:"-"`
+	Manager         *Manager        `json:"-"`
+	chatroom        string          `json:"-"`
+	egress          chan Event      `json:"-"`
+	rateLimiter     *SlidingWindowLimiter
+	lastMessageTime time.Time
 }
 
 type ClientList map[*Client]bool
 
 func NewClient(conn *websocket.Conn, manager *Manager, id string, username string, rol string) *Client {
 	return &Client{
-		ID:       id,
-		Username: username,
-		Conn:     conn,
-		Manager:  manager,
-		Rol:      rol,
-		egress:   make(chan Event),
+		ID:              id,
+		Username:        username,
+		Conn:            conn,
+		Manager:         manager,
+		Rol:             rol,
+		egress:          make(chan Event),
+		rateLimiter:     NewSlidingWindowLimiter(20, time.Minute),
+		lastMessageTime: time.Now(),
 	}
 }
 
@@ -77,6 +80,13 @@ func (c *Client) Read() {
 			continue
 		}
 
+		if request.Type == EventSendMessage && !c.rateLimiter.Allow() {
+			errorMessageHandler("Demasiados mensajes, espere un minuto", time.Now(), c)
+			continue
+		}
+
+		c.lastMessageTime = time.Now()
+
 		if err := c.Manager.RouteEvent(request, c); err != nil {
 			log.Printf("Error routing the event: %v", err)
 		}
@@ -92,6 +102,7 @@ func (c *Client) Write() {
 	}()
 
 	ticker := time.NewTicker(pingInterval)
+	inactivityTicker := time.NewTicker(30 * time.Second)
 
 	for {
 		select {
@@ -118,9 +129,15 @@ func (c *Client) Write() {
 			log.Println("Message sent")
 
 		case <-ticker.C:
-			log.Println("ping")
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				log.Printf("Error sending ping message: %v", err)
+				return
+			}
+
+		case <-inactivityTicker.C:
+			if time.Since(c.lastMessageTime) > 5*time.Minute {
+				log.Printf("Client %s (%s) inactive for 5 minutes, closing connection", c.Username, c.ID)
+				c.Conn.Close()
 				return
 			}
 		}
@@ -129,6 +146,5 @@ func (c *Client) Write() {
 }
 
 func (c *Client) pongHandler(pongMsg string) error {
-	log.Println("pong")
 	return c.Conn.SetReadDeadline(time.Now().Add(pongWait))
 }

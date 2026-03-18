@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -20,7 +21,9 @@ import (
 
 func checkOrigin(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
-
+	if os.Getenv("GO_ENV") == "development" {
+		return true
+	}
 	switch origin {
 	case "http://localhost:3000":
 		return true
@@ -213,6 +216,10 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			clientID = usr.ID
+			if usr.FirstName == nil && usr.LastName == nil {
+				http.Error(w, "Introduce tu nombre y apellido en tu perfil por favor", http.StatusInternalServerError)
+				return
+			}
 			if usr.LastName == nil {
 				req.Username = *usr.FirstName
 			} else {

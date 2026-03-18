@@ -81,12 +81,13 @@ func routeUpdateLatestMessage(room *Room, c *Client, msg NewMessageEvent) error 
 		Type:    EventUpdateRoom,
 		Payload: data,
 	}
-
+	c.Manager.RLock()
 	for client := range c.Manager.Clients {
 		if client.Rol == RoleRecep || client.Rol == RoleAdmin {
 			client.egress <- updateOutgoingEvent
 		}
 	}
+	c.Manager.RUnlock()
 	return nil
 
 }
@@ -254,11 +255,13 @@ func newRoomHandler(room Room, c *Client) error {
 		Payload: data,
 	}
 
+	c.Manager.RLock()
 	for client := range c.Manager.Clients {
 		if client.Rol == RoleRecep || client.Rol == RoleAdmin {
 			client.egress <- outgoingEvent
 		}
 	}
+	c.Manager.RUnlock()
 
 	return nil
 }
@@ -275,10 +278,11 @@ func leaveRoomHandler(client *Client) {
 		Type:    EventLeaveRoom,
 		Payload: data,
 	}
-
+	client.Manager.RLock()
 	for c := range client.Manager.Clients {
 		if c.Rol != RolePacient {
 			c.egress <- outgointEvent
 		}
 	}
+	client.Manager.RUnlock()
 }

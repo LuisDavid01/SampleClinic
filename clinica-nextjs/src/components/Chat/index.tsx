@@ -155,6 +155,7 @@ export default function FloatingChat() {
 		}
 		switch (event.type) {
 			case "new_message":
+				console.log("new message");
 				const payload = event.payload as NewMessageEvent;
 				const messageEvent = Object.assign(new NewMessageEvent(payload.message, payload.from, payload.role, payload.sent))
 				setMessages(prev => [
@@ -224,6 +225,7 @@ export default function FloatingChat() {
 		}
 		setInputError(null)
 		if (newMessage) {
+			console.log("enviando mensaje...");
 			sendEvent("send_message", new SendMessageEvent(validationResult.data));
 
 
