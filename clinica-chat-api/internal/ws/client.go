@@ -23,27 +23,29 @@ const (
 )
 
 type Client struct {
-	ID          string          `json:"user_id"`
-	Username    string          `json:"username"`
-	Rol         string          `json:"-"`
-	Conn        *websocket.Conn `json:"-"`
-	Manager     *Manager        `json:"-"`
-	chatroom    string          `json:"-"`
-	egress      chan Event      `json:"-"`
-	rateLimiter *SlidingWindowLimiter
+	ID              string          `json:"user_id"`
+	Username        string          `json:"username"`
+	Rol             string          `json:"-"`
+	Conn            *websocket.Conn `json:"-"`
+	Manager         *Manager        `json:"-"`
+	chatroom        string          `json:"-"`
+	egress          chan Event      `json:"-"`
+	rateLimiter     *SlidingWindowLimiter
+	lastMessageTime time.Time
 }
 
 type ClientList map[*Client]bool
 
 func NewClient(conn *websocket.Conn, manager *Manager, id string, username string, rol string) *Client {
 	return &Client{
-		ID:          id,
-		Username:    username,
-		Conn:        conn,
-		Manager:     manager,
-		Rol:         rol,
-		egress:      make(chan Event),
-		rateLimiter: NewSlidingWindowLimiter(20, time.Minute),
+		ID:              id,
+		Username:        username,
+		Conn:            conn,
+		Manager:         manager,
+		Rol:             rol,
+		egress:          make(chan Event),
+		rateLimiter:     NewSlidingWindowLimiter(20, time.Minute),
+		lastMessageTime: time.Now(),
 	}
 }
 
@@ -83,6 +85,8 @@ func (c *Client) Read() {
 			continue
 		}
 
+		c.lastMessageTime = time.Now()
+
 		if err := c.Manager.RouteEvent(request, c); err != nil {
 			log.Printf("Error routing the event: %v", err)
 		}
@@ -98,6 +102,7 @@ func (c *Client) Write() {
 	}()
 
 	ticker := time.NewTicker(pingInterval)
+	inactivityTicker := time.NewTicker(30 * time.Second)
 
 	for {
 		select {
@@ -126,6 +131,13 @@ func (c *Client) Write() {
 		case <-ticker.C:
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				log.Printf("Error sending ping message: %v", err)
+				return
+			}
+
+		case <-inactivityTicker.C:
+			if time.Since(c.lastMessageTime) > 5*time.Minute {
+				log.Printf("Client %s (%s) inactive for 5 minutes, closing connection", c.Username, c.ID)
+				c.Conn.Close()
 				return
 			}
 		}
