@@ -14,7 +14,8 @@ import {
 import clsx from 'clsx'
 import { createArchivo, deleteArchivo, downloadArchivo, getArchivosByUser } from '@/actions/archivos'
 import { Archivo } from '@/types/Consent'
-import { useQueries } from '@tanstack/react-query'
+import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useNotification } from '../UseNotification'
 
 
 
@@ -28,6 +29,8 @@ export default function DocumentosExpediente({ expedienteId,
 		expedienteId: number,
 		pacienteId: number
 	}) {
+	const { showNotification } = useNotification()
+	const queryClient = useQueryClient()
 	const [files, setFiles] = useState<File[]>([])
 	const [isUploading, setIsUploading] = useState(false)
 	const [page, setPage] = useState(1);
@@ -136,22 +139,41 @@ export default function DocumentosExpediente({ expedienteId,
 	const handleGuardarDocumentos = async () => {
 		setIsUploading(true)
 		try {
-			// Aquí iría la lógica para subir los archivos al servidor
-			// Por ejemplo, usando FormData y fetch
-			console.log('Guardando files:', files)
 			const data = {
 				idPaciente: pacienteId,
 				idExpediente: expedienteId,
 				categoria: 'archivo' as const,
 				files: files as File[]
 			}
-			// Simular delay de subida
-			await createArchivo(data)
-			// Limpiar la lista después de guardar
+
+			const result = await createArchivo(data)
+
+			if (!result.success) {
+				showNotification({
+					type: 'error',
+					title: 'Error al subir archivos',
+					message: result.message
+				})
+			} else {
+				showNotification({
+					type: 'success',
+					title: 'Archivos subidos',
+					message: `${files.length === 1 ? 'Se ha' : 'Se han'} subido ${files.length} archivo${files.length !== 1 ? 's' : ''} correctamente`
+				})
+
+				queryClient.invalidateQueries({
+					queryKey: ['archivos', page, limit, pacienteId]
+				})
+			}
 
 			setFiles([])
 		} catch (error) {
 			console.error('Error al guardar files:', error)
+			showNotification({
+				type: 'error',
+				title: 'Error',
+				message: 'Ocurrió un error al subir los archivos'
+			})
 		} finally {
 			setIsUploading(false)
 		}
