@@ -8,7 +8,7 @@
 // Usar fetch nativo de Node.js (disponible desde Node 18+)
 
 const API_BASE_URL = 'http://localhost:3001/api';
-const TEST_TOKEN = 'Bearer sk_test_REVOKED'; // Token de prueba
+const TEST_TOKEN = process.env.CLERK_TEST_TOKEN || 'Bearer test_clerk_token_placeholder';
 
 // Colores para la consola
 const colors = {

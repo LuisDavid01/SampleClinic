@@ -3,7 +3,7 @@ const axios = require('axios');
 // Función para probar endpoints de Swagger
 async function testSwaggerRoutes() {
   const baseURL = 'http://localhost:3001/api';
-  const token = 'JWT_TOKEN_REVOKED';
+  const token = process.env.TEST_JWT_TOKEN || 'test_jwt_token_placeholder';
   
   const headers = {
     'Authorization': `Bearer ${token}`,

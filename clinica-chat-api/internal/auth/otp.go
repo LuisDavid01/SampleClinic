@@ -52,13 +52,6 @@ func (rm *RetentionMap) ValidateOTP(otp string) (OTP, bool) {
 	rm.Lock()
 	defer rm.Unlock()
 	log.Println("recibi otp")
-	if os.Getenv("GO_ENV") == "development" && otp == "123456" {
-		return OTP{
-			Username: "test-Pacient",
-			Rol:      "paciente",
-			UserID:   uuid.NewString(),
-		}, true
-	}
 
 	if _, ok := rm.data[otp]; !ok {
 		return OTP{}, false

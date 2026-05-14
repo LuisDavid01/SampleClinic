@@ -1,8 +1,11 @@
 import crypto from 'crypto';
 
-// Clave de encriptación (en producción debe estar en variables de entorno)
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'MUST_SET_IN_ENV';
 const ALGORITHM = 'aes-256-cbc';
+
+if (!process.env.ENCRYPTION_KEY) {
+  throw new Error('ENCRYPTION_KEY no está configurada. Debe establecerse en el entorno de producción.');
+}
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 
 /**
  * Encripta un texto usando AES-256-CBC

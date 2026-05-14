@@ -7,8 +7,7 @@
 // Configuración de la API
 const API_BASE_URL = 'http://localhost:3001/api';
 
-// Token real de Clerk proporcionado
-const CLERK_TOKEN = 'CLERK_JWT_TOKEN_REVOKED';
+const CLERK_TOKEN = process.env.CLERK_TEST_TOKEN || 'test_clerk_token_placeholder';
 
 // Función para hacer peticiones HTTP
 const makeRequest = async (method, endpoint, body = null) => {
