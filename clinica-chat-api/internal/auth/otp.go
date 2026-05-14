@@ -2,8 +2,6 @@ package auth
 
 import (
 	"context"
-	"log"
-	"os"
 	"sync"
 	"time"
 
@@ -51,7 +49,6 @@ func (rm *RetentionMap) NewOTP(username, rol, userID string) OTP {
 func (rm *RetentionMap) ValidateOTP(otp string) (OTP, bool) {
 	rm.Lock()
 	defer rm.Unlock()
-	log.Println("recibi otp")
 
 	if _, ok := rm.data[otp]; !ok {
 		return OTP{}, false

@@ -3,23 +3,21 @@ package app
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/LuisDavid01/fisioterapeuta-ep/clinica-chat-api/internal/ws"
 )
 
 type Application struct {
-	Logger  *log.Logger
+	Logger  *slog.Logger
 	Manager *ws.Manager
 }
 
-func NewApplication() (*Application, error) {
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+func NewApplication(logger *slog.Logger) (*Application, error) {
 	ctx := context.Background()
-	manager := ws.NewManager(ctx)
+	manager := ws.NewManager(ctx, logger)
 
 	//we construct the application
 	app := &Application{

@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -53,18 +52,20 @@ type RoomList map[string]*Room
 
 type Manager struct {
 	Clients ClientList
+	Logger  *slog.Logger
 	sync.RWMutex
 	Rooms    RoomList
 	opts     *auth.RetentionMap
 	handlers map[string]EventHanlder
 }
 
-func NewManager(ctx context.Context) *Manager {
+func NewManager(ctx context.Context, logger *slog.Logger) *Manager {
 	m := &Manager{
 		Clients:  make(ClientList),
 		handlers: make(map[string]EventHanlder),
 		opts:     auth.NewRetentionMap(ctx, 5*time.Second),
 		Rooms:    make(RoomList),
+		Logger:   logger,
 	}
 
 	m.setupEventHandlers()
@@ -99,7 +100,7 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		m.Logger.Error("failed to upgrade connection", "error", err)
 		return
 	}
 
@@ -114,9 +115,9 @@ func (m *Manager) ServeWs(w http.ResponseWriter, r *http.Request) {
 		}
 		m.addRoom(clientRoom)
 		client.chatroom = clientRoom.ID
-		log.Printf("New room created: %s", clientRoom.ID)
 	}
-	fmt.Printf("New client connected: %s , role: %s, chatroom:  %s\n", client.Username, client.Rol, client.chatroom)
+
+	m.Logger.Debug("New client connected", "username", client.Username, "role", client.Rol, "chatroom", client.chatroom)
 
 	go client.Read()
 	go client.Write()
@@ -145,7 +146,6 @@ func (m *Manager) RemoveClient(client *Client) {
 		leaveRoomHandler(client)
 		client.Conn.Close()
 		delete(m.Clients, client)
-		log.Printf("Client removed:  %s", client.Username)
 
 	}
 }
@@ -192,7 +192,6 @@ type UserLoginRequest struct {
 //	@Security		BearerAuth
 //	@Router			/api/otp [post]
 func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Recibí OTP request")
 	authHeader := r.Header.Get("Authorization")
 
 	var role = RolePacient
@@ -203,10 +202,15 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	if len(req.Username) < 8 {
+		http.Error(w, "Introduce tu nombre y apellido en tu perfil por favor", http.StatusInternalServerError)
+		return
+	}
+
 	if authHeader != "" {
 
 		claims, ok := clerk.SessionClaimsFromContext(r.Context())
-		log.Println("Getting claims...")
 		if ok {
 			userID := claims.Subject
 
@@ -240,8 +244,7 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 	if clientID == "" {
 		clientID = "anon-" + uuid.New().String()
 	}
-	// eliminar en prod
-	log.Printf("Usuario loggeado: %+v , rol: %s, id: %s", req, role, clientID)
+	m.Logger.Debug("Usuario loggeado", "role", role, "id", clientID)
 
 	//generamos la respuesta
 	otp := m.opts.NewOTP(req.Username, role, clientID)
@@ -252,11 +255,10 @@ func (m *Manager) OtpHandler(w http.ResponseWriter, r *http.Request) {
 
 	data, err := json.Marshal(resp)
 	if err != nil {
-		log.Printf("Error sending the OTP: %v", err)
+		m.Logger.Error("Error sending the OTP", "error", err)
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
-	return
 
 }
 

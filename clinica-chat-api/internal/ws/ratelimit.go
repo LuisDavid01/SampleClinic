@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"log"
 	"sync"
 	"time"
 )
@@ -37,7 +36,6 @@ func (s *SlidingWindowLimiter) Allow() bool {
 	s.timestamps = s.timestamps[:valid]
 
 	if len(s.timestamps) >= s.maxRequests {
-		log.Printf("Rate limit exceeded: %d requests in %v", len(s.timestamps), s.window)
 		return false
 	}
 

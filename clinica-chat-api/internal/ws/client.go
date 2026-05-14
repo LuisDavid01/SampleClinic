@@ -2,7 +2,7 @@ package ws
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -56,7 +56,7 @@ func (c *Client) Read() {
 	}()
 
 	if err := c.Conn.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
-		log.Println(err)
+		c.Manager.Logger.Error("error setting read deadline", "error", err)
 		return
 	}
 
@@ -69,14 +69,14 @@ func (c *Client) Read() {
 		if err != nil {
 
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseAbnormalClosure, websocket.CloseGoingAway) {
-				log.Printf("error: %v", err)
+				fmt.Printf("Unsual close error: %v", err)
 			}
 			break
 		}
 		var request Event
 
 		if err := json.Unmarshal(payload, &request); err != nil {
-			log.Printf("error parsing the event: %v", err)
+			c.Manager.Logger.Error("Error unmarshalling the message", "error", err)
 			continue
 		}
 
@@ -88,7 +88,7 @@ func (c *Client) Read() {
 		c.lastMessageTime = time.Now()
 
 		if err := c.Manager.RouteEvent(request, c); err != nil {
-			log.Printf("Error routing the event: %v", err)
+			c.Manager.Logger.Error("Error routing the event", "error", err)
 		}
 
 	}
@@ -109,34 +109,33 @@ func (c *Client) Write() {
 		case message, ok := <-c.egress:
 			if !ok {
 				if err := c.Conn.WriteMessage(websocket.CloseMessage, nil); err != nil {
-					log.Printf("error  sending error message: %v", err)
+					c.Manager.Logger.Error("Error sending close message", "error", err)
 
 				}
 				return
 			}
 			data, err := json.Marshal(message)
 			if err != nil {
+				c.Manager.Logger.Error("Error marshalling the message", "error", err)
 
-				log.Printf("error parsing the send message: %v", err)
 				return
 			}
 
 			if err := c.Conn.WriteMessage(websocket.TextMessage, data); err != nil {
-				log.Printf("error  sending the message: %v", err)
+				c.Manager.Logger.Error("Error sending message", "error", err)
 				return
 			}
 
-			log.Println("Message sent")
 
 		case <-ticker.C:
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				log.Printf("Error sending ping message: %v", err)
+				c.Manager.Logger.Error("Error sending ping message", "error", err)
 				return
 			}
 
 		case <-inactivityTicker.C:
 			if time.Since(c.lastMessageTime) > 5*time.Minute {
-				log.Printf("Client %s (%s) inactive for 5 minutes, closing connection", c.Username, c.ID)
+				c.Manager.Logger.Error("Client inactivity", "username", c.Username)
 				c.Conn.Close()
 				return
 			}
