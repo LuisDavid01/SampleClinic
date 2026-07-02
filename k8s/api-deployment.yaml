@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clinica-api
+  labels:
+    app: clinica-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clinica-api
+  template:
+    metadata:
+      labels:
+        app: clinica-api
+    spec:
+      containers:
+        - name: clinica-api
+          image: luisdavid01/clinicaapi:latest 
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: clinica-api-configmap
+                  key: PORT
