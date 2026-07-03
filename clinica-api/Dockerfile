@@ -47,8 +47,8 @@ ENV SMTP_PORT=587
 ENV SMTP_SECURE=false
 ENV SMTP_USER=tu-email@gmail.com
 ENV SMTP_PASS=tu-app-password
-ENV EMAIL_FROM=noreply@clinicaestebanporras.com
-ENV EMAIL_FROM_NAME="Clínica Esteban Porras"
+ENV EMAIL_FROM=noreply@example.com
+ENV EMAIL_FROM_NAME="example"
 
 # Frontend URL
 ENV FRONTEND_URL=http://localhost:3000

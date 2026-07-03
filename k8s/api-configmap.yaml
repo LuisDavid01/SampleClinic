@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: clinica-api-configmap
 data:
-  API_PORT: "8082"
+  API_PORT: "3001"

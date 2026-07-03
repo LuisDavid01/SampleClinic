@@ -17,9 +17,6 @@ spec:
       containers:
         - name: clinica-api
           image: luisdavid01/clinicaapi:latest 
-          env:
-            - name: PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: clinica-api-configmap
-                  key: PORT
+          envFrom:
+            - secretRef:
+                name: clinicaapi-secrets
