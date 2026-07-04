@@ -17,7 +17,7 @@ const ServicioSchema = z.object({
 export type ServicioData = z.infer<typeof ServicioSchema>
 
 /** ========= Base URL ========= */
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001/api'
 
 /** ========= GET: listado ========= */
 export async function getServicios(page: number, search?: string, limit: number = 10) {
@@ -51,7 +51,7 @@ export async function getServicios(page: number, search?: string, limit: number 
 }
 
 export async function getAllServicios() {
-  
+	console.log(`todos los servicios vienen de ${baseUrl}`)
 
   const res = await fetch(`${baseUrl}/servicios/public`, {
     method: 'GET',
@@ -59,7 +59,7 @@ export async function getAllServicios() {
       'Content-Type': 'application/json',
     },
   })
-  if (!res.ok) throw new Error('Failed to fetch servicios')
+  if (!res.ok) throw new Error(`Failed to fetch servicios publicos  ${baseUrl}`)
   return res.json()
 }
 

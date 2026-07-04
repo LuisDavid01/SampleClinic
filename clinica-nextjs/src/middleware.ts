@@ -26,7 +26,6 @@ const isProtectedRoute = createRouteMatcher([
 export default clerkMiddleware(async (auth, req) => {
 	const authData = await auth();
 	const userRole = authData.sessionClaims?.metadata?.role as string | undefined;
-
 	if (isProtectedRoute(req)) {
 		if (!authData.userId) {
 			const url = new URL("/", req.url);

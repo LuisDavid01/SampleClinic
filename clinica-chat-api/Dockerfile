@@ -15,9 +15,8 @@ FROM alpine:latest AS runner
 
 
 WORKDIR /app
-ENV GO_ENV="development"
-ENV CLERK_SECRET_KEY=""
+ENV GO_ENV="production"
 COPY --from=build /app/main .
-EXPOSE 8080
+EXPOSE 8081
 
 CMD ["./main"]
