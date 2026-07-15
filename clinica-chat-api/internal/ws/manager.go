@@ -31,7 +31,7 @@ func checkOrigin(r *http.Request) bool {
 		return true
 	case "http://clinica.stackkub.com":
 		return true
-	case "http://clinica.internal:3000":
+	case "http://clinica.internal":
 		return true
 	default:
 		fmt.Println("unknown origin", origin)

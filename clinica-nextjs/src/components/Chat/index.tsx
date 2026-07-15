@@ -74,6 +74,8 @@ export default function FloatingChat() {
 		try {
 
 			const token = await getToken();
+			const backendUrl = process.env.NEXT_PUBLIC_CHAT_API_BASE_URL
+			console.log(`chat url: ${backendUrl}`)
 			const otp = await fetch(`/chat/otp`, {
 				headers: {
 					"Authorization": `Bearer ${token}`,
@@ -94,6 +96,7 @@ export default function FloatingChat() {
 			}).then((data) => {
 				return data.otp;
 			})
+			console.log("ws url: ", `${process.env.NEXT_PUBLIC_WS_URL}`)
 			wsRef.current = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}?otp=` + otp);
 
 			wsRef.current.onerror = (error) => {
