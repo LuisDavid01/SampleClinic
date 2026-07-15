@@ -8,3 +8,30 @@ spec:
     - name: http
       protocol: HTTP
       port: 80
+    - name: https-clinica
+      protocol: HTTPS
+      port: 443
+      hostname: "clinica.internal"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: clinica-tls-secret
+            kind: Secret
+    - name: https-api
+      protocol: HTTPS
+      port: 443
+      hostname: "clinicaapi.internal"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: clinicaapi-tls-secret
+            kind: Secret
+    - name: https-chat
+      protocol: HTTPS
+      port: 443
+      hostname: "clinicachat.internal"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: clinicachat-tls-secret
+            kind: Secret

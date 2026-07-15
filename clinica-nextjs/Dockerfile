@@ -16,9 +16,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_Z2xvd2luZy1nb2xkZmlzaC05Mi5jbGVyay5hY2NvdW50cy5kZXYk"
-ARG NEXT_PUBLIC_API_BASE_URL="http://clinicaapi.internal/api"
-ARG NEXT_PUBLIC_CHAT_API_BASE_URL="http://clinicachat.internal/api"
-ARG NEXT_PUBLIC_WS_URL="ws://clinicachat.internal/ws"
+ARG NEXT_PUBLIC_API_BASE_URL="https://clinicaapi.internal/api"
+ARG NEXT_PUBLIC_CHAT_API_BASE_URL="https://clinicachat.internal/api"
+ARG NEXT_PUBLIC_WS_URL="wss://clinicachat.internal/ws"
 RUN npm install -g pnpm && pnpm run build
 
 FROM gcr.io/distroless/nodejs20-debian12 AS runner

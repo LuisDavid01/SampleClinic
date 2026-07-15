@@ -5,6 +5,7 @@ metadata:
 spec:
   parentRefs:
     - name: clinica-gateway
+      sectionName: https-chat
   hostnames:
     - "clinicachat.internal"
   rules:

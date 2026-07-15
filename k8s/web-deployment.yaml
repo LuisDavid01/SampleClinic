@@ -45,6 +45,11 @@ spec:
                 configMapKeyRef:
                   name: webclinica-configmap
                   key: NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL
+            - name: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: webclinica-configmap
+                  key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
             - name: NEXT_PUBLIC_API_BASE_URL
               valueFrom:
                 configMapKeyRef:

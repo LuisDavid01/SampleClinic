@@ -5,6 +5,7 @@ metadata:
 spec:
   parentRefs:
     - name: clinica-gateway
+      sectionName: https-api
   hostnames:
     - "clinicaapi.internal"
   rules:

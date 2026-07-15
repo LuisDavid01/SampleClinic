@@ -1,0 +1,41 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clinica-tls
+  namespace: default
+spec:
+  secretName: clinica-tls-secret
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+  commonName: clinica.internal
+  dnsNames:
+    - clinica.internal
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clinicaapi-tls
+  namespace: default
+spec:
+  secretName: clinicaapi-tls-secret
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+  commonName: clinicaapi.internal
+  dnsNames:
+    - clinicaapi.internal
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clinicachat-tls
+  namespace: default
+spec:
+  secretName: clinicachat-tls-secret
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+  commonName: clinicachat.internal
+  dnsNames:
+    - clinicachat.internal
