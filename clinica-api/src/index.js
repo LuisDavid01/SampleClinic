@@ -491,20 +491,12 @@ app.use('*', (req, res) => {
 // Función para iniciar el servidor
 const startServer = async () => {
 	try {
-		// En Docker, esperar a que la base de datos esté lista
-		if (process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('postgres:')) {
-			const { default: waitForDatabase } = await import('../scripts/wait-for-db.js');
-			await waitForDatabase();
-		}
 
-		// Conectar a la base de datos
 		await prisma.$connect();
 
-		// Iniciar job de recordatorios
 		const { startReminderJob } = await import('./jobs/reminderJob.js');
 		startReminderJob();
 
-		// Iniciar servidor
 		app.listen(port, () => {
 		});
 	} catch (error) {

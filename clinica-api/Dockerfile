@@ -1,44 +1,68 @@
-# Usar Node.js 18 como imagen base con Debian para mejor compatibilidad con Prisma
-FROM node:18-slim
+FROM node:20 AS deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
-# Instalar dependencias del sistema necesarias para Prisma, healthcheck y timezone
-RUN apt-get update && apt-get install -y openssl wget tzdata && rm -rf /var/lib/apt/lists/*
-
-# Configurar timezone (se puede sobrescribir con variable de entorno TZ)
+FROM node:20 AS builder
 ENV TZ=America/Costa_Rica
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Establecer directorio de trabajo
 WORKDIR /app
 
-# Copiar archivos de dependencias
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma
+COPY --from=deps /app/node_modules ./node_modules
 
-# Instalar dependencias (incluyendo devDependencies para Prisma)
-RUN npm ci
-
-# Copiar el código fuente
-COPY . .
-
-# Generar el cliente de Prisma
 RUN npx prisma generate
 
-# Hacer ejecutables los scripts
-RUN chmod +x scripts/start.sh scripts/init-prisma.sh
+COPY . .
 
-# Instalar postgresql-client para pg_isready
-RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
 
-# Crear usuario no-root para seguridad
-RUN groupadd -g 1001 nodejs
-RUN useradd -r -u 1001 -g nodejs nodejs
+FROM gcr.io/distroless/nodejs20-debian12 AS runner
+WORKDIR /app
 
-# Cambiar la propiedad de los archivos al usuario nodejs
-RUN chown -R nodejs:nodejs /app
-USER nodejs
+ENV NODE_ENV=production
+ENV PORT=3001
 
-# Exponer el puerto
+ENV TZ=America/Costa_Rica
+ENV DATABASE_URL "test"
+ENV JWT_SECRET=your-unique-jwt-secret-here
+ENV JWT_EXPIRES_IN=7d
+
+# Clerk Authentication
+ENV CLERK_SECRET_KEY=sk_test_demo
+ENV CLERK_PUBLISHABLE_KEY=pk_test_demo
+
+
+# CORS
+ENV CORS_ORIGIN=http://localhost:3000
+
+ENV ENCRYPTION_KEY=your-unique-32-char-encryption-key-here
+
+# Email Configuration
+ENV SMTP_HOST=smtp.gmail.com
+ENV SMTP_PORT=587
+ENV SMTP_SECURE=false
+ENV SMTP_USER=tu-email@gmail.com
+ENV SMTP_PASS=tu-app-password
+ENV EMAIL_FROM=noreply@example.com
+ENV EMAIL_FROM_NAME="example"
+
+# Frontend URL
+ENV FRONTEND_URL=http://localhost:3000
+
+# Configuración de Recordatorios
+ENV RECORDATORIO_DIAS_ANTES=2
+ENV CRON_SCHEDULE_RECORDATORIOS="0 9 * * *"
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/package.json ./package.json
+
+
 EXPOSE 3001
-
-# Comando para iniciar la aplicación con inicialización automática
-CMD ["./scripts/init-prisma.sh"]
+CMD ["src/index.js"]

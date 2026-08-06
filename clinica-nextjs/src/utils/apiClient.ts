@@ -32,7 +32,7 @@ export class ApiClient {
 		const baseUrlClean = this.baseUrl.endsWith('/') ? this.baseUrl.slice(0, -1) : this.baseUrl;
 		const endpointClean = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 		const url = `${baseUrlClean}${endpointClean}`;
-		
+
 		// Agregar timeout para móvil
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 segundos
@@ -87,7 +87,7 @@ export class ApiClient {
 			return response.json();
 		} catch (error: any) {
 			clearTimeout(timeoutId);
-			
+
 			// Log detallado del error en móvil
 			const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 			if (isMobile) {
@@ -101,7 +101,7 @@ export class ApiClient {
 					stack: error?.stack
 				});
 			}
-			
+
 			if (error.name === 'AbortError' || error.message?.includes('Timeout')) {
 				throw new Error('La conexión tardó demasiado. Verifica tu conexión a internet.');
 			}
@@ -153,7 +153,7 @@ export class ApiClient {
 				let errorMessage = `Error ${response.status}: ${response.statusText}`;
 				try {
 					const errorData = await response.json();
-					
+
 					// Solo mostrar como error si realmente hay información de error
 					// Si el objeto está vacío, solo loguear como información
 					if (Object.keys(errorData).length === 0) {
@@ -161,7 +161,7 @@ export class ApiClient {
 					} else {
 						console.error('API Error Details:', errorData);
 					}
-					
+
 					// Intentar obtener el mensaje de error de diferentes formas
 					if (errorData.message) {
 						errorMessage = errorData.message;
@@ -229,7 +229,7 @@ export class ApiClient {
 			let errorMessage = `Error ${response.status}: ${response.statusText}`;
 			try {
 				const errorData = await response.json();
-				
+
 				// Solo mostrar como error si realmente hay información de error
 				// Si el objeto está vacío, solo loguear como información
 				if (response.status === 200) {
@@ -237,7 +237,7 @@ export class ApiClient {
 				} else {
 					console.error('API Error Details:', errorData);
 				}
-				
+
 				// Intentar obtener el mensaje de error de diferentes formas
 				if (errorData.message) {
 					errorMessage = errorData.message;
@@ -307,33 +307,12 @@ export function useApiClient() {
 	// Obtener baseUrl con fallback robusto para móvil
 	const getBaseUrl = () => {
 		// En el cliente (especialmente móvil), usar el proxy de Next.js para evitar CORS
-		if (typeof window !== 'undefined') {
-			const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-			
-			// Usar el proxy de Next.js (/api) que está configurado en next.config.ts
-			// Esto evita problemas de CORS y funciona mejor en móvil
-			const proxyUrl = '/api';
-			console.log('🔧 [useApiClient] Cliente detectado - usando proxy Next.js:', { 
-				isMobile, 
-				url: proxyUrl,
-				hostname: window.location.hostname,
-				protocol: window.location.protocol
-			});
-			return proxyUrl;
-		}
-		
-		// En el servidor, usar la URL directa del API
-		if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-			const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+				// En el servidor, usar la URL directa del API
+			const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL!;
 			console.log('🔧 [useApiClient] Servidor - usando NEXT_PUBLIC_API_BASE_URL:', envUrl);
 			return envUrl;
-		}
-		
-		// Fallback para servidor
-		const serverUrl = 'http://localhost:3001/api';
-		console.log('🔧 [useApiClient] Servidor - usando fallback:', serverUrl);
-		return serverUrl;
-	};
+
+		};
 
 	return new ApiClient(getBaseUrl(), getToken);
 }

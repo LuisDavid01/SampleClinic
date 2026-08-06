@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatclinica-api
+  labels:
+    app: chatclinica-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatclinica-api
+  template:
+    metadata:
+      labels:
+        app: chatclinica-api
+    spec:
+      containers:
+        - name: chatclinica-api
+          image: luisdavid01/clinicachat:latest 
+          env:
+            - name: API_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: chatclinica-api-configmap
+                  key: API_PORT

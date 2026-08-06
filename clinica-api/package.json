@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
+    "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -49,13 +49,12 @@
     "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.10",
+    "react-datepicker": "^4.25.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
-    "react-datepicker": "^4.25.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2",
-    "prisma": "^6.17.1"
+    "prisma": "^6.19.3"
   }
 }

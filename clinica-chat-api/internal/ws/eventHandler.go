@@ -278,11 +278,9 @@ func leaveRoomHandler(client *Client) {
 		Type:    EventLeaveRoom,
 		Payload: data,
 	}
-	client.Manager.RLock()
 	for c := range client.Manager.Clients {
 		if c.Rol != RolePacient {
 			c.egress <- outgointEvent
 		}
 	}
-	client.Manager.RUnlock()
 }

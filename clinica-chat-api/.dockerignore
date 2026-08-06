@@ -1,0 +1,10 @@
+diagrama-chat.png
+.env
+.env.example
+.air.toml
+KeyGen.bash
+chatApi
+clinic.access.log
+main
+readme.md
+todo.md
