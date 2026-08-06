@@ -23,3 +23,8 @@ spec:
                 configMapKeyRef:
                   name: chatclinica-api-configmap
                   key: API_PORT
+            - name: CLERK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: clinicachat-secrets
+                  key: CLERK_SECRET_KEY
