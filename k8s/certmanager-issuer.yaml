@@ -1,6 +1,7 @@
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: selfsigned-issuer
+  name: ca-issuer
 spec:
-  selfSigned: {}
+  ca:
+    secretName: clinic-ca-key

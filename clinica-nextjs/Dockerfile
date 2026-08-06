@@ -16,12 +16,17 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_Z2xvd2luZy1nb2xkZmlzaC05Mi5jbGVyay5hY2NvdW50cy5kZXYk"
-ARG NEXT_PUBLIC_API_BASE_URL="https://clinicaapi.internal/api"
-ARG NEXT_PUBLIC_CHAT_API_BASE_URL="https://clinicachat.internal/api"
-ARG NEXT_PUBLIC_WS_URL="wss://clinicachat.internal/ws"
+ARG NEXT_PUBLIC_API_BASE_URL="http://clinicaapi-service:3001/api"
+ARG NEXT_PUBLIC_CHAT_API_BASE_URL="http://clinicachat-service:8081/api"
+ARG NEXT_PUBLIC_WS_URL="ws://clinicachat-service:8081/ws"
 RUN npm install -g pnpm && pnpm run build
 
-FROM gcr.io/distroless/nodejs20-debian12 AS runner
+FROM node:20-slim AS runner
+
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+COPY ca.crt /usr/local/share/ca-certificates/clinic-internal.crt
+RUN update-ca-certificates
+
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -40,4 +45,4 @@ COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
 
-CMD ["server.js"]
+CMD ["node", "server.js"]

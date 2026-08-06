@@ -6,7 +6,7 @@ metadata:
 spec:
   secretName: clinica-tls-secret
   issuerRef:
-    name: selfsigned-issuer
+    name: ca-issuer
     kind: ClusterIssuer
   commonName: clinica.internal
   dnsNames:
@@ -20,7 +20,7 @@ metadata:
 spec:
   secretName: clinicaapi-tls-secret
   issuerRef:
-    name: selfsigned-issuer
+    name: ca-issuer
     kind: ClusterIssuer
   commonName: clinicaapi.internal
   dnsNames:
@@ -34,7 +34,7 @@ metadata:
 spec:
   secretName: clinicachat-tls-secret
   issuerRef:
-    name: selfsigned-issuer
+    name: ca-issuer
     kind: ClusterIssuer
   commonName: clinicachat.internal
   dnsNames:

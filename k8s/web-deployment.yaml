@@ -70,3 +70,4 @@ spec:
                 secretKeyRef:
                   name: clinicaweb-secrets
                   key: CLERK_SECRET_KEY
+
