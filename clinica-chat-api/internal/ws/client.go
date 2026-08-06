@@ -2,7 +2,6 @@ package ws
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -67,9 +66,14 @@ func (c *Client) Read() {
 		_, payload, err := c.Conn.ReadMessage()
 
 		if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+				return
+
+			}
 
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseAbnormalClosure, websocket.CloseGoingAway) {
-				fmt.Printf("Unsual close error: %v", err)
+				c.Manager.Logger.Error("Unusual close error ", "error", err)
+
 			}
 			break
 		}
@@ -96,13 +100,15 @@ func (c *Client) Read() {
 }
 
 func (c *Client) Write() {
+	ticker := time.NewTicker(pingInterval)
+	inactivityTicker := time.NewTicker(30 * time.Second)
+
 	defer func() {
+		ticker.Stop()
+		inactivityTicker.Stop()
 		c.Manager.RemoveClient(c)
 
 	}()
-
-	ticker := time.NewTicker(pingInterval)
-	inactivityTicker := time.NewTicker(30 * time.Second)
 
 	for {
 		select {
@@ -126,7 +132,6 @@ func (c *Client) Write() {
 				return
 			}
 
-
 		case <-ticker.C:
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				c.Manager.Logger.Error("Error sending ping message", "error", err)
@@ -136,7 +141,6 @@ func (c *Client) Write() {
 		case <-inactivityTicker.C:
 			if time.Since(c.lastMessageTime) > 5*time.Minute {
 				c.Manager.Logger.Error("Client inactivity", "username", c.Username)
-				c.Conn.Close()
 				return
 			}
 		}

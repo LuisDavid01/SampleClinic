@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import { OfflineChat } from "../OfflineChat";
 import { useAuth } from "@clerk/nextjs";
 import { useNotification } from "../UseNotification";
-
+import { v4 as uuid } from 'uuid';
 
 export default function SupportChat() {
 	const [isOpen, setIsOpen] = useState(false);
@@ -186,7 +186,7 @@ export default function SupportChat() {
 				setMessages(prev => [
 					...prev,
 					{
-						id: crypto.randomUUID(),
+						id: uuid(),
 						sender: messageEvent.from,
 						role: messageEvent.role,
 						text: messageEvent.message,
@@ -547,14 +547,13 @@ export default function SupportChat() {
 											<div className="space-y-3">
 												{messages.map(msg => (
 													<div key={msg.id} className={`flex ${msg.role === 'paciente' ? 'justify-start' : 'justify-end'}`}>
-														<div className={`max-w-[80%] p-3 rounded-lg text-sm ${msg.role === 'paciente'
-															? 'bg-blue-500 text-white'
-															: 'bg-card'
-															}`}>
-															<p className="break-words whitespace-pre-wrap">
-
-																{msg.text}
-															</p>
+													<div className={`max-w-[90%] min-w-0 p-3 rounded-lg text-sm ${msg.role === 'paciente'
+														? 'bg-blue-500 text-white'
+														: 'bg-card'
+														}`}>
+														<p className="wrap-anywhere whitespace-pre-wrap">
+															{msg.text}
+														</p>
 															<div className="flex items-center gap-1 mt-1">
 																<Clock className="h-3 w-3 opacity-70" />
 																<span className="text-xs opacity-70">{msg.timestamp}</span>

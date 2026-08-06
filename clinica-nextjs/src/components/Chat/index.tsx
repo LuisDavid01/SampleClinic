@@ -16,6 +16,7 @@ import { chatEvent, chatMessageSchema, errorMessageEvent, joinRoomEvent, NewMess
 import { useAuth } from "@clerk/nextjs";
 import { useNotification } from "../UseNotification";
 import { SurveyForm } from "../SurveyForm";
+import { v4 as uuid } from 'uuid';
 
 
 export default function FloatingChat() {
@@ -164,7 +165,7 @@ export default function FloatingChat() {
 				setMessages(prev => [
 					...prev,
 					{
-						id: crypto.randomUUID(),
+						id: uuid(),
 						sender: messageEvent.from,
 						role: messageEvent.role,
 						text: messageEvent.message,
@@ -333,11 +334,11 @@ export default function FloatingChat() {
 									<div className="space-y-3">
 										{messages.map(msg => (
 											<div key={msg.id} className={`flex ${msg.role === 'paciente' ? 'justify-end' : 'justify-start'}`}>
-												<div className={`max-w-[80%] p-3 rounded-lg text-sm  ${msg.role === 'paciente'
+												<div className={`max-w-[90%] min-w-0 p-3 rounded-lg text-sm  ${msg.role === 'paciente'
 													? 'bg-card '
 													: 'bg-blue-500 text-white'
 													}`}>
-													<p className="break-words whitespace-pre-wrap">
+													<p className="wrap-anywhere whitespace-pre-wrap">
 														{msg.text}
 													</p>
 													<div className="flex items-center gap-1 mt-1">
