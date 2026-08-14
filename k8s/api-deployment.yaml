@@ -17,6 +17,10 @@ spec:
       containers:
         - name: clinica-api
           image: luisdavid01/clinicaapi:latest 
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
           envFrom:
             - secretRef:
                 name: clinicaapi-secrets

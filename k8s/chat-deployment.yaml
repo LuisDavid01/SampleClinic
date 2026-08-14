@@ -17,6 +17,10 @@ spec:
       containers:
         - name: chatclinica-api
           image: luisdavid01/clinicachat:latest 
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
           env:
             - name: API_PORT
               valueFrom:

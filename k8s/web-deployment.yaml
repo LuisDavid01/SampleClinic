@@ -17,6 +17,10 @@ spec:
       containers:
         - name: clinica-web
           image: luisdavid01/clinicanextjs:latest 
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "1.0"
           env:
             - name: HOSTNAME
               value: "0.0.0.0"
